@@ -11,12 +11,12 @@ export default class DataModel {
 
     };
 
-    setSpeciesLookup(){
-
+    setSpeciesLookup(data=[]){
+        this.speciesLookup = data;
     };
 
-    setHucsBySpecies(){
-
+    setHucsBySpecies(data=[]){
+        this.hucsBySpecies = data;
     };
 
 };

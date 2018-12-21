@@ -6,6 +6,7 @@ import Controller from './core/Controller';
 import View from './core/View';
 
 import * as esriLoader from 'esri-loader';
+import { resolve } from "path";
 
 const Promise = require('es6-promise').Promise;
 const esriLoaderOptions = {
@@ -19,17 +20,20 @@ esriLoader.utils.Promise = Promise;
 esriLoader.loadModules([
     'esri/views/MapView', 
     'esri/WebMap',
+    "esri/Graphic",
     "esri/identity/OAuthInfo",
     "esri/identity/IdentityManager",
     "esri/portal/Portal"
 ], esriLoaderOptions).then(([
-    MapView, WebMap,
+    MapView, WebMap, 
+    Graphic,
     OAuthInfo, esriId, Portal
 ]) => {
 
     const MapControl = function(options={}){
 
         let mapView = null;
+        let hucsLayer = null;
 
         const webMapID = options.webMapID || null;
         const mapViewContainerID = options.mapViewContainerID || null;
@@ -60,15 +64,131 @@ esriLoader.loadModules([
         };
 
         const initMapEventHandlers = ()=>{
-
+            mapView.on('hold', event=>{
+                // console.log('map view on hold', event);
+                queryHucsLayerByMouseEvent(event);
+            });
         };
 
         const mapViewOnReadyHandler = ()=>{
-            console.log('mapView is ready...');
+            // console.log('mapView is ready...');
+
+            initMapEventHandlers();
+
+            setHucsLayer(mapView.map);
         };
 
+        const queryHucsLayerByMouseEvent = (event)=>{
+            const query = hucsLayer.createQuery();
+            query.geometry = mapView.toMap(event);  // the point location of the pointer
+            query.spatialRelationship = "intersects";  // this is the default
+            query.returnGeometry = true;
+            query.outFields = [ "*" ];
+            
+            hucsLayer.queryFeatures(query).then(function(response){
+                console.log(response);
+
+                if(response.features && response.features.length){
+                    setPreviewHuc(response.features[0]);
+                }
+            });
+
+        };
+
+        const setHucsLayer = (webmap)=>{
+            // console.log(webmap.layers.items);
+
+            hucsLayer = webmap.layers.items.filter(d=>{
+                return d.title.indexOf('HUC10') !== -1 
+            })[0];
+
+            // console.log(hucsLayer);
+        };
+
+        const setPreviewHuc = (feature)=>{
+
+            addPreviewHucGraphic(feature);
+        };
+
+        const addPreviewHucGraphic = (feature)=>{
+            // const attributes = feature.attributes;
+
+            cleanPreviewHucGraphic();
+
+            const symbol = {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: [255, 0, 0, .9],
+                outline: {  // autocasts as new SimpleLineSymbol()
+                    color: [125, 125, 125, 0.3],
+                    width: "0.5px"
+                }
+            };
+
+            const graphicForSelectedHuc = new Graphic({
+                geometry: feature.geometry,
+                symbol: symbol,
+                attributes: {
+                    isUnsavedPreviewHuc: true
+                }
+            });
+
+            mapView.graphics.add(graphicForSelectedHuc);
+        };
+
+        const cleanPreviewHucGraphic = ()=>{
+            mapView.graphics.forEach(g=>{
+                if(g.attributes.isUnsavedPreviewHuc){
+                    mapView.graphics.remove(g);
+                }
+            })
+        };
+
+        // highlight hucs from the species extent table
+        const highlightHucs = (data)=>{
+            cleanPreviewHucGraphic();
+            hucsLayer.renderer = getUniqueValueRenderer(data);
+        };
+
+        const getUniqueValueRenderer = (data)=>{
+
+            const defaultSymbol = {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: [0,0,0, 0],
+                outline: {  // autocasts as new SimpleLineSymbol()
+                    color: [125, 125, 125, 0.3],
+                    width: "0.5px"
+                }
+            }
+
+            const symbolForHighlightFeature = {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: [116,97,168, .5],
+                outline: {  // autocasts as new SimpleLineSymbol()
+                    color: [255, 255, 255, 0.3],
+                    width: "0.5px"
+                }
+            };
+
+            const uniqueValueInfos = data.map(d=>{
+                return {
+                    value: d[config.FIELD_NAME.speciesLookupHucID],
+                    symbol: symbolForHighlightFeature
+                }
+            });
+
+            const renderer = {
+                type: "unique-value",  // autocasts as new UniqueValueRenderer()
+                field: config.FIELD_NAME.huc10LayerHucID,
+                defaultSymbol: defaultSymbol, //{ type: "none" },  // autocasts as new SimpleFillSymbol()
+                uniqueValueInfos: uniqueValueInfos
+            };
+
+            return renderer;
+        }
+
         return {
-            init
+            init,
+            highlightHucs
         };
 
     };
@@ -129,14 +249,21 @@ esriLoader.loadModules([
             esriId.useSignInPage = false;
             esriId.registerOAuthInfos([info]);
 
-            esriId.checkSignInStatus(info.portalUrl + "/sharing").then((res)=>{
-                // console.log('already signed in as', res.userId);
-                setUserCredential(res);
-                setPortalUser();
-            }).catch(()=>{
-                // console.log('Anonymous view, sign in first');
-                signIn();
+            return new Promise((resolve, reject)=>{
+
+                esriId.checkSignInStatus(info.portalUrl + "/sharing").then((res)=>{
+                    // console.log('already signed in as', res.userId);
+                    setUserCredential(res);
+                    setPortalUser();
+
+                    resolve(res);
+
+                }).catch(()=>{
+                    // console.log('Anonymous view, sign in first');
+                    signIn();
+                });
             });
+
         };
 
         return {
@@ -168,10 +295,24 @@ esriLoader.loadModules([
         });
 
         const oauthManager = new OAuthManager(config.oauthAppID);
-        oauthManager.init();
 
-        mapControl.init();
-        controller.init();
+        oauthManager.init().then(credential=>{
+            // console.log('user credential', credential);
+
+            const token = credential.token;
+
+            mapControl.init();
+
+            controller.init({
+                token
+            });
+
+        });
+
+
+        window.appDebugger = {
+            signOut: oauthManager.signOut
+        };
 
     })();
 

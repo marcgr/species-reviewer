@@ -1,6 +1,12 @@
+import config from '../config';
+
+import SpeciesSelector from '../components/SpeciesSelector';
+
 export default function View(){
 
-    return {
+    const speciesSelector = new SpeciesSelector();
 
+    return {
+        speciesSelector
     };
 };

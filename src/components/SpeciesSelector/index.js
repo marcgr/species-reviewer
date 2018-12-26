@@ -34,8 +34,8 @@ export default function SpeciesSelector(){
         const compoenetHtml = `
             <div id='speciesSelectorContainer'>
                 <label>
-                    Select Species:
                     <select class="select-full">
+                        <option value="" selected disabled hidden>Select Species</option>
                         ${optionsHtml}
                     </select>
                 </label>

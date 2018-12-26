@@ -19,4 +19,8 @@ export default class DataModel {
         this.hucsBySpecies = data;
     };
 
+    setStatus(data=[]){
+        this.status = data;
+    };
+
 };

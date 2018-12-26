@@ -18,6 +18,8 @@ export default function Controller(options={}){
         token = options.token || null;
 
         initSpeciesLookupTable();
+
+        initStatusTable();
     };
 
     const initSpeciesLookupTable = ()=>{
@@ -43,6 +45,27 @@ export default function Controller(options={}){
 
         });
 
+    };
+
+    const initStatusTable = ()=>{
+
+        queryStatusTable().then(data=>{
+
+            data = data.map(d=>{
+                const lineBreakPattern = /(\r\n\t|\n|\r\t)/g;
+
+                let statusType = d.attributes[config.FIELD_NAME.statusType];
+
+                if(lineBreakPattern.test(statusType)){
+                    statusType = statusType.replace(lineBreakPattern, ' ');
+                }
+
+                return statusType;
+            });
+
+            dataModel.setStatus(data);
+
+        });
     };
 
     const searchHucsBySpecies = (speciesKey)=>{
@@ -111,6 +134,29 @@ export default function Controller(options={}){
         } else {
             console.log('species extent table url is not found for', speciesKey);
         }
+    };
+
+    const queryStatusTable = ()=>{
+        const requestUrl = config.URL.statusTable + '/query';
+
+        return new Promise((resolve, reject)=>{
+
+            axios.get(requestUrl, {
+                params: {
+                    where: '1=1',
+                    outFields: '*',
+                    f: 'json',
+                    token
+                }
+            }).then(function (response) {
+                // console.log(response);
+
+                if(response.data && response.data.features && response.data.features.length){
+                    // console.log(response.data.features);
+                    resolve(response.data.features) 
+                }
+            });
+        });
     };
 
     return {

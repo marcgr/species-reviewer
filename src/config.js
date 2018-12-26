@@ -6,7 +6,8 @@ module.exports = {
 
     'FIELD_NAME': {
         'huc10LayerHucID': 'HUC10',
-        'speciesLookupHucID': 'HUC10'
+        'speciesLookupHucID': 'HUC10',
+        'statusType': 'StatusType'
     },
 
     'DOM_ID': {
@@ -15,11 +16,13 @@ module.exports = {
     },
 
     "URL": {
-        "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/RangeReviewHUC/FeatureServer/3',
+        "rangeReviewHucServiceBase": "",
+        "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesLookup/FeatureServer/1',
+        "statusTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/StatusTable/FeatureServer/0",
 
         "speciesExtent": {
-            "IsotriaMedeoloides": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/RangeReviewHUC/FeatureServer/1",
-            "LithobatesKauffeldi": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/RangeReviewHUC/FeatureServer/2",
+            "IsotriaMedeoloides": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/IsotriaMedeoloides/FeatureServer/4",
+            "LithobatesKauffeldi": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/LithobatesKauffeldi/FeatureServer/3",
         }
     }
 };

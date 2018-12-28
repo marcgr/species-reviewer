@@ -34,15 +34,18 @@ esriLoader.loadModules([
 
         let mapView = null;
         let hucsLayer = null;
+        let hucFeatureOnSelectHandler = null;
 
         const webMapID = options.webMapID || null;
         const mapViewContainerID = options.mapViewContainerID || null;
 
-        const init = ()=>{
+        const init = (options={})=>{
             if(!webMapID || ! mapViewContainerID){
                 console.error('web map ID and map view container DOM ID is required to init map control');
                 return;
             }
+
+            hucFeatureOnSelectHandler = options.hucFeatureOnSelectHandler || null;
 
             initMapView();
         };
@@ -86,7 +89,7 @@ esriLoader.loadModules([
             query.outFields = [ "*" ];
             
             hucsLayer.queryFeatures(query).then(function(response){
-                console.log(response);
+                // console.log(response);
 
                 if(response.features && response.features.length){
                     setPreviewHuc(response.features[0]);
@@ -108,6 +111,10 @@ esriLoader.loadModules([
         const setPreviewHuc = (feature)=>{
 
             addPreviewHucGraphic(feature);
+
+            if(hucFeatureOnSelectHandler){
+                hucFeatureOnSelectHandler(feature);
+            }
         };
 
         const addPreviewHucGraphic = (feature)=>{
@@ -241,7 +248,7 @@ esriLoader.loadModules([
             portal.load().then(()=>{
                 poralUser = portal.user;
                 // console.log(portal);
-                // console.log('poralUser', poralUser);
+                console.log('poralUser', poralUser);
             });
         };
 
@@ -266,12 +273,18 @@ esriLoader.loadModules([
 
         };
 
+        const getUserID = ()=>{
+            // console.log(poralUser);
+            return poralUser.username;
+        };
+
         return {
             init,
             signIn,
             signOut,
             getUserContentUrl,
-            isAnonymous: checkIsAnonymous
+            isAnonymous: checkIsAnonymous,
+            getUserID
         };
 
     };
@@ -285,23 +298,29 @@ esriLoader.loadModules([
         
         const mapControl = new MapControl({
             webMapID: config.webMapID,
-            mapViewContainerID: config.DOM_ID.mapViewContainer
+            mapViewContainerID: config.DOM_ID.mapViewContainer,
         });
+
+        const oauthManager = new OAuthManager(config.oauthAppID);
 
         const controller = new Controller({
             dataModel,
             mapControl,
-            view
+            view,
+            oauthManager
         });
-
-        const oauthManager = new OAuthManager(config.oauthAppID);
 
         oauthManager.init().then(credential=>{
             // console.log('user credential', credential);
 
             const token = credential.token;
 
-            mapControl.init();
+            mapControl.init({
+                hucFeatureOnSelectHandler: (hucFeature)=>{
+                    // console.log('selected hucFeature', hucFeature);
+                    controller.setSelectedHucFeature(hucFeature);
+                }
+            });
 
             controller.init({
                 token

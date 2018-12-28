@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+import FeedbackManager from '../core/FeedbackManager';
 import config from '../config';
 
 const Promise = require('es6-promise').Promise;
@@ -7,10 +8,24 @@ const Promise = require('es6-promise').Promise;
 export default function Controller(options={}){
 
     let token = null;
+    let selectedHucFeature = null;
 
     const dataModel = options.dataModel || null;
     const mapControl = options.mapControl || null;
     const view = options.view || null;
+    const oauthManager = options.oauthManager || null;
+    
+    const feedbackManager = new FeedbackManager({
+        onOpenHandler: ()=>{
+
+        },
+        onCloseHandler: ()=>{
+
+        },
+        onSubmitHandler:(data)=>{
+
+        }
+    });
 
     const init = (options={})=>{
         // console.log('init app controller', dataModel, mapControl, view);
@@ -40,6 +55,7 @@ export default function Controller(options={}){
                 onChange: (val)=>{
                     // console.log(val);
                     searchHucsBySpecies(val);
+                    dataModel.setSelectedSpecies(val);
                 }
             });
 
@@ -159,8 +175,42 @@ export default function Controller(options={}){
         });
     };
 
+    const setSelectedHucFeature = (feature=null)=>{
+
+        selectedHucFeature = feature;
+
+        if(selectedHucFeature){
+            const hucID = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
+            dataModel.setSelectedHuc(hucID);
+
+            openFeedbackManager();
+        }
+    };
+
+    const openFeedbackManager = (options={})=>{
+        const userID = oauthManager.getUserID();
+        const species = dataModel.getSelectedSpecies();
+        const hucID = dataModel.getSelectedHuc();
+
+        feedbackManager.open({
+            userID,
+            species,
+            hucID
+        })
+    };
+
+    const closeFeedbackManager = ()=>{
+        feedbackManager.close();
+
+        dataModel.setSelectedSpecies();
+        dataModel.setSelectedHuc();
+    };
+
     return {
-        init
+        init,
+        feedbackManager,
+        setSelectedHucFeature
+        // openFeedbackManager
     };
 
 }

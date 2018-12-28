@@ -4,7 +4,9 @@ export default class DataModel {
 
         this.speciesLookup = [];
         this.hucsBySpecies = [];
-        this.status = [];        
+        this.status = [];
+        this.selectedSpecies = null;      
+        this.selectedHuc = null;  
     };
 
     init(){
@@ -22,5 +24,21 @@ export default class DataModel {
     setStatus(data=[]){
         this.status = data;
     };
+
+    setSelectedSpecies(val=null){
+        this.selectedSpecies = val;
+    }
+
+    getSelectedSpecies(){
+        return this.selectedSpecies;
+    }
+
+    setSelectedHuc(val=null){
+        this.selectedHuc = val;
+    }
+
+    getSelectedHuc(){
+        return this.selectedHuc;
+    }
 
 };

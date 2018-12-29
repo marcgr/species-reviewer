@@ -17,7 +17,7 @@ export default function(options={}){
         feedbackDataModel.init(data);
 
         if(onOpenHandler){
-            onOpenHandler();
+            onOpenHandler(feedbackDataModel.getFeedbackData());
         }
 
         // console.log(feedbackDataModel);
@@ -33,7 +33,7 @@ export default function(options={}){
 
     const submit = ()=>{
 
-        save(feedbackDataModel);
+        save(feedbackDataModel.getFeedbackData());
     };
 
     const save = (feedbackData)=>{

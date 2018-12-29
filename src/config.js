@@ -6,13 +6,15 @@ module.exports = {
 
     'FIELD_NAME': {
         'huc10LayerHucID': 'HUC10',
+        'huc10LayerHucName': 'NAME',
         'speciesLookupHucID': 'HUC10',
         'statusType': 'StatusType'
     },
 
     'DOM_ID': {
         'mapViewContainer': 'viewDiv',
-        "speciesSelector": 'speciesSelectorDiv'
+        "speciesSelector": 'speciesSelectorDiv',
+        'feedbackControl': 'feedbackControlDiv'
     },
 
     "URL": {

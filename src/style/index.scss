@@ -25,3 +25,10 @@ html, body{
     width: $sidebar-width;
     height: 100%;
 }
+
+#feedbackControlDiv {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+}

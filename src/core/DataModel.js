@@ -7,6 +7,7 @@ export default class DataModel {
         this.status = [];
         this.selectedSpecies = null;      
         this.selectedHuc = null;  
+        // this.selectedHucName = null;
     };
 
     init(){

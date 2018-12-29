@@ -195,7 +195,8 @@ esriLoader.loadModules([
 
         return {
             init,
-            highlightHucs
+            highlightHucs,
+            cleanPreviewHucGraphic
         };
 
     };
@@ -319,6 +320,15 @@ esriLoader.loadModules([
                 hucFeatureOnSelectHandler: (hucFeature)=>{
                     // console.log('selected hucFeature', hucFeature);
                     controller.setSelectedHucFeature(hucFeature);
+                }
+            });
+
+            // view.init();
+
+            view.feedbackControlPanel.init({
+                containerID: config.DOM_ID.feedbackControl,
+                onCloseHandler: ()=>{
+                    controller.closeFeedbackManager();
                 }
             });
 

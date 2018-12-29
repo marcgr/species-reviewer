@@ -6,25 +6,27 @@ export default class FeedbackManager{
         this.species = null;
         this.status = null;   
         this.comment = null;  
+        this.hucName = null;
     };
 
     init(options){
         this.userID = options.userID || null;
         this.hucID = options.hucID || null;
         this.species = options.species || null;
+        this.hucName = options.hucName || null;
     };
 
-    setUserID(val=''){
-        this.userID = val;
-    };
+    // setUserID(val=''){
+    //     this.userID = val;
+    // };
 
-    setHucID(val=''){
-        this.hucID = val;
-    };
+    // setHucID(val=''){
+    //     this.hucID = val;
+    // };
 
-    setSpecies(val=''){
-        this.species = val;
-    };
+    // setSpecies(val=''){
+    //     this.species = val;
+    // };
 
     setStatus(val=''){
         this.status = val;
@@ -40,6 +42,7 @@ export default class FeedbackManager{
         this.species = null;
         this.status = null;   
         this.comment = null; 
+        this.hucName = null;
     };
 
     getFeedbackData(){
@@ -48,7 +51,8 @@ export default class FeedbackManager{
             hucID: this.hucID,
             species: this.species,
             status: this.status,
-            comment: this.comment
+            comment: this.comment,
+            hucName: this.hucName
         };
     }
 

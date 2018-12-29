@@ -16,11 +16,13 @@ export default function Controller(options={}){
     const oauthManager = options.oauthManager || null;
     
     const feedbackManager = new FeedbackManager({
-        onOpenHandler: ()=>{
-
+        onOpenHandler: (data)=>{
+            // console.log('feedbackManager is opened', data);
+            view.feedbackControlPanel.open(data);
         },
         onCloseHandler: ()=>{
-
+            // console.log('feedbackManager is closed');
+            view.feedbackControlPanel.close();
         },
         onSubmitHandler:(data)=>{
 
@@ -56,6 +58,7 @@ export default function Controller(options={}){
                     // console.log(val);
                     searchHucsBySpecies(val);
                     dataModel.setSelectedSpecies(val);
+                    closeFeedbackManager();
                 }
             });
 
@@ -183,6 +186,8 @@ export default function Controller(options={}){
             const hucID = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
             dataModel.setSelectedHuc(hucID);
 
+            // console.log(selectedHucFeature);
+
             openFeedbackManager();
         }
     };
@@ -191,12 +196,14 @@ export default function Controller(options={}){
         const userID = oauthManager.getUserID();
         const species = dataModel.getSelectedSpecies();
         const hucID = dataModel.getSelectedHuc();
+        const hucName = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
 
         feedbackManager.open({
             userID,
             species,
-            hucID
-        })
+            hucID,
+            hucName
+        });
     };
 
     const closeFeedbackManager = ()=>{
@@ -204,12 +211,17 @@ export default function Controller(options={}){
 
         dataModel.setSelectedSpecies();
         dataModel.setSelectedHuc();
+
+        setSelectedHucFeature(); // reset selected huc feature
+
+        mapControl.cleanPreviewHucGraphic();
     };
 
     return {
         init,
         feedbackManager,
-        setSelectedHucFeature
+        setSelectedHucFeature,
+        closeFeedbackManager
         // openFeedbackManager
     };
 

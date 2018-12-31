@@ -48,7 +48,7 @@ export default function SpeciesSelector(){
 
     const initEventHandler = ()=>{
 
-        const changeEventHandler = (evt)=>{
+        const changeEventHandler = (event)=>{
             if(event.target.value && onChangeHandler){
                 onChangeHandler(event.target.value);
             }

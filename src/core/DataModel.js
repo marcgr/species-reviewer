@@ -42,4 +42,7 @@ export default class DataModel {
         return this.selectedHuc;
     }
 
+    getStatusByIndex(index){
+        return index && this.status[+index] ? this.status[+index] : null;
+    }
 };

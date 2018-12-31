@@ -14,6 +14,8 @@ export default class FeedbackManager{
         this.hucID = options.hucID || null;
         this.species = options.species || null;
         this.hucName = options.hucName || null;
+        this.status = options.status || null;   
+        this.comment = options.comment || null; 
     };
 
     // setUserID(val=''){

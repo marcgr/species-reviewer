@@ -328,7 +328,20 @@ esriLoader.loadModules([
             view.feedbackControlPanel.init({
                 containerID: config.DOM_ID.feedbackControl,
                 onCloseHandler: ()=>{
-                    controller.closeFeedbackManager();
+                    controller.resetSelectedHucFeature();
+                },
+                statusOnChange: (val)=>{
+                    // console.log(val);
+                    // const status = controller.dataModel.getStatusByIndex(val);
+                    controller.feedbackManager.feedbackDataModel.setStatus(val);
+                },
+                commentOnChange: (val)=>{
+                    // console.log(val);
+                    controller.feedbackManager.feedbackDataModel.setComment(val);
+                },
+                onSubmitHandler: ()=>{
+                    // console.log('submit btn on click');
+                    controller.feedbackManager.submit();
                 }
             });
 

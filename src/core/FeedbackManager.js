@@ -20,7 +20,7 @@ export default function(options={}){
             onOpenHandler(feedbackDataModel.getFeedbackData());
         }
 
-        // console.log(feedbackDataModel);
+        // console.log(feedbackDataModel.getFeedbackData());
     };
 
     const close = ()=>{
@@ -33,7 +33,13 @@ export default function(options={}){
 
     const submit = ()=>{
 
-        save(feedbackDataModel.getFeedbackData());
+        const feedbackData =  feedbackDataModel.getFeedbackData()
+
+        save(feedbackData);
+
+        if(onSubmitHandler){
+            onSubmitHandler(feedbackData);
+        }
     };
 
     const save = (feedbackData)=>{
@@ -45,6 +51,8 @@ export default function(options={}){
         }
 
         feedbackDataStore[hucID][species] = JSON.parse(JSON.stringify(feedbackData));
+
+        console.log(feedbackDataStore);
     };
 
     const remove = ()=>{
@@ -52,7 +60,8 @@ export default function(options={}){
     };
 
     const getSavedItemFromDataStore = (hucID, species)=>{
-        return feedbackDataStore[hucID] && feedbackDataStore[hucID][species] ? feedbackDataStore[hucID][species] : null;
+        console.log(hucID, feedbackDataStore[hucID])
+        return typeof feedbackDataStore[hucID] !== 'undefined' && typeof feedbackDataStore[hucID][species] !== 'undefined' ? feedbackDataStore[hucID][species] : null;
     };
 
     // const checkIfAlreadyInDataStore = (data)=>{
@@ -70,7 +79,9 @@ export default function(options={}){
     return {
         open,
         close,
-        save
+        save,
+        submit,
+        feedbackDataModel
     };
 
 }

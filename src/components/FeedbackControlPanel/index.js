@@ -4,12 +4,22 @@ export default function FeedbackControlPanel(){
 
     let container = null;
     let onCloseHandler = null;
-
+    let statusOnChange = null;
+    let commentOnChange = null;
+    let onSubmitHandler = null;
+    let statusData = [];
+    
     const init = (options={})=>{
 
         container = options.containerID ? document.getElementById(options.containerID) : null;
 
         onCloseHandler = options.onCloseHandler || null;
+
+        statusOnChange = options.statusOnChange || null;
+
+        commentOnChange = options.commentOnChange || null;
+
+        onSubmitHandler = options.onSubmitHandler || null;
 
         if(!container){
             console.error('containerID is required for FeedbackControlPanel');
@@ -23,7 +33,16 @@ export default function FeedbackControlPanel(){
 
     const render = (data={})=>{
 
+        // console.log(data);
+
         const hucName = data.hucName || '';
+        const comment = data.comment || '';
+        const statusIdx = +data.status || 0;
+
+        const radioBtns = statusData.map( (d, i)=>{
+            const isChecked = i === statusIdx ? 'checked' : ''
+            return `<label><input type="radio" name="status" value="${i}" ${isChecked}>${d}</label>`
+        }).join('');
 
         const compoenetHtml = `
             <div id='feedbackControlPanelContainer' class='panel panel-black'>
@@ -40,16 +59,14 @@ export default function FeedbackControlPanel(){
                 <div class='trailer-half'>
                     <fieldset class="fieldset-radio trailer-0">
                         <legend class='font-size--2'>Choose Status</legend>
-                        <label><input type="radio" name="status" value="0">Modeled In Range Modeled Extent</label>
-                        <label><input type="radio" name="status" value="1">Add - Known Occurances</label>
-                        <label><input type="radio" name="status" value="2">Remove - Model is Inaccurate</label>
+                        ${radioBtns}
                     </fieldset>
                 </div>
 
                 <div>
                     <label>
                         <span class='font-size--2'>Comment</span>
-                        <textarea type="text" placeholder="" class=""></textarea>
+                        <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
                     </label>
                 </div>
 
@@ -72,7 +89,35 @@ export default function FeedbackControlPanel(){
                     onCloseHandler();
                 }
             }
-        })
+        });
+
+        container.addEventListener('click', function (event){
+            if (event.target.type === 'radio') {
+                // console.log('click radio btn', event.target.value);
+                if(statusOnChange){
+                    statusOnChange(event.target.value);
+                }
+            }
+        });
+
+        container.addEventListener('input', function (event){
+            // console.log(event.target);
+            if (event.target.classList.contains('comment-textarea')) { 
+                // console.log('textarea on input', event.target.value);
+                if(commentOnChange){
+                    commentOnChange(event.target.value);
+                }
+            }
+        });
+
+        container.addEventListener('click', function (event){
+            if (event.target.classList.contains('js-submit-feedback')) {
+                // console.log('close feedback control panel');
+                if(onSubmitHandler){
+                    onSubmitHandler();
+                }
+            }
+        });
 
     };
 
@@ -84,10 +129,16 @@ export default function FeedbackControlPanel(){
         container.innerHTML = '';
     };
 
+    const setStatusData = (data=[])=>{
+        statusData = data;
+        // console.log('setStatusData', statusData);
+    };
+
     return {
         init,
         open,
-        close
+        close,
+        setStatusData
     };
 
 }

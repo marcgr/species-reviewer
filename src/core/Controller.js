@@ -17,7 +17,6 @@ export default function Controller(options={}){
     
     const feedbackManager = new FeedbackManager({
         onOpenHandler: (data)=>{
-            // console.log('feedbackManager is opened', data);
             view.feedbackControlPanel.open(data);
         },
         onCloseHandler: ()=>{
@@ -25,7 +24,7 @@ export default function Controller(options={}){
             view.feedbackControlPanel.close();
         },
         onSubmitHandler:(data)=>{
-
+            console.log(data);
         }
     });
 
@@ -56,9 +55,11 @@ export default function Controller(options={}){
                 data,
                 onChange: (val)=>{
                     // console.log(val);
-                    searchHucsBySpecies(val);
-                    dataModel.setSelectedSpecies(val);
-                    closeFeedbackManager();
+                    // closeFeedbackManager();
+                    // searchHucsBySpecies(val);
+                    // dataModel.setSelectedSpecies(val);
+
+                    setSelectedSpecies(val);
                 }
             });
 
@@ -83,6 +84,8 @@ export default function Controller(options={}){
             });
 
             dataModel.setStatus(data);
+
+            view.feedbackControlPanel.setStatusData(data);
 
         });
     };
@@ -178,6 +181,14 @@ export default function Controller(options={}){
         });
     };
 
+    const setSelectedSpecies = (val)=>{
+        dataModel.setSelectedSpecies(val);
+
+        searchHucsBySpecies(val);
+
+        resetSelectedHucFeature();
+    };
+
     const setSelectedHucFeature = (feature=null)=>{
 
         selectedHucFeature = feature;
@@ -192,36 +203,42 @@ export default function Controller(options={}){
         }
     };
 
+    const resetSelectedHucFeature = ()=>{
+        selectedHucFeature = null;
+
+        dataModel.setSelectedHuc();
+
+        mapControl.cleanPreviewHucGraphic();
+
+        feedbackManager.close();
+    };
+
     const openFeedbackManager = (options={})=>{
         const userID = oauthManager.getUserID();
         const species = dataModel.getSelectedSpecies();
         const hucID = dataModel.getSelectedHuc();
         const hucName = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
 
-        feedbackManager.open({
-            userID,
-            species,
-            hucID,
-            hucName
-        });
-    };
+        if(userID && species && hucID){
+            feedbackManager.open({
+                userID,
+                species,
+                hucID,
+                hucName
+            });
+        } else {
+            console.error('userID, species name and huc id are required to open the feedback manager...');
+            resetSelectedHucFeature();
+        }
 
-    const closeFeedbackManager = ()=>{
-        feedbackManager.close();
-
-        dataModel.setSelectedSpecies();
-        dataModel.setSelectedHuc();
-
-        setSelectedHucFeature(); // reset selected huc feature
-
-        mapControl.cleanPreviewHucGraphic();
     };
 
     return {
         init,
+        dataModel,
         feedbackManager,
         setSelectedHucFeature,
-        closeFeedbackManager
+        resetSelectedHucFeature
         // openFeedbackManager
     };
 

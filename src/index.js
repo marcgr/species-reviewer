@@ -117,6 +117,10 @@ esriLoader.loadModules([
             }
         };
 
+        const addHucGraphicByStatus = (hucID, status)=>{
+
+        };
+
         const addPreviewHucGraphic = (feature)=>{
             // const attributes = feature.attributes;
 
@@ -167,19 +171,37 @@ esriLoader.loadModules([
                 }
             }
 
-            const symbolForHighlightFeature = {
+            const symbolForStatus1 = {
                 type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: [116,97,168, .5],
+                color: [102,194,165, .5],
                 outline: {  // autocasts as new SimpleLineSymbol()
                     color: [255, 255, 255, 0.3],
                     width: "0.5px"
                 }
             };
 
+            // const symbolForStatus2 = {
+            //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+            //     color: [90,180,172, .5],
+            //     outline: {  // autocasts as new SimpleLineSymbol()
+            //         color: [255, 255, 255, 0.3],
+            //         width: "0.5px"
+            //     }
+            // };
+
+            // const symbolForStatus3 = {
+            //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+            //     color: [216,179,101, .5],
+            //     outline: {  // autocasts as new SimpleLineSymbol()
+            //         color: [255, 255, 255, 0.3],
+            //         width: "0.5px"
+            //     }
+            // };
+
             const uniqueValueInfos = data.map(d=>{
                 return {
                     value: d[config.FIELD_NAME.speciesLookupHucID],
-                    symbol: symbolForHighlightFeature
+                    symbol: symbolForStatus1
                 }
             });
 
@@ -249,7 +271,7 @@ esriLoader.loadModules([
             portal.load().then(()=>{
                 poralUser = portal.user;
                 // console.log(portal);
-                console.log('poralUser', poralUser);
+                // console.log('poralUser', poralUser);
             });
         };
 
@@ -276,7 +298,7 @@ esriLoader.loadModules([
 
         const getUserID = ()=>{
             // console.log(poralUser);
-            return poralUser.username;
+            return poralUser ? poralUser.username : userCredential.userId;
         };
 
         return {

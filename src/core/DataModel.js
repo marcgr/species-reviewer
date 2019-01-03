@@ -3,7 +3,7 @@ export default class DataModel {
     constructor(options={}){
 
         this.speciesLookup = [];
-        this.hucsBySpecies = [];
+        this.hucsBySpecies = {};
         this.status = [];
         this.selectedSpecies = null;      
         this.selectedHuc = null;  
@@ -18,8 +18,9 @@ export default class DataModel {
         this.speciesLookup = data;
     };
 
-    setHucsBySpecies(data=[]){
-        this.hucsBySpecies = data;
+    setHucsBySpecies(species, data=[]){
+        this.hucsBySpecies[species] = data;
+        // this.hucsBySpecies = data;
     };
 
     setStatus(data=[]){
@@ -41,6 +42,11 @@ export default class DataModel {
     getSelectedHuc(){
         return this.selectedHuc;
     }
+
+    getHucsBySpecies(species){
+        species = species || this.selectedSpecies;
+        return this.hucsBySpecies[species];
+    };
 
     getStatusByIndex(index){
         return index && this.status[+index] ? this.status[+index] : null;

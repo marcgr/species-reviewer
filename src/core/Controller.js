@@ -25,6 +25,8 @@ export default function Controller(options={}){
         },
         onSubmitHandler:(data)=>{
             console.log(data);
+
+            postFeedback(data);
         }
     });
 
@@ -36,6 +38,8 @@ export default function Controller(options={}){
         initSpeciesLookupTable();
 
         initStatusTable();
+
+        queryFeedbacksByUser();
     };
 
     const initSpeciesLookupTable = ()=>{
@@ -92,19 +96,40 @@ export default function Controller(options={}){
 
     const searchHucsBySpecies = (speciesKey)=>{
 
-        queryHucsBySpecies(speciesKey).then(data=>{
+        const hucsBySpecies = dataModel.getHucsBySpecies(speciesKey);
 
-            data = data.map(d=>{
-                return d.attributes
-            });
+        if(hucsBySpecies){
+            renderHucsBySpeciesDataOnMap(hucsBySpecies);
+        } else {
+            queryHucsBySpecies(speciesKey).then(data=>{
 
-            dataModel.setHucsBySpecies(data);
+                data = data.map(d=>{
+                    return d.attributes
+                });
+    
+                dataModel.setHucsBySpecies(speciesKey, data);
+    
+                renderHucsBySpeciesDataOnMap();
+            }).catch(err=>{
+                console.log(err);
+            })
+        }
 
-            mapControl.highlightHucs(data);
+    };
 
-            console.log(data);
-        })
+    const renderHucsBySpeciesDataOnMap = (data)=>{
+        const hucs = data || dataModel.getHucsBySpecies();
+        mapControl.highlightHucs(hucs);
 
+        renderHucWithFeedbackDataOnMap();
+        // console.log('renderHucsBySpeciesDataOnMap', data);
+    };
+
+    const renderHucWithFeedbackDataOnMap = ()=>{
+        const species = dataModel.getSelectedSpecies();
+        const data = feedbackManager.getFeedbackDataBySpecies(species);
+
+        console.log(data);
     };
 
     const querySpeciesLookupTable = ()=>{
@@ -177,6 +202,109 @@ export default function Controller(options={}){
                     // console.log(response.data.features);
                     resolve(response.data.features) 
                 }
+            });
+        });
+    };
+
+    const queryFeedbacksByUser = ()=>{
+
+        const userID = oauthManager.getUserID();
+
+        fetchFeedback({
+            where: `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`
+        }).then(res=>{
+            // console.log('previous feedbacks', res);
+
+            const formattedFeedbackData = res.map(d=>{
+                return {
+                    userID: d.attributes[config.FIELD_NAME.feedbackTable.userID],
+                    hucID: d.attributes[config.FIELD_NAME.feedbackTable.hucID],
+                    species: d.attributes[config.FIELD_NAME.feedbackTable.species],
+                    status: d.attributes[config.FIELD_NAME.feedbackTable.status],
+                    comment: d.attributes[config.FIELD_NAME.feedbackTable.comment]
+                }
+            });
+
+            feedbackManager.batchAddToDataStore(formattedFeedbackData);
+        });
+    };
+
+    const fetchFeedback = (options={})=>{
+        const requestUrl = config.URL.feedbackTable + '/query';
+        const whereClause = options.where || '1=1';
+
+        return new Promise((resolve, reject)=>{
+
+            axios.get(requestUrl, {
+                params: {
+                    where: whereClause,
+                    outFields: '*',
+                    f: 'json',
+                    token
+                }
+            }).then(function (response) {
+                // console.log(response);
+
+                if(response.data && response.data.features){
+                    // console.log(response.data.features);
+                    resolve(response.data.features);
+                } else {
+                    reject('no features found from the feedback table');
+                }
+            });
+        });
+    };
+
+    const postFeedback = (data={})=>{
+        // console.log(data);
+
+        const feedbackFeature = {
+            "attributes": {
+                [config.FIELD_NAME.feedbackTable.userID]: data.userID,
+                [config.FIELD_NAME.feedbackTable.hucID]: data.hucID,
+                [config.FIELD_NAME.feedbackTable.status]: data.status,
+                [config.FIELD_NAME.feedbackTable.comment]: data.comment,
+                [config.FIELD_NAME.feedbackTable.species]: data.species
+            }
+        };
+
+        // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
+        fetchFeedback({
+            where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
+        }).then(features=>{
+            // console.log(features);
+
+            let operationName = 'addFeatures';
+
+            if(features[0]){
+                feedbackFeature.attributes.ObjectId = features[0].attributes.ObjectId;
+                operationName = 'updateFeatures';
+            } 
+
+            applyEditToFeedbackTable(feedbackFeature, operationName).then(res=>{
+                console.log(operationName, res);
+            });
+
+        }).catch(err=>{
+            console.error(err);
+
+        })
+    };
+
+    const applyEditToFeedbackTable = (feature, operationName)=>{
+        const requestUrl = config.URL.feedbackTable + '/' + operationName;
+
+        const bodyFormData = new FormData();
+        bodyFormData.append('features', JSON.stringify(feature)); 
+        bodyFormData.append('rollbackOnFailure', false); 
+        bodyFormData.append('f', 'pjson'); 
+        bodyFormData.append('token', token); 
+
+        return new Promise((resolve, reject)=>{
+
+            axios.post(requestUrl, bodyFormData).then(function (response) {
+                // console.log(response);
+                resolve(response);
             });
         });
     };

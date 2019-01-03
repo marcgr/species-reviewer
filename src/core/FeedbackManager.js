@@ -12,7 +12,7 @@ export default function(options={}){
     const open = (data={})=>{
 
         // if data is already in dataStore, use the item from data store instead because it has the status and comments info 
-        data = getSavedItemFromDataStore(data.hucID, data.species) || data;
+        data = getSavedItemFromDataStore(data.hucID, data.species, data.hucName) || data;
 
         feedbackDataModel.init(data);
 
@@ -46,42 +46,53 @@ export default function(options={}){
         const hucID = feedbackData.hucID;
         const species = feedbackData.species;
 
-        if(!feedbackDataStore[hucID]){
-            feedbackDataStore[hucID] = {};
+        if(!feedbackDataStore[species]){
+            feedbackDataStore[species] = {};
         }
 
-        feedbackDataStore[hucID][species] = JSON.parse(JSON.stringify(feedbackData));
+        feedbackDataStore[species][hucID] = JSON.parse(JSON.stringify(feedbackData));
 
-        console.log(feedbackDataStore);
+        // console.log(feedbackDataStore);
     };
 
     const remove = ()=>{
 
     };
 
-    const getSavedItemFromDataStore = (hucID, species)=>{
-        console.log(hucID, feedbackDataStore[hucID])
-        return typeof feedbackDataStore[hucID] !== 'undefined' && typeof feedbackDataStore[hucID][species] !== 'undefined' ? feedbackDataStore[hucID][species] : null;
+    const getSavedItemFromDataStore = (hucID, species, hucName)=>{
+        // console.log('get Saved Item From DataStore', species, hucID, feedbackDataStore[species]);
+        const savedItem = typeof feedbackDataStore[species] !== 'undefined' && typeof feedbackDataStore[species][hucID] !== 'undefined' ? feedbackDataStore[species][hucID] : null;
+        
+        if(typeof savedItem.hucName === 'undefined' && hucName){
+            savedItem.hucName = hucName;
+        }
+
+        return savedItem;
     };
 
-    // const checkIfAlreadyInDataStore = (data)=>{
+    const batchAddToDataStore = (data)=>{
+        // console.log(data);
 
-        
+        data.forEach(d=>{
+            save(d);
+        });
 
-    //     if(savedFeedbackData){
-    //         data.status = savedFeedbackData.status;
-    //         data.comment = savedFeedbackData.comment;
-    //     }
+        console.log(feedbackDataStore);
+    };
 
-    //     return data;
-    // };
+    const getFeedbackDataBySpecies = (species)=>{
+        console.log('getFeedbackDataBySpecies', species);
+        return feedbackDataStore[species];
+    };
 
     return {
         open,
         close,
         save,
         submit,
-        feedbackDataModel
+        feedbackDataModel,
+        batchAddToDataStore,
+        getFeedbackDataBySpecies
     };
 
 }

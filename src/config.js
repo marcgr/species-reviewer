@@ -8,7 +8,14 @@ module.exports = {
         'huc10LayerHucID': 'HUC10',
         'huc10LayerHucName': 'NAME',
         'speciesLookupHucID': 'HUC10',
-        'statusType': 'StatusType'
+        'statusType': 'StatusType',
+        'feedbackTable': {
+            'hucID': 'HUCID',
+            'userID': 'UserID',
+            'species': 'Species',
+            'comment': 'Comment',
+            'status': 'StatusType'
+        },
     },
 
     'DOM_ID': {
@@ -21,6 +28,7 @@ module.exports = {
         "rangeReviewHucServiceBase": "",
         "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesLookup/FeatureServer/1',
         "statusTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/StatusTable/FeatureServer/0",
+        "feedbackTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesFeedbackTable/FeatureServer/0",
 
         "speciesExtent": {
             "IsotriaMedeoloides": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/IsotriaMedeoloides/FeatureServer/4",

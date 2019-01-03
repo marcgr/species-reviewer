@@ -160,11 +160,15 @@ esriLoader.loadModules([
 
             removeHucGraphicByStatus(hucID);
 
-            if(+status > 0){
-                queryHucsLayerByHucID(hucID).then(feature=>{
-                    addHucGraphicByStatus(feature, status);
-                });
-            } 
+            // if(+status > 0){
+            //     queryHucsLayerByHucID(hucID).then(feature=>{
+            //         addHucGraphicByStatus(feature, status);
+            //     });
+            // } 
+
+            queryHucsLayerByHucID(hucID).then(feature=>{
+                addHucGraphicByStatus(feature, status);
+            });
         };
 
         const addHucGraphicByStatus = (feature, status)=>{
@@ -174,25 +178,20 @@ esriLoader.loadModules([
             const geometry = feature.geometry;
             const attributes = feature.attributes;
 
-            const symbolForAdded = {
+            const colorLookup = [
+                config.COLOR.status0,
+                config.COLOR.status1,
+                config.COLOR.status2
+            ];
+
+            const symbol = {
                 type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: config.COLOR.status1,
+                color: colorLookup[+status],
                 outline: {  // autocasts as new SimpleLineSymbol()
                     color: config.COLOR.hucBorder,
                     width: "0.5px"
                 }
             };
-
-            const symbolForRemoved = {
-                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: config.COLOR.status2,
-                outline: {  // autocasts as new SimpleLineSymbol()
-                    color: config.COLOR.hucBorder,
-                    width: "0.5px"
-                }
-            };
-
-            const symbol = +status === 1 ? symbolForAdded : symbolForRemoved;
 
             const graphic = new Graphic({
                 geometry,
@@ -261,9 +260,9 @@ esriLoader.loadModules([
                 }
             }
 
-            const symbolForStatus1 = {
+            const symbol = {
                 type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: config.COLOR.status0,
+                color: config.COLOR.hucFill,
                 outline: {  // autocasts as new SimpleLineSymbol()
                     color: config.COLOR.hucBorder,
                     width: "0.5px"
@@ -273,7 +272,7 @@ esriLoader.loadModules([
             const uniqueValueInfos = data.map(d=>{
                 return {
                     value: d[config.FIELD_NAME.speciesLookupHucID],
-                    symbol: symbolForStatus1
+                    symbol: symbol
                 }
             });
 

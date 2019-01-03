@@ -20,13 +20,14 @@ esriLoader.utils.Promise = Promise;
 esriLoader.loadModules([
     'esri/views/MapView', 
     'esri/WebMap',
+    "esri/layers/GraphicsLayer",
     "esri/Graphic",
     "esri/identity/OAuthInfo",
     "esri/identity/IdentityManager",
     "esri/portal/Portal"
 ], esriLoaderOptions).then(([
     MapView, WebMap, 
-    Graphic,
+    GraphicsLayer, Graphic,
     OAuthInfo, esriId, Portal
 ]) => {
 
@@ -35,6 +36,8 @@ esriLoader.loadModules([
         let mapView = null;
         let hucsLayer = null;
         let hucFeatureOnSelectHandler = null;
+        let hucsByStatusGraphicLayer = new GraphicsLayer();
+        let hucPreviewGraphicLayer = new GraphicsLayer();
 
         const webMapID = options.webMapID || null;
         const mapViewContainerID = options.mapViewContainerID || null;
@@ -79,6 +82,8 @@ esriLoader.loadModules([
             initMapEventHandlers();
 
             setHucsLayer(mapView.map);
+
+            mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
         };
 
         const queryHucsLayerByMouseEvent = (event)=>{
@@ -94,6 +99,24 @@ esriLoader.loadModules([
                 if(response.features && response.features.length){
                     setPreviewHuc(response.features[0]);
                 }
+            });
+
+        };
+
+        const queryHucsLayerByHucID = (hucID)=>{
+            const query = hucsLayer.createQuery();
+            query.where = `${config.FIELD_NAME.huc10LayerHucID} = '${hucID}'`;
+            query.returnGeometry = true;
+            query.outFields = [ "*" ];
+            
+            return new Promise((resolve, reject)=>{
+
+                hucsLayer.queryFeatures(query).then(function(response){
+                    if(response.features && response.features.length){
+                        // console.log(response.features[0]);
+                        resolve(response.features[0]);
+                    }
+                });
             });
 
         };
@@ -117,8 +140,60 @@ esriLoader.loadModules([
             }
         };
 
-        const addHucGraphicByStatus = (hucID, status)=>{
+        const toggleHucGraphicByStatus = (hucID, status)=>{
 
+            removeHucGraphicByStatus(hucID);
+
+            if(+status > 0){
+                queryHucsLayerByHucID(hucID).then(feature=>{
+                    addHucGraphicByStatus(feature, status);
+                });
+            } 
+        };
+
+        const addHucGraphicByStatus = (feature, status)=>{
+
+            // console.log('calling addHucGraphicByStatus', status);
+
+            const geometry = feature.geometry;
+            const attributes = feature.attributes;
+
+            const symbol1 = {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: [0, 255, 0, .9],
+                outline: {  // autocasts as new SimpleLineSymbol()
+                    color: [125, 125, 125, 0.3],
+                    width: "0.5px"
+                }
+            };
+
+            const symbol2 = {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: [0, 0, 255, .9],
+                outline: {  // autocasts as new SimpleLineSymbol()
+                    color: [125, 125, 125, 0.3],
+                    width: "0.5px"
+                }
+            };
+
+            const symbol = +status === 1 ? symbol1 : symbol2;
+
+            const graphic = new Graphic({
+                geometry,
+                symbol,
+                attributes
+            });
+
+            hucsByStatusGraphicLayer.add(graphic);
+        };
+
+        const removeHucGraphicByStatus = (hucID)=>{
+            // console.log('removeHucGraphicByStatus', hucID);
+            hucsByStatusGraphicLayer.graphics.forEach(g=>{
+                if(g && g.attributes && g.attributes[config.FIELD_NAME.huc10LayerHucID] === hucID){
+                    hucsByStatusGraphicLayer.remove(g);
+                }
+            })
         };
 
         const addPreviewHucGraphic = (feature)=>{
@@ -128,35 +203,34 @@ esriLoader.loadModules([
 
             const symbol = {
                 type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: [255, 0, 0, .9],
+                color: [0, 0, 0, 0],
                 outline: {  // autocasts as new SimpleLineSymbol()
-                    color: [125, 125, 125, 0.3],
-                    width: "0.5px"
+                    color: [255, 50, 50, 0.75],
+                    width: "2px"
                 }
             };
 
             const graphicForSelectedHuc = new Graphic({
                 geometry: feature.geometry,
                 symbol: symbol,
-                attributes: {
-                    isUnsavedPreviewHuc: true
-                }
             });
 
-            mapView.graphics.add(graphicForSelectedHuc);
+            hucPreviewGraphicLayer.add(graphicForSelectedHuc);
+        };
+
+        const clearAllGraphics = ()=>{
+            hucsByStatusGraphicLayer.removeAll();
+            cleanPreviewHucGraphic();
         };
 
         const cleanPreviewHucGraphic = ()=>{
-            mapView.graphics.forEach(g=>{
-                if(g.attributes.isUnsavedPreviewHuc){
-                    mapView.graphics.remove(g);
-                }
-            })
+            hucPreviewGraphicLayer.removeAll();
         };
 
         // highlight hucs from the species extent table
         const highlightHucs = (data)=>{
-            cleanPreviewHucGraphic();
+            // cleanPreviewHucGraphic();
+            clearAllGraphics();
             hucsLayer.renderer = getUniqueValueRenderer(data);
         };
 
@@ -180,24 +254,6 @@ esriLoader.loadModules([
                 }
             };
 
-            // const symbolForStatus2 = {
-            //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-            //     color: [90,180,172, .5],
-            //     outline: {  // autocasts as new SimpleLineSymbol()
-            //         color: [255, 255, 255, 0.3],
-            //         width: "0.5px"
-            //     }
-            // };
-
-            // const symbolForStatus3 = {
-            //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-            //     color: [216,179,101, .5],
-            //     outline: {  // autocasts as new SimpleLineSymbol()
-            //         color: [255, 255, 255, 0.3],
-            //         width: "0.5px"
-            //     }
-            // };
-
             const uniqueValueInfos = data.map(d=>{
                 return {
                     value: d[config.FIELD_NAME.speciesLookupHucID],
@@ -218,7 +274,8 @@ esriLoader.loadModules([
         return {
             init,
             highlightHucs,
-            cleanPreviewHucGraphic
+            cleanPreviewHucGraphic,
+            toggleHucGraphicByStatus
         };
 
     };

@@ -63,7 +63,7 @@ export default function(options={}){
         // console.log('get Saved Item From DataStore', species, hucID, feedbackDataStore[species]);
         const savedItem = typeof feedbackDataStore[species] !== 'undefined' && typeof feedbackDataStore[species][hucID] !== 'undefined' ? feedbackDataStore[species][hucID] : null;
         
-        if(typeof savedItem.hucName === 'undefined' && hucName){
+        if(savedItem && typeof savedItem.hucName === 'undefined' && hucName){
             savedItem.hucName = hucName;
         }
 
@@ -77,11 +77,11 @@ export default function(options={}){
             save(d);
         });
 
-        console.log(feedbackDataStore);
+        // console.log(feedbackDataStore);
     };
 
     const getFeedbackDataBySpecies = (species)=>{
-        console.log('getFeedbackDataBySpecies', species);
+        // console.log('getFeedbackDataBySpecies', species);
         return feedbackDataStore[species];
     };
 

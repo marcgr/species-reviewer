@@ -27,6 +27,8 @@ export default function Controller(options={}){
             console.log(data);
 
             postFeedback(data);
+
+            mapControl.toggleHucGraphicByStatus(data.hucID, data.status);
         }
     });
 
@@ -129,7 +131,18 @@ export default function Controller(options={}){
         const species = dataModel.getSelectedSpecies();
         const data = feedbackManager.getFeedbackDataBySpecies(species);
 
-        console.log(data);
+        // console.log(data); 
+
+        Object.keys(data).forEach(function(key) {
+
+            // console.log(key, data[key]);
+
+            const hucID = data[key].hucID;
+            const status = data[key].status;
+
+            mapControl.toggleHucGraphicByStatus(hucID, status);
+          
+        });
     };
 
     const querySpeciesLookupTable = ()=>{

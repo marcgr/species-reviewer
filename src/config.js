@@ -19,9 +19,11 @@ module.exports = {
     },
 
     'DOM_ID': {
+        'mainControl': 'mainControlDiv',
         'mapViewContainer': 'viewDiv',
         "speciesSelector": 'speciesSelectorDiv',
-        'feedbackControl': 'feedbackControlDiv'
+        'feedbackControl': 'feedbackControlDiv',
+        'legend': 'legendDiv'
     },
 
     "URL": {
@@ -34,5 +36,12 @@ module.exports = {
             "IsotriaMedeoloides": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/IsotriaMedeoloides/FeatureServer/4",
             "LithobatesKauffeldi": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/LithobatesKauffeldi/FeatureServer/3",
         }
+    },
+
+    "COLOR": {
+        "hucBorder": [150, 150, 150, 0.3],
+        "status0": [200,200,200,.5],
+        "status1": [166,219,160,.5],
+        "status2": [194,165,207,.5]
     }
 };

@@ -18,13 +18,15 @@ export default function Controller(options={}){
     const feedbackManager = new FeedbackManager({
         onOpenHandler: (data)=>{
             view.feedbackControlPanel.open(data);
+            view.toggleMainControl(false);
         },
         onCloseHandler: ()=>{
             // console.log('feedbackManager is closed');
             view.feedbackControlPanel.close();
+            view.toggleMainControl(true);
         },
         onSubmitHandler:(data)=>{
-            console.log(data);
+            // console.log('feedback manager onSubmitHandler', data);
 
             postFeedback(data);
 
@@ -93,7 +95,21 @@ export default function Controller(options={}){
 
             view.feedbackControlPanel.setStatusData(data);
 
+            initLegendForStatus(data);
+
         });
+    };
+
+    const initLegendForStatus = (data)=>{
+        data = data.map((d, i)=>{
+            return {
+                label: d,
+                color: config.COLOR['status' + i]
+            };
+        });
+
+        view.initLegend(data);
+        // console.log(data);
     };
 
     const searchHucsBySpecies = (speciesKey)=>{

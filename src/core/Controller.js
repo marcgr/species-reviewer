@@ -31,6 +31,8 @@ export default function Controller(options={}){
             postFeedback(data);
 
             mapControl.toggleHucGraphicByStatus(data.hucID, data.status);
+
+            resetSelectedHucFeature();
         }
     });
 

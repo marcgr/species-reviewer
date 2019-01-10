@@ -8,11 +8,12 @@ export default function(options={}){
     const onOpenHandler = options.onOpenHandler || null;
     const onCloseHandler = options.onCloseHandler || null;
     const onSubmitHandler = options.onSubmitHandler || null;
+    const onRemoveHandler = options.onRemoveHandler || null;
 
     const open = (data={})=>{
 
         // if data is already in dataStore, use the item from data store instead because it has the status and comments info 
-        data = getSavedItemFromDataStore(data.hucID, data.species, data.hucName) || data;
+        data = getSavedItemFromDataStore(data) || data;
 
         feedbackDataModel.init(data);
 
@@ -56,10 +57,28 @@ export default function(options={}){
     };
 
     const remove = ()=>{
+        const feedbackData =  feedbackDataModel.getFeedbackData();
 
+        removeFromDataStore(feedbackData.species, feedbackData.hucID);
+
+        // console.log('remove feedback', feedbackData);
+
+        if(onRemoveHandler){
+            onRemoveHandler(feedbackData);
+        }
     };
 
-    const getSavedItemFromDataStore = (hucID, species, hucName)=>{
+    const removeFromDataStore = (species, hucID)=>{
+        if(feedbackDataStore[species][hucID]){
+            delete feedbackDataStore[species][hucID];
+        }
+    };
+
+    const getSavedItemFromDataStore = (data)=>{
+        const hucID = data.hucID;
+        const species = data.species;
+        const hucName = data.hucName;
+
         // console.log('get Saved Item From DataStore', species, hucID, feedbackDataStore[species]);
         const savedItem = typeof feedbackDataStore[species] !== 'undefined' && typeof feedbackDataStore[species][hucID] !== 'undefined' ? feedbackDataStore[species][hucID] : null;
         
@@ -69,6 +88,7 @@ export default function(options={}){
 
         if(savedItem){
             savedItem.isSaved = true;
+            savedItem.isHucInModeledRange = data.isHucInModeledRange;
         }
 
         return savedItem;
@@ -94,6 +114,7 @@ export default function(options={}){
         close,
         save,
         submit,
+        remove,
         feedbackDataModel,
         batchAddToDataStore,
         getFeedbackDataBySpecies

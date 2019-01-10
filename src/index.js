@@ -160,15 +160,15 @@ esriLoader.loadModules([
 
             removeHucGraphicByStatus(hucID);
 
-            // if(+status > 0){
-            //     queryHucsLayerByHucID(hucID).then(feature=>{
-            //         addHucGraphicByStatus(feature, status);
-            //     });
-            // } 
+            if(+status > 0){
+                queryHucsLayerByHucID(hucID).then(feature=>{
+                    addHucGraphicByStatus(feature, status);
+                });
+            } 
 
-            queryHucsLayerByHucID(hucID).then(feature=>{
-                addHucGraphicByStatus(feature, status);
-            });
+            // queryHucsLayerByHucID(hucID).then(feature=>{
+            //     addHucGraphicByStatus(feature, status);
+            // });
         };
 
         const addHucGraphicByStatus = (feature, status)=>{
@@ -424,18 +424,24 @@ esriLoader.loadModules([
                 onCloseHandler: ()=>{
                     controller.resetSelectedHucFeature();
                 },
-                statusOnChange: (val)=>{
-                    // console.log(val);
-                    // const status = controller.dataModel.getStatusByIndex(val);
-                    controller.feedbackManager.feedbackDataModel.setStatus(val);
-                },
+                // statusOnChange: (val)=>{
+                //     // console.log(val);
+                //     // const status = controller.dataModel.getStatusByIndex(val);
+                //     controller.feedbackManager.feedbackDataModel.setStatus(val);
+                // },
                 commentOnChange: (val)=>{
                     // console.log(val);
                     controller.feedbackManager.feedbackDataModel.setComment(val);
                 },
-                onSubmitHandler: ()=>{
-                    // console.log('submit btn on click');
+                onSubmitHandler: (status)=>{
+                    // console.log('submit btn on click, new status >', status);
+                    if(status){
+                        controller.feedbackManager.feedbackDataModel.setStatus(status);
+                    }
                     controller.feedbackManager.submit();
+                },
+                onRemoveHandler: ()=>{
+                    controller.feedbackManager.remove();
                 }
             });
 

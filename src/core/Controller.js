@@ -34,6 +34,15 @@ export default function Controller(options={}){
             mapControl.toggleHucGraphicByStatus(data.hucID, data.status);
 
             resetSelectedHucFeature();
+        },
+        onRemoveHandler: (data)=>{
+            console.log('feedback manager onRemoveHandler', data);
+
+            deleteFeedback(data);
+
+            mapControl.toggleHucGraphicByStatus(data.hucID, 0);
+
+            resetSelectedHucFeature();
         }
     });
 
@@ -287,6 +296,23 @@ export default function Controller(options={}){
         });
     };
 
+    const deleteFeedback = (data={})=>{
+        // // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
+        fetchFeedback({
+            where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
+        }).then(features=>{
+            // console.log('found feature to delete', features);
+
+            if(features[0]){
+                const objectID = features[0].attributes.ObjectId;
+
+                deleteFromFeedbackTable(objectID).then(res=>{
+                    // console.log('deleted from feedback table', res);
+                });
+            } 
+        });
+    };
+
     const postFeedback = (data={})=>{
         // console.log(data);
 
@@ -322,6 +348,24 @@ export default function Controller(options={}){
 
         })
     };
+
+    const deleteFromFeedbackTable = (objectID)=>{
+        const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
+
+        const bodyFormData = new FormData();
+        bodyFormData.append('objectIds', objectID); 
+        bodyFormData.append('rollbackOnFailure', false); 
+        bodyFormData.append('f', 'pjson'); 
+        bodyFormData.append('token', token); 
+
+        return new Promise((resolve, reject)=>{
+
+            axios.post(requestUrl, bodyFormData).then(function (response) {
+                // console.log(response);
+                resolve(response);
+            });
+        });
+    }
 
     const applyEditToFeedbackTable = (feature, operationName)=>{
         const requestUrl = config.URL.feedbackTable + '/' + operationName;
@@ -381,7 +425,7 @@ export default function Controller(options={}){
         const hucName = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
         const isHucInModeledRange = dataModel.isHucInModeledRange(hucID, species);
 
-        // console.log(isHucInModeledRange);
+        // console.log('isHucInModeledRange', isHucInModeledRange);
 
         if(userID && species && hucID){
             feedbackManager.open({

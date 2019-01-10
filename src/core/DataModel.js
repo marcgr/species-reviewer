@@ -68,6 +68,8 @@ export default class DataModel {
 
         const hucs = this.hucsBySpecies[species];
 
+        // console.log('isHucInModeledRange', hucID);
+
         const isHucInModeledRange = hucs.filter(d=>{ return d.HUC10 === hucID }).length ? true : false;
 
         return isHucInModeledRange;

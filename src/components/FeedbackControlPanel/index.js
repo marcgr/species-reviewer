@@ -41,7 +41,7 @@ export default function FeedbackControlPanel(){
         const hucName = data.hucName || '';
         const comment = data.comment || '';
         // const statusIdx = +data.status || 0;
-        const message = data.isHucInModeledRange ? 'Model is inaccurate, remove this HUC from range' : 'Known occurances, add this HUC to range';
+        const message = data.isHucInModeledRange ? `Model is inaccurate, <span class='avenir-demi'>REMOVE</span> this HUC from range` : `Known occurances, <span class='avenir-demi'>ADD</span> this HUC to range`;
 
         // const radioBtns = statusData.map( (d, i)=>{
         //     const isChecked = i === statusIdx ? 'checked' : ''
@@ -93,12 +93,12 @@ export default function FeedbackControlPanel(){
                 </div>
 
                 <div class='trailer-half'>
-                    <p class='font-size--2 avenir-demi trailer-half'>${message}</p>
+                    <p class='font-size--2 trailer-half'>${message}</p>
                 </div>
 
                 <div>
                     <label>
-                        <span class='font-size--2'>Comment:</span>
+                        <span class='font-size--3'>Comment:</span>
                         <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
                     </label>
                 </div>

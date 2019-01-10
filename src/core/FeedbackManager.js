@@ -33,7 +33,7 @@ export default function(options={}){
 
     const submit = ()=>{
 
-        const feedbackData =  feedbackDataModel.getFeedbackData()
+        const feedbackData =  feedbackDataModel.getFeedbackData();
 
         save(feedbackData);
 
@@ -65,6 +65,10 @@ export default function(options={}){
         
         if(savedItem && typeof savedItem.hucName === 'undefined' && hucName){
             savedItem.hucName = hucName;
+        }
+
+        if(savedItem){
+            savedItem.isSaved = true;
         }
 
         return savedItem;

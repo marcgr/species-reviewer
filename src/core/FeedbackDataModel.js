@@ -7,6 +7,8 @@ export default class FeedbackManager{
         this.status = null;   
         this.comment = null;  
         this.hucName = null;
+        this.isHucInModeledRange = null;
+        this.isSaved = null;
     };
 
     init(options){
@@ -16,6 +18,8 @@ export default class FeedbackManager{
         this.hucName = options.hucName || null;
         this.status = options.status || null;   
         this.comment = options.comment || null; 
+        this.isHucInModeledRange = options.isHucInModeledRange || null; 
+        this.isSaved = options.isSaved || null; 
     };
 
     // setUserID(val=''){
@@ -45,6 +49,8 @@ export default class FeedbackManager{
         this.status = null;   
         this.comment = null; 
         this.hucName = null;
+        this.isHucInModeledRange = null;
+        this.isSaved = null;
     };
 
     getFeedbackData(){
@@ -54,7 +60,9 @@ export default class FeedbackManager{
             species: this.species,
             status: this.status,
             comment: this.comment,
-            hucName: this.hucName
+            hucName: this.hucName,
+            isHucInModeledRange: this.isHucInModeledRange,
+            isSaved: this.isSaved
         };
     }
 

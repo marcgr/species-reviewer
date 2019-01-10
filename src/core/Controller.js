@@ -19,6 +19,7 @@ export default function Controller(options={}){
         onOpenHandler: (data)=>{
             view.feedbackControlPanel.open(data);
             view.toggleMainControl(false);
+            console.log('feedbackManager onOpenHandler', data);
         },
         onCloseHandler: ()=>{
             // console.log('feedbackManager is closed');
@@ -354,6 +355,7 @@ export default function Controller(options={}){
 
         if(selectedHucFeature){
             const hucID = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
+
             dataModel.setSelectedHuc(hucID);
 
             // console.log(selectedHucFeature);
@@ -377,13 +379,17 @@ export default function Controller(options={}){
         const species = dataModel.getSelectedSpecies();
         const hucID = dataModel.getSelectedHuc();
         const hucName = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
+        const isHucInModeledRange = dataModel.isHucInModeledRange(hucID, species);
+
+        // console.log(isHucInModeledRange);
 
         if(userID && species && hucID){
             feedbackManager.open({
                 userID,
                 species,
                 hucID,
-                hucName
+                hucName,
+                isHucInModeledRange
             });
         } else {
             console.error('userID, species name and huc id are required to open the feedback manager...');

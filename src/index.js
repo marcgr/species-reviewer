@@ -78,7 +78,7 @@ esriLoader.loadModules([
 
             mapView.when(mapViewOnReadyHandler);
 
-            // initBasemapGallery(mapView);
+            initBasemapGallery(mapView);
         };
 
         const initMapEventHandlers = ()=>{
@@ -500,6 +500,8 @@ esriLoader.loadModules([
                     controller.feedbackManager.remove();
                 }
             });
+
+            view.init();
 
             controller.init({
                 token

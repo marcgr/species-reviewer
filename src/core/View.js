@@ -13,6 +13,20 @@ export default function View(){
         // feedbackControlPanel.init({
         //     containerID: config.DOM_ID.feedbackControl
         // });
+
+        initEventHandlers();
+    };
+
+    const initEventHandlers = ()=>{
+        document.querySelectorAll('.js-toggle-basemap-gallery').forEach(element=>{
+            // console.log(element);
+            element.addEventListener('click', toggleBasemapGallery);
+        });
+    };
+
+    const toggleBasemapGallery = ()=>{
+        console.log('toggleBasemapGallery');
+        document.getElementById('basemapGalleryControl').classList.toggle('is-collapsed');
     };
 
     const toggleMainControl = (isVisible)=>{

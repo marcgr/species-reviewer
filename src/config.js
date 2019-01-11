@@ -39,7 +39,8 @@ module.exports = {
     },
 
     "COLOR": {
-        "hucBorder": [150, 150, 150, 0.3],
+        "hucBorder": [100, 100, 100, 0.3],
+        "hucBorderIsModeled": [90, 90, 90, 0.75],
         "hucFill": [200,200,200,.5],
         "status0": [200,200,200,.5],
         "status1": [166,219,160,.5],

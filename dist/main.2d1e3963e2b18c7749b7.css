@@ -38,8 +38,31 @@ html, body {
   align-items: center; }
 
 .legend-icon {
-  width: 18px;
-  height: 18px; }
+  width: 22px;
+  height: 22px; }
+
+.legend-icon[data-index='0'] {
+  background-color: rgba(200, 200, 200, 0.5); }
+
+.legend-icon[data-index='1'] {
+  background: url(d38bc32f78a59f6ab43c93c1073eca10.png) center center no-repeat;
+  background-size: 80%; }
+
+.legend-icon[data-index='2'] {
+  background: url(d5619de7e448c73e36158f99aff13b52.png) center center no-repeat;
+  background-size: 80%; }
+
+#basemapGalleryControlHeader {
+  width: 100%;
+  background: #ccc; }
+
+#basemapGalleryControl {
+  position: absolute;
+  bottom: 2rem;
+  left: 1rem;
+  z-index: 10;
+  height: 550px;
+  overflow-y: auto; }
 
 
 #feedbackControlPanelContainer {

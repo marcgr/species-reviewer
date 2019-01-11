@@ -53,14 +53,20 @@ export default function View(){
         };
 
         const render = ()=>{
-            const componentHtml = data.map(d=>{
+            const componentHtml = data.map((d,i)=>{
                 const color = `rgb(${d.color.slice(0,3).join(',')})`;
                 return `
                     <div class='trailer-quarter legend-item'>
-                        <div class='inline-block legend-icon margin-right-half' style='background-color:${color};'></div>
+                        <div class='inline-block legend-icon margin-right-half' data-index='${i}'></div>
                         <span class='font-size--2'>${d.label}</span>
                     </div>
                 `;
+                // return `
+                //     <div class='trailer-quarter legend-item'>
+                //         <div class='inline-block legend-icon margin-right-half' style='background-color:${color};'></div>
+                //         <span class='font-size--2'>${d.label}</span>
+                //     </div>
+                // `;
             }).join('');
 
             container.innerHTML = componentHtml;

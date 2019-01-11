@@ -40,6 +40,34 @@ html, body{
 }
 
 .legend-icon{
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
+}
+
+.legend-icon[data-index='0']{
+    background-color: rgba(200,200,200,.5);
+}
+
+.legend-icon[data-index='1']{
+    background: url('../static/dash_green.png') center center no-repeat;
+    background-size: 80%;
+}
+
+.legend-icon[data-index='2']{
+    background: url('../static/dash_red.png') center center no-repeat;
+    background-size: 80%;
+}
+
+#basemapGalleryControlHeader{
+    width: 100%;
+    background: #ccc;
+}
+
+#basemapGalleryControl{
+    position: absolute;
+    bottom: 2rem;
+    left: 1rem;
+    z-index: 10;
+    height: 550px;
+    overflow-y: auto;
 }

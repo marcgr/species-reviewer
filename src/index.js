@@ -6,7 +6,13 @@ import Controller from './core/Controller';
 import View from './core/View';
 
 import * as esriLoader from 'esri-loader';
-import { resolve } from "path";
+// import { resolve } from "path";
+
+// import dashImg from './static/dash.png';
+// import dotImg from './static/dot.png';
+
+import dashRed from './static/dash_red.png';
+import dashGreen from './static/dash_green.png';
 
 const Promise = require('es6-promise').Promise;
 const esriLoaderOptions = {
@@ -22,6 +28,7 @@ esriLoader.loadModules([
     'esri/WebMap',
     "esri/layers/GraphicsLayer",
     "esri/Graphic",
+    "esri/widgets/BasemapGallery",
     // "esri/widgets/Legend",
     "esri/identity/OAuthInfo",
     "esri/identity/IdentityManager",
@@ -29,6 +36,7 @@ esriLoader.loadModules([
 ], esriLoaderOptions).then(([
     MapView, WebMap, 
     GraphicsLayer, Graphic,
+    BasemapGallery,
     // Legend,
     OAuthInfo, esriId, Portal
 ]) => {
@@ -69,6 +77,8 @@ esriLoader.loadModules([
             });
 
             mapView.when(mapViewOnReadyHandler);
+
+            // initBasemapGallery(mapView);
         };
 
         const initMapEventHandlers = ()=>{
@@ -89,6 +99,16 @@ esriLoader.loadModules([
               
         //     mapView.ui.add(legend, "bottom-right");
         // }
+
+        const initBasemapGallery = (view)=>{
+            const basemapGallery = new BasemapGallery({
+                view: view,
+                container: 'basemapGalleryDiv'
+            });
+
+            // Add widget to the top right corner of the view
+            // view.ui.add(basemapGallery);
+        };
 
         const mapViewOnReadyHandler = ()=>{
             // console.log('mapView is ready...');
@@ -184,13 +204,37 @@ esriLoader.loadModules([
                 config.COLOR.status2
             ];
 
-            const symbol = {
-                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: colorLookup[+status],
-                outline: {  // autocasts as new SimpleLineSymbol()
-                    color: config.COLOR.hucBorder,
-                    width: "0.5px"
-                }
+            // const symbol = {
+            //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+            //     color: colorLookup[+status],
+            //     outline: {  // autocasts as new SimpleLineSymbol()
+            //         color: config.COLOR.hucBorder,
+            //         width: "0.5px"
+            //     }
+            // };
+
+            const symbol = +status === 1 
+            ? {
+                type: "picture-fill",  // autocasts as new PictureFillSymbol()
+                url: dashGreen, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+                width: "24px",
+                height: "24px",
+                opacity: .75,
+                outline: {
+                    color: config.COLOR.hucBorderIsModeled,
+                    width: "1px"
+                },
+            } 
+            : {
+                type: "picture-fill",  // autocasts as new PictureFillSymbol()
+                url: dashRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+                width: "24px",
+                height: "24px",
+                opacity: .75,
+                outline: {
+                    color: config.COLOR.hucBorderIsModeled,
+                    width: "1px"
+                },
             };
 
             const graphic = new Graphic({
@@ -268,6 +312,18 @@ esriLoader.loadModules([
                     width: "0.5px"
                 }
             };
+
+            // const symbol = {
+            //     type: "picture-fill",  // autocasts as new PictureFillSymbol()
+            //     url: dashImg, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+            //     width: "16px",
+            //     height: "16px",
+            //     opacity: .75,
+            //     outline: {
+            //         color: config.COLOR.hucBorderIsModeled,
+            //         width: "1px"
+            //     },
+            // };
 
             const uniqueValueInfos = data.map(d=>{
                 return {

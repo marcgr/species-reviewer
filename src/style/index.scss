@@ -1,7 +1,7 @@
 @import url('https://js.arcgis.com/4.10/esri/css/main.css');
 @import '~calcite-web/dist/css/calcite-web.min.css';
 
-// $sidebar-width: 450px;
+$control-panel-width: 300px;
 
 html, body{
     padding: 0;
@@ -23,15 +23,22 @@ html, body{
     top: 1rem;
     right: 1rem;
     z-index: 5;
-    width: 300px;
+    width: $control-panel-width;
     // height: 100%;
 }
 
-#feedbackControlDiv {
+#feedbackControlDiv, 
+#overallFeedbackDiv {
     position: absolute;
     top: 1rem;
     right: 1rem;
     z-index: 10;
+}
+
+#feedbackControlDiv > div, 
+#overallFeedbackDiv > div {
+    position: relative;
+    width: $control-panel-width;
 }
 
 .legend-item {

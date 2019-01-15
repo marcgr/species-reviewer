@@ -309,7 +309,7 @@ esriLoader.loadModules([
                 color: config.COLOR.hucFill,
                 outline: {  // autocasts as new SimpleLineSymbol()
                     color: config.COLOR.hucBorder,
-                    width: "0.5px"
+                    width: "2px"
                 }
             };
 

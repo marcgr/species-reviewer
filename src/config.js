@@ -23,6 +23,7 @@ module.exports = {
         'mapViewContainer': 'viewDiv',
         "speciesSelector": 'speciesSelectorDiv',
         'feedbackControl': 'feedbackControlDiv',
+        'overallFeedbackControl': 'overallFeedbackDiv',
         'legend': 'legendDiv'
     },
 
@@ -39,9 +40,9 @@ module.exports = {
     },
 
     "COLOR": {
-        "hucBorder": [100, 100, 100, 0.3],
-        "hucBorderIsModeled": [90, 90, 90, 0.75],
-        "hucFill": [200,200,200,.5],
+        "hucBorder": [255, 255, 255, 0.3],
+        "hucBorderIsModeled": [255, 255, 255, 1],
+        "hucFill": [217, 217, 217, .4],
         "status0": [200,200,200,.5],
         "status1": [166,219,160,.5],
         "status2": [194,165,207,.5]

@@ -2,17 +2,23 @@ import config from '../config';
 
 import SpeciesSelector from '../components/SpeciesSelector';
 import FeedbackControlPanel from '../components/FeedbackControlPanel';
+import OverallFeedbackControlPanel from '../components/OverallFeedbackControl';
 
 export default function View(){
 
     const speciesSelector = new SpeciesSelector();
     const feedbackControlPanel = new FeedbackControlPanel();
+    const overallFeedbackControlPanel = new OverallFeedbackControlPanel();
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
 
     const init = ()=>{
         // feedbackControlPanel.init({
         //     containerID: config.DOM_ID.feedbackControl
         // });
+
+        overallFeedbackControlPanel.init({
+            containerID: config.DOM_ID.overallFeedbackControl
+        });
 
         initEventHandlers();
     };
@@ -97,6 +103,7 @@ export default function View(){
         initLegend,
         speciesSelector,
         feedbackControlPanel,
-        toggleMainControl
+        toggleMainControl,
+        overallFeedbackControlPanel
     };
 };

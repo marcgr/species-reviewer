@@ -19,7 +19,7 @@ export default function Controller(options={}){
         onOpenHandler: (data)=>{
             view.feedbackControlPanel.open(data);
             view.toggleMainControl(false);
-            console.log('feedbackManager onOpenHandler', data);
+            // console.log('feedbackManager onOpenHandler', data);
         },
         onCloseHandler: ()=>{
             // console.log('feedbackManager is closed');
@@ -36,7 +36,7 @@ export default function Controller(options={}){
             resetSelectedHucFeature();
         },
         onRemoveHandler: (data)=>{
-            console.log('feedback manager onRemoveHandler', data);
+            // console.log('feedback manager onRemoveHandler', data);
 
             deleteFeedback(data);
 
@@ -85,6 +85,8 @@ export default function Controller(options={}){
                 }
             });
 
+        }).catch(err=>{
+            console.error(err);
         });
 
     };
@@ -215,6 +217,8 @@ export default function Controller(options={}){
                     // console.log(response.data.features);
                     resolve(response.data.features) 
                 }
+            }).catch(err=>{
+                console.error(err);
             });
         });
 
@@ -238,6 +242,8 @@ export default function Controller(options={}){
                         // console.log(response.data.features);
                         resolve(response.data.features) 
                     }
+                }).catch(err=>{
+                    console.error(err);
                 });
             });
 
@@ -265,6 +271,8 @@ export default function Controller(options={}){
                     // console.log(response.data.features);
                     resolve(response.data.features) 
                 }
+            }).catch(err=>{
+                console.error(err);
             });
         });
     };
@@ -290,6 +298,8 @@ export default function Controller(options={}){
             });
 
             feedbackManager.batchAddToDataStore(formattedFeedbackData);
+        }).catch(err=>{
+            console.error(err);
         });
     };
 
@@ -303,21 +313,27 @@ export default function Controller(options={}){
         }).then(res=>{
             // console.log('previous overall feedbacks', res);
 
-            const rating = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.rating] ? res[0].attributes[config.FIELD_NAME.overallFeedback.rating] : 0;
-            const comment = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.comment] ? res[0].attributes[config.FIELD_NAME.overallFeedback.comment] : 0;
+            saveOverallFeedbackToDataModel(res);
+
+            // dataModel.setOverallFeedback(res);
+
+            // const rating = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.rating] ? res[0].attributes[config.FIELD_NAME.overallFeedback.rating] : 0;
+            // const comment = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.comment] ? res[0].attributes[config.FIELD_NAME.overallFeedback.comment] : 0;
 
             view.overallFeedbackControlPanel.init({
                 containerID: config.DOM_ID.overallFeedbackControl,
-                rating,
-                comment,
+                // rating,
+                // comment,
                 onCloseHandler: ()=>{
                     view.toggleOverallFeeback(false);
                 },
                 onSubmitHandler: (data)=>{
                     // console.log('submit overall feedback', data);
-                    postOverallFeedback(data);
                     view.toggleOverallFeeback(false);
+                    postOverallFeedback(data);
                 }
+            }).catch(err=>{
+                console.error(err);
             });
 
         });
@@ -365,6 +381,8 @@ export default function Controller(options={}){
                     // console.log('deleted from feedback table', res);
                 });
             } 
+        }).catch(err=>{
+            console.error(err);
         });
     };
 
@@ -373,18 +391,22 @@ export default function Controller(options={}){
         comment: ''
     })=>{
         const userID = oauthManager.getUserID();
+        const species = dataModel.getSelectedSpecies();
 
         const feature = {
             "attributes": {
                 [config.FIELD_NAME.overallFeedback.userID]: userID,
+                [config.FIELD_NAME.overallFeedback.species]: species,
                 [config.FIELD_NAME.overallFeedback.rating]: data.rating,
                 [config.FIELD_NAME.overallFeedback.comment]: data.comment,
             }
         };
 
+        saveOverallFeedbackToDataModel([feature]);
+
         fetchFeedback({
             requestUrl: config.URL.overallFeedback + '/query',
-            where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
+            where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.species} = '${species}'`
         }).then(features=>{
             // console.log(features);
 
@@ -396,9 +418,11 @@ export default function Controller(options={}){
             } 
 
             applyEditToFeatureTable(requestUrl, feature).then(res=>{
-                // console.log(applyEditToFeatureTable, res);
+                // console.log('post edit to OverallFeedback table', res);
             });
-        })
+        }).catch(err=>{
+            console.error(err);
+        });
     }
 
     const postFeedback = (data={})=>{
@@ -452,6 +476,8 @@ export default function Controller(options={}){
             axios.post(requestUrl, bodyFormData).then(function (response) {
                 // console.log(response);
                 resolve(response);
+            }).catch(err=>{
+                console.error(err);
             });
         });
     }
@@ -470,6 +496,8 @@ export default function Controller(options={}){
             axios.post(requestUrl, bodyFormData).then(function (response) {
                 // console.log(response);
                 resolve(response);
+            }).catch(err=>{
+                console.error(err);
             });
         });
     };
@@ -551,13 +579,48 @@ export default function Controller(options={}){
         }
     };
 
+    const openOverallFeedbackPanel = ()=>{
+        const species = dataModel.getSelectedSpecies();
+
+        const prevFeedbackData = dataModel.getOverallFeedback(species);
+
+        // console.log(prevFeedbackData);
+
+        const data = prevFeedbackData 
+        ? {
+            rating: prevFeedbackData[config.FIELD_NAME.overallFeedback.rating],
+            comment: prevFeedbackData[config.FIELD_NAME.overallFeedback.comment],
+        }
+        : {};
+
+        view.toggleOverallFeeback(true, data);
+    };
+
+    const saveOverallFeedbackToDataModel = (features)=>{
+        // const data = {};
+
+        features.forEach(feature=>{
+            const key = feature.attributes[config.FIELD_NAME.overallFeedback.species];
+
+            const val = {
+                [config.FIELD_NAME.overallFeedback.rating]: feature.attributes[config.FIELD_NAME.overallFeedback.rating],
+                [config.FIELD_NAME.overallFeedback.comment]: feature.attributes[config.FIELD_NAME.overallFeedback.comment],
+            };
+
+            dataModel.saveToOverallFeedback(key, val);
+        });
+
+        // console.log(data);
+    };
+
     return {
         init,
         dataModel,
         feedbackManager,
         setSelectedHucFeature,
         resetSelectedHucFeature,
-        downloadPdf
+        downloadPdf,
+        openOverallFeedbackPanel
         // openFeedbackManager
     };
 

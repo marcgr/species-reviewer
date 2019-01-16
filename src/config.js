@@ -18,6 +18,7 @@ module.exports = {
         },
         'overallFeedback': {
             'userID': 'UserID',
+            'species': 'Species',
             'comment': 'Comment',
             'rating': 'Rating'
         }

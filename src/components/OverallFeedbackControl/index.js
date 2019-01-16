@@ -14,15 +14,16 @@ export default function(){
         container = options.containerID ? document.getElementById(options.containerID) : null;
         onSubmitHandler = options.onSubmitHandler || null;
         onCloseHandler = options.onCloseHandler || null;
-        rating = options.rating || rating;
-        comment = options.comment || comment;
+
+        // rating = options.rating || rating;
+        // comment = options.comment || comment;
 
         if(!container){
             console.error('containerID is required to init Overall Feedback Control');
             return;
         }
 
-        render();
+        // render();
 
         initEventHandler();
     };
@@ -44,7 +45,7 @@ export default function(){
         const compoenetHtml = `
             <div id='overallFeedbackControlPanelContainer' class='panel panel-black'>
                 <div class="text-center">
-                    <h4>Tell us how you like the model and app?</h4>
+                    <h4>Tell us how you like the modeled results?</h4>
                 </div>
 
                 <div class="text-center">${getRatingStarHtml()}</div>
@@ -52,7 +53,7 @@ export default function(){
                 <div class='leader-half'>
                     <label>
                         <span class='font-size--3'>feedback</span>
-                        <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
+                        <textarea type="text" placeholder="" class="comment-textarea" rows="4">${comment}</textarea>
                     </label>
                 </div>
 
@@ -125,9 +126,25 @@ export default function(){
         container.classList.toggle('hide', !isVisible);
     };
 
+    const open = (data={ rating: 0, comment: ''})=>{
+        setRating(data.rating);
+        setComment(data.comment);
+
+        render();
+        toggleVisibility(true);
+    };
+
+    const close = ()=>{
+        setRating();
+        setComment();
+        toggleVisibility(false);
+    }
+
     return {
         init,
-        toggleVisibility
+        // toggleVisibility,
+        open,
+        close
     };
 
 }

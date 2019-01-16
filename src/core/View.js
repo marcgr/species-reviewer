@@ -7,20 +7,25 @@ import OverallFeedbackControlPanel from '../components/OverallFeedbackControl';
 export default function View(){
 
     let downloadPdfBtnOnClick = null;
+    let openOverallBtnOnclick = null;
 
     const speciesSelector = new SpeciesSelector();
     const feedbackControlPanel = new FeedbackControlPanel();
     const overallFeedbackControlPanel = new OverallFeedbackControlPanel();
+
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
 
     const init = (options={
-        downloadPdfBtnOnClick: null
+        downloadPdfBtnOnClick: null,
+        openOverallBtnOnclick: null
     })=>{
         // feedbackControlPanel.init({
         //     containerID: config.DOM_ID.feedbackControl
         // });
 
         downloadPdfBtnOnClick = options.downloadPdfBtnOnClick;
+        openOverallBtnOnclick = options.openOverallBtnOnclick;
+
 
         initEventHandlers();
     };
@@ -32,8 +37,8 @@ export default function View(){
         });
 
         document.querySelectorAll('.js-open-overall-feedback').forEach(element=>{
-            // console.log(element);
-            element.addEventListener('click', toggleOverallFeeback);
+            // console.log('js-open-overall-feedback on click');
+            element.addEventListener('click', openOverallBtnOnclick);
         });
 
         document.querySelectorAll('.js-download-pdf').forEach(element=>{
@@ -41,8 +46,13 @@ export default function View(){
         });
     };
 
-    const toggleOverallFeeback = (isVisible)=>{
-        overallFeedbackControlPanel.toggleVisibility(isVisible);
+    const toggleOverallFeeback = (isVisible=false, data={})=>{
+        if(isVisible){
+            overallFeedbackControlPanel.open(data);
+        } else {
+            overallFeedbackControlPanel.close();
+        }
+        
         toggleMainControl(!isVisible);
     };
 

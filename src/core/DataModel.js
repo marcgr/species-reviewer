@@ -8,6 +8,7 @@ export default class DataModel {
         this.status = [];
         this.selectedSpecies = null;      
         this.selectedHuc = null;  
+        this.overallFeedback = {};
         // this.selectedHucName = null;
     };
 
@@ -21,6 +22,11 @@ export default class DataModel {
 
     setHucsBySpecies(species, data=[]){
         this.hucsBySpecies[species] = data;
+        // this.hucsBySpecies = data;
+    };
+
+    saveToOverallFeedback(key, val){
+        this.overallFeedback[key] = val;
         // this.hucsBySpecies = data;
     };
 
@@ -62,7 +68,7 @@ export default class DataModel {
 
     getStatusByIndex(index){
         return index && this.status[+index] ? this.status[+index] : null;
-    }
+    };
 
     isHucInModeledRange(hucID, species){
 
@@ -73,5 +79,9 @@ export default class DataModel {
         const isHucInModeledRange = hucs.filter(d=>{ return d.HUC10 === hucID }).length ? true : false;
 
         return isHucInModeledRange;
+    };
+
+    getOverallFeedback(key){
+        return this.overallFeedback[key];
     }
 };

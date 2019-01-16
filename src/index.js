@@ -541,6 +541,9 @@ esriLoader.loadModules([
             view.init({
                 downloadPdfBtnOnClick: ()=>{
                     controller.downloadPdf();
+                },
+                openOverallBtnOnclick: ()=>{
+                    controller.openOverallFeedbackPanel();
                 }
             });
 

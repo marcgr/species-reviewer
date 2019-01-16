@@ -52,16 +52,20 @@ html, body{
 }
 
 .legend-icon[data-index='0']{
-    background-color: rgba(200,200,200,.5);
+    background-color: #ffd400;
 }
 
 .legend-icon[data-index='1']{
-    background: url('../static/dash_green.png') center center no-repeat;
-    background-size: 80%;
+    background-color: rgba(255,255,255, 1);
 }
 
 .legend-icon[data-index='2']{
-    background: url('../static/dash_red.png') center center no-repeat;
+    background: url('../static/Hatch_Black.png') center center no-repeat;
+    background-size: 80%;
+}
+
+.legend-icon[data-index='3']{
+    background: url('../static/Hatch_Red.png') center center no-repeat;
     background-size: 80%;
 }
 
@@ -116,4 +120,28 @@ html, body{
 
 .cursor-pointer {
     cursor: pointer;
+}
+
+.download-pdf-btn{
+    height: 33px;
+    line-height: 33px;
+
+    div {
+        height: 33px;
+    }
+
+    svg {
+        fill: #999;
+    }
+}
+
+.download-pdf-btn.is-active {
+    cursor: pointer;
+    svg {
+        fill: #56a5d8;
+    }
+}
+
+.center-align{
+    display:flex;justify-content:center;align-items:center;
 }

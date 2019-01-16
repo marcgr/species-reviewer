@@ -6,19 +6,21 @@ import OverallFeedbackControlPanel from '../components/OverallFeedbackControl';
 
 export default function View(){
 
+    let downloadPdfBtnOnClick = null;
+
     const speciesSelector = new SpeciesSelector();
     const feedbackControlPanel = new FeedbackControlPanel();
     const overallFeedbackControlPanel = new OverallFeedbackControlPanel();
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
 
-    const init = ()=>{
+    const init = (options={
+        downloadPdfBtnOnClick: null
+    })=>{
         // feedbackControlPanel.init({
         //     containerID: config.DOM_ID.feedbackControl
         // });
 
-        overallFeedbackControlPanel.init({
-            containerID: config.DOM_ID.overallFeedbackControl
-        });
+        downloadPdfBtnOnClick = options.downloadPdfBtnOnClick;
 
         initEventHandlers();
     };
@@ -28,10 +30,24 @@ export default function View(){
             // console.log(element);
             element.addEventListener('click', toggleBasemapGallery);
         });
+
+        document.querySelectorAll('.js-open-overall-feedback').forEach(element=>{
+            // console.log(element);
+            element.addEventListener('click', toggleOverallFeeback);
+        });
+
+        document.querySelectorAll('.js-download-pdf').forEach(element=>{
+            element.addEventListener('click', downloadPdfBtnOnClick);
+        });
+    };
+
+    const toggleOverallFeeback = (isVisible)=>{
+        overallFeedbackControlPanel.toggleVisibility(isVisible);
+        toggleMainControl(!isVisible);
     };
 
     const toggleBasemapGallery = ()=>{
-        console.log('toggleBasemapGallery');
+        // console.log('toggleBasemapGallery');
         document.getElementById('basemapGalleryControl').classList.toggle('is-collapsed');
     };
 
@@ -41,6 +57,11 @@ export default function View(){
         } else {
             $mainControlPanel.classList.add('hide');
         }
+    };
+
+    const toggleDownloadAsPdfBtn = (url)=>{
+        const isActive = url ? true : false;
+        document.getElementById('downloadPdfBtn').classList.toggle('is-active', isActive);
     };
 
     const initLegend = (data)=>{
@@ -74,7 +95,7 @@ export default function View(){
 
         const render = ()=>{
             const componentHtml = data.map((d,i)=>{
-                const color = `rgb(${d.color.slice(0,3).join(',')})`;
+                // const color = `rgb(${d.color.slice(0,3).join(',')})`;
                 return `
                     <div class='trailer-quarter legend-item'>
                         <div class='inline-block legend-icon margin-right-half' data-index='${i}'></div>
@@ -104,6 +125,8 @@ export default function View(){
         speciesSelector,
         feedbackControlPanel,
         toggleMainControl,
-        overallFeedbackControlPanel
+        overallFeedbackControlPanel,
+        toggleOverallFeeback,
+        toggleDownloadAsPdfBtn
     };
 };

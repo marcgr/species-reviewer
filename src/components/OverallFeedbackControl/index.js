@@ -4,24 +4,40 @@ export default function(){
 
     let container = null;
     let onSubmitHandler = null;
+    let onCloseHandler = null;
+
+    let rating = 0;
+    let comment = '';
 
     const init = (options={})=>{
 
         container = options.containerID ? document.getElementById(options.containerID) : null;
         onSubmitHandler = options.onSubmitHandler || null;
-
-        const data = options.data || null;
+        onCloseHandler = options.onCloseHandler || null;
+        rating = options.rating || rating;
+        comment = options.comment || comment;
 
         if(!container){
             console.error('containerID is required to init Overall Feedback Control');
             return;
         }
 
-        render(data);
+        render();
+
         initEventHandler();
     };
 
-    const render = (data)=>{
+    const setRating = (val=0)=>{
+        rating = val;
+        // console.log('setRating', rating);
+    };
+
+    const setComment = (val='')=>{
+        comment = val;
+        // console.log('setComment', comment);
+    };
+
+    const render = ()=>{
 
         // const comment = data.comment || '';
 
@@ -31,36 +47,87 @@ export default function(){
                     <h4>Tell us how you like the model and app?</h4>
                 </div>
 
-                <div class="text-center">
-                    <span class="icon-ui-favorites icon-ui-yellow icon-ui-flush"></span>
-                    <span class="icon-ui-favorites icon-ui-yellow icon-ui-flush"></span>
-                    <span class="icon-ui-favorites icon-ui-gray icon-ui-flush"></span>
-                    <span class="icon-ui-favorites icon-ui-gray icon-ui-flush"></span>
-                    <span class="icon-ui-favorites icon-ui-gray icon-ui-flush"></span>
-                </div>
+                <div class="text-center">${getRatingStarHtml()}</div>
 
                 <div class='leader-half'>
                     <label>
                         <span class='font-size--3'>feedback</span>
-                        <textarea type="text" placeholder="" class="comment-textarea"></textarea>
+                        <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
                     </label>
                 </div>
 
-                <div class='leader-half trailer-half'>
-                    <btn class='btn btn-fill'>Save</btn>
+                <div class='leader-half trailer-half action-btn-wrap'>
+                    <btn class='btn btn-half js-close'>Close</btn>
+                    <btn class='btn btn-half js-submit'>Save</btn>
                 </div>
             </div>
         `;
 
         container.innerHTML = compoenetHtml;
+
     };
+
+    const getRatingStarHtml = ()=>{
+        
+        const arrOfRatingStarHtml = [];
+
+        for(let i = 0, len = 5; i < len ; i++){
+
+            const starColor = i < rating ? `icon-ui-yellow` : `icon-ui-gray`;
+            const itemHtm = `<span class="js-set-rating icon-ui-favorites icon-ui-flush ${starColor}" data-rating='${i+1}'></span>`
+            arrOfRatingStarHtml.push(itemHtm);
+        }
+
+        return arrOfRatingStarHtml.join('');
+    };
+
+    const toggleRating = (rating=0, isRemove)=>{
+        // console.log('calling toggleRating', rating, isRemove)
+
+        if(isRemove){
+            setRating(rating-1);
+        } else {
+            setRating(rating);
+        }
+
+        render();
+    }
 
     const initEventHandler = ()=>{
 
+        container.addEventListener('click', function(event){
+
+            if(event.target.classList.contains('js-close')){
+                onCloseHandler();
+            }
+
+            if(event.target.classList.contains('js-set-rating')){
+                const isRemoveRatingStar = event.target.classList.contains('icon-ui-yellow') ? true : false;
+                toggleRating(event.target.dataset.rating, isRemoveRatingStar);
+            }
+
+            if(event.target.classList.contains('js-submit')){
+                onSubmitHandler({
+                    rating,
+                    comment
+                });
+            }
+
+        });
+
+        container.addEventListener('input', function(event){
+            // console.log(event.target);
+            setComment(event.target.value);
+        });
+    };
+
+    const toggleVisibility = (isVisible=false)=>{
+        container.classList.toggle('hide', !isVisible);
     };
 
     return {
-        init
+        init,
+        toggleVisibility
     };
 
 }

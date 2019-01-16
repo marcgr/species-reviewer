@@ -56,6 +56,8 @@ export default function Controller(options={}){
         initStatusTable();
 
         queryFeedbacksByUser();
+
+        queryOverallFeedbacksByUser();
     };
 
     const initSpeciesLookupTable = ()=>{
@@ -109,6 +111,8 @@ export default function Controller(options={}){
 
             initLegendForStatus(data);
 
+        }).catch(error=>{
+            console.error(error);
         });
     };
 
@@ -116,12 +120,17 @@ export default function Controller(options={}){
         data = data.map((d, i)=>{
             return {
                 label: d,
-                color: config.COLOR['status' + i]
+                // color: config.COLOR['status' + i]
             };
         });
 
+        data.unshift({
+            label: 'Actual Extent',
+            // color: config.COLOR.actualModeledExtent
+        });
+
         view.initLegend(data);
-        // console.log(data);
+        
     };
 
     const searchHucsBySpecies = (speciesKey)=>{
@@ -129,7 +138,10 @@ export default function Controller(options={}){
         const hucsBySpecies = dataModel.getHucsBySpecies(speciesKey);
 
         if(hucsBySpecies){
-            renderHucsBySpeciesDataOnMap(hucsBySpecies);
+            renderHucsBySpeciesDataOnMap({
+                data: hucsBySpecies,
+                speciesKey
+            });
         } else {
             queryHucsBySpecies(speciesKey).then(data=>{
 
@@ -139,7 +151,9 @@ export default function Controller(options={}){
     
                 dataModel.setHucsBySpecies(speciesKey, data);
     
-                renderHucsBySpeciesDataOnMap();
+                renderHucsBySpeciesDataOnMap({
+                    speciesKey
+                });
             }).catch(err=>{
                 console.log(err);
             })
@@ -147,12 +161,20 @@ export default function Controller(options={}){
 
     };
 
-    const renderHucsBySpeciesDataOnMap = (data)=>{
-        const hucs = data || dataModel.getHucsBySpecies();
+    const renderHucsBySpeciesDataOnMap = (options={
+        data: null,
+        speciesKey: ''
+    })=>{
+        const hucs = options.data || dataModel.getHucsBySpecies();
+
+        if(options.speciesKey){
+            const actualBoundaryLayerUrl = config.URL.speciesActualBoundaries[options.speciesKey];
+            mapControl.addActualModelBoundaryLayer(actualBoundaryLayerUrl);
+        }
+        
         mapControl.highlightHucs(hucs);
 
         renderHucWithFeedbackDataOnMap();
-        // console.log('renderHucsBySpeciesDataOnMap', data);
     };
 
     const renderHucWithFeedbackDataOnMap = ()=>{
@@ -252,6 +274,7 @@ export default function Controller(options={}){
         const userID = oauthManager.getUserID();
 
         fetchFeedback({
+            requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`
         }).then(res=>{
             // console.log('previous feedbacks', res);
@@ -270,8 +293,38 @@ export default function Controller(options={}){
         });
     };
 
+    const queryOverallFeedbacksByUser = ()=>{
+
+        const userID = oauthManager.getUserID();
+
+        fetchFeedback({
+            requestUrl: config.URL.overallFeedback + '/query',
+            where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
+        }).then(res=>{
+            // console.log('previous overall feedbacks', res);
+
+            const rating = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.rating] ? res[0].attributes[config.FIELD_NAME.overallFeedback.rating] : 0;
+            const comment = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.comment] ? res[0].attributes[config.FIELD_NAME.overallFeedback.comment] : 0;
+
+            view.overallFeedbackControlPanel.init({
+                containerID: config.DOM_ID.overallFeedbackControl,
+                rating,
+                comment,
+                onCloseHandler: ()=>{
+                    view.toggleOverallFeeback(false);
+                },
+                onSubmitHandler: (data)=>{
+                    // console.log('submit overall feedback', data);
+                    postOverallFeedback(data);
+                    view.toggleOverallFeeback(false);
+                }
+            });
+
+        });
+    };
+
     const fetchFeedback = (options={})=>{
-        const requestUrl = config.URL.feedbackTable + '/query';
+        const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
         const whereClause = options.where || '1=1';
 
         return new Promise((resolve, reject)=>{
@@ -299,19 +352,54 @@ export default function Controller(options={}){
     const deleteFeedback = (data={})=>{
         // // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
         fetchFeedback({
+            requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
         }).then(features=>{
             // console.log('found feature to delete', features);
 
             if(features[0]){
+                const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
                 const objectID = features[0].attributes.ObjectId;
 
-                deleteFromFeedbackTable(objectID).then(res=>{
+                deleteFromFeedbackTable(requestUrl, objectID).then(res=>{
                     // console.log('deleted from feedback table', res);
                 });
             } 
         });
     };
+
+    const postOverallFeedback = (data={
+        rating: 0,
+        comment: ''
+    })=>{
+        const userID = oauthManager.getUserID();
+
+        const feature = {
+            "attributes": {
+                [config.FIELD_NAME.overallFeedback.userID]: userID,
+                [config.FIELD_NAME.overallFeedback.rating]: data.rating,
+                [config.FIELD_NAME.overallFeedback.comment]: data.comment,
+            }
+        };
+
+        fetchFeedback({
+            requestUrl: config.URL.overallFeedback + '/query',
+            where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
+        }).then(features=>{
+            // console.log(features);
+
+            const requestUrl = features[0] ? config.URL.overallFeedback + '/updateFeatures' : config.URL.overallFeedback + '/addFeatures' ;
+            // let operationName = 'addFeatures';
+
+            if(features[0]){
+                feature.attributes.ObjectId = features[0].attributes.ObjectId;
+            } 
+
+            applyEditToFeatureTable(requestUrl, feature).then(res=>{
+                // console.log(applyEditToFeatureTable, res);
+            });
+        })
+    }
 
     const postFeedback = (data={})=>{
         // console.log(data);
@@ -328,19 +416,20 @@ export default function Controller(options={}){
 
         // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
         fetchFeedback({
+            requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
         }).then(features=>{
             // console.log(features);
 
-            let operationName = 'addFeatures';
+            let requestUrl = features[0] ? config.URL.feedbackTable + '/updateFeatures' : config.URL.feedbackTable + '/addFeatures' ;
+            // let operationName = 'addFeatures';
 
             if(features[0]){
                 feedbackFeature.attributes.ObjectId = features[0].attributes.ObjectId;
-                operationName = 'updateFeatures';
             } 
 
-            applyEditToFeedbackTable(feedbackFeature, operationName).then(res=>{
-                console.log(operationName, res);
+            applyEditToFeatureTable(requestUrl, feedbackFeature).then(res=>{
+                // console.log(applyEditToFeatureTable, res);
             });
 
         }).catch(err=>{
@@ -349,8 +438,8 @@ export default function Controller(options={}){
         })
     };
 
-    const deleteFromFeedbackTable = (objectID)=>{
-        const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
+    const deleteFromFeedbackTable = (requestUrl, objectID)=>{
+        // const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
 
         const bodyFormData = new FormData();
         bodyFormData.append('objectIds', objectID); 
@@ -367,8 +456,8 @@ export default function Controller(options={}){
         });
     }
 
-    const applyEditToFeedbackTable = (feature, operationName)=>{
-        const requestUrl = config.URL.feedbackTable + '/' + operationName;
+    const applyEditToFeatureTable = (requestUrl, feature)=>{
+        // const requestUrl = config.URL.feedbackTable + '/' + operationName;
 
         const bodyFormData = new FormData();
         bodyFormData.append('features', JSON.stringify(feature)); 
@@ -391,6 +480,8 @@ export default function Controller(options={}){
         searchHucsBySpecies(val);
 
         resetSelectedHucFeature();
+
+        view.toggleDownloadAsPdfBtn(getPdfUrlForSelectedSpecies());
     };
 
     const setSelectedHucFeature = (feature=null)=>{
@@ -442,12 +533,31 @@ export default function Controller(options={}){
 
     };
 
+    const getPdfUrlForSelectedSpecies = ()=>{
+        const species = dataModel.getSelectedSpecies();
+        const url = config.URL.pdf[species];
+        return url;
+    }
+
+    const downloadPdf = ()=>{
+        // console.log('controller: download pdf');
+
+        const url = getPdfUrlForSelectedSpecies();
+
+        if(url){
+            window.open(url);
+        } else {
+            console.error('no pdf file is found for selected species', species);
+        }
+    };
+
     return {
         init,
         dataModel,
         feedbackManager,
         setSelectedHucFeature,
-        resetSelectedHucFeature
+        resetSelectedHucFeature,
+        downloadPdf
         // openFeedbackManager
     };
 

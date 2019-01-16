@@ -11,8 +11,11 @@ import * as esriLoader from 'esri-loader';
 // import dashImg from './static/dash.png';
 // import dotImg from './static/dot.png';
 
-import dashRed from './static/dash_red.png';
-import dashGreen from './static/dash_green.png';
+// import dashRed from './static/dash_red.png';
+// import dashGreen from './static/dash_green.png';
+
+import hatchRed from './static/Hatch_Red.png';
+import hatchBlack from './static/Hatch_Black.png';
 
 const Promise = require('es6-promise').Promise;
 const esriLoaderOptions = {
@@ -26,6 +29,7 @@ esriLoader.utils.Promise = Promise;
 esriLoader.loadModules([
     'esri/views/MapView', 
     'esri/WebMap',
+    "esri/layers/FeatureLayer",
     "esri/layers/GraphicsLayer",
     "esri/Graphic",
     "esri/widgets/BasemapGallery",
@@ -35,6 +39,7 @@ esriLoader.loadModules([
     "esri/portal/Portal"
 ], esriLoaderOptions).then(([
     MapView, WebMap, 
+    FeatureLayer,
     GraphicsLayer, Graphic,
     BasemapGallery,
     // Legend,
@@ -46,8 +51,11 @@ esriLoader.loadModules([
         let mapView = null;
         let hucsLayer = null;
         let hucFeatureOnSelectHandler = null;
-        let hucsByStatusGraphicLayer = new GraphicsLayer();
+        let hucsByStatusGraphicLayer = new GraphicsLayer({
+            opacity: .6
+        });
         let hucPreviewGraphicLayer = new GraphicsLayer();
+        let actualModelBoundaryLayer = null;
 
         const webMapID = options.webMapID || null;
         const mapViewContainerID = options.mapViewContainerID || null;
@@ -198,11 +206,11 @@ esriLoader.loadModules([
             const geometry = feature.geometry;
             const attributes = feature.attributes;
 
-            const colorLookup = [
-                config.COLOR.status0,
-                config.COLOR.status1,
-                config.COLOR.status2
-            ];
+            // const colorLookup = [
+            //     config.COLOR.status0,
+            //     config.COLOR.status1,
+            //     config.COLOR.status2
+            // ];
 
             // const symbol = {
             //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
@@ -216,24 +224,22 @@ esriLoader.loadModules([
             const symbol = +status === 1 
             ? {
                 type: "picture-fill",  // autocasts as new PictureFillSymbol()
-                url: dashGreen, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+                url: hatchBlack, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
                 width: "24px",
                 height: "24px",
-                opacity: .75,
                 outline: {
                     color: config.COLOR.hucBorderIsModeled,
-                    width: "1px"
+                    width: "2px"
                 },
             } 
             : {
                 type: "picture-fill",  // autocasts as new PictureFillSymbol()
-                url: dashRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+                url: hatchRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
                 width: "24px",
                 height: "24px",
-                opacity: .75,
                 outline: {
                     color: config.COLOR.hucBorderIsModeled,
-                    width: "1px"
+                    width: "2px"
                 },
             };
 
@@ -265,7 +271,7 @@ esriLoader.loadModules([
                 color: [0, 0, 0, 0],
                 outline: {  // autocasts as new SimpleLineSymbol()
                     color: [255, 50, 50, 0.75],
-                    width: "2px"
+                    width: "2.5px"
                 }
             };
 
@@ -300,7 +306,7 @@ esriLoader.loadModules([
                 color: [0,0,0, 0],
                 outline: {  // autocasts as new SimpleLineSymbol()
                     color: config.COLOR.hucBorder,
-                    width: "0.5px"
+                    width: "1px"
                 }
             }
 
@@ -308,7 +314,7 @@ esriLoader.loadModules([
                 type: "simple-fill",  // autocasts as new SimpleFillSymbol()
                 color: config.COLOR.hucFill,
                 outline: {  // autocasts as new SimpleLineSymbol()
-                    color: config.COLOR.hucBorder,
+                    color: config.COLOR.hucBorderIsModeled,
                     width: "2px"
                 }
             };
@@ -340,13 +346,44 @@ esriLoader.loadModules([
             };
 
             return renderer;
-        }
+        };
+
+        const addActualModelBoundaryLayer = (url)=>{
+            console.log(url);
+
+            if(actualModelBoundaryLayer){
+                mapView.map.remove(actualModelBoundaryLayer);
+            }
+
+            actualModelBoundaryLayer = new FeatureLayer({
+                url: url,
+                opacity: .65,
+                renderer: {
+                    type: 'simple',
+                    symbol: {
+                        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                        color: config.COLOR.actualModeledExtent,
+                        style: "solid",
+                        outline: {  // autocasts as new SimpleLineSymbol()
+                            color: "white",
+                            width: '.5px'
+                        }
+                    }
+                }
+            });
+
+            mapView.map.add(actualModelBoundaryLayer);
+
+            mapView.map.reorder(actualModelBoundaryLayer, 0);
+
+        };
 
         return {
             init,
             highlightHucs,
             cleanPreviewHucGraphic,
-            toggleHucGraphicByStatus
+            toggleHucGraphicByStatus,
+            addActualModelBoundaryLayer
         };
 
     };
@@ -501,12 +538,18 @@ esriLoader.loadModules([
                 }
             });
 
-            view.init();
+            view.init({
+                downloadPdfBtnOnClick: ()=>{
+                    controller.downloadPdf();
+                }
+            });
 
             controller.init({
                 token
             });
 
+        }).catch(error=>{
+            console.error(error);
         });
 
 

@@ -82,6 +82,8 @@ export default function Controller(options={}){
                     // dataModel.setSelectedSpecies(val);
 
                     setSelectedSpecies(val);
+
+                    view.enableOpenOverallFeedbackBtnBtn();
                 }
             });
 

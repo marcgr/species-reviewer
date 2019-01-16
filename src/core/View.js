@@ -74,6 +74,10 @@ export default function View(){
         document.getElementById('downloadPdfBtn').classList.toggle('is-active', isActive);
     };
 
+    const enableOpenOverallFeedbackBtnBtn = (url)=>{
+        document.getElementById('openOverallFeedbackBtn').classList.remove('btn-disabled');
+    };
+
     const initLegend = (data)=>{
         const legend = new Legend({
             container: config.DOM_ID.legend
@@ -137,6 +141,7 @@ export default function View(){
         toggleMainControl,
         overallFeedbackControlPanel,
         toggleOverallFeeback,
-        toggleDownloadAsPdfBtn
+        toggleDownloadAsPdfBtn,
+        enableOpenOverallFeedbackBtnBtn
     };
 };

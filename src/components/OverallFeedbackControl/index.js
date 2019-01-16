@@ -29,7 +29,7 @@ export default function(){
     };
 
     const setRating = (val=0)=>{
-        rating = val;
+        rating = +val;
         // console.log('setRating', rating);
     };
 
@@ -82,14 +82,16 @@ export default function(){
         return arrOfRatingStarHtml.join('');
     };
 
-    const toggleRating = (rating=0, isRemove)=>{
+    const toggleRating = (rating=0)=>{
         // console.log('calling toggleRating', rating, isRemove)
 
-        if(isRemove){
-            setRating(rating-1);
-        } else {
-            setRating(rating);
-        }
+        // if(isRemove){
+        //     setRating(rating-1);
+        // } else {
+        //     setRating(rating);
+        // }
+
+        setRating(rating);
 
         render();
     }
@@ -104,7 +106,7 @@ export default function(){
 
             if(event.target.classList.contains('js-set-rating')){
                 const isRemoveRatingStar = event.target.classList.contains('icon-ui-yellow') ? true : false;
-                toggleRating(event.target.dataset.rating, isRemoveRatingStar);
+                toggleRating(event.target.dataset.rating);
             }
 
             if(event.target.classList.contains('js-submit')){

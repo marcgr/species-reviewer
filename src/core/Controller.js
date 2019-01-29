@@ -9,6 +9,7 @@ export default function Controller(options={}){
 
     let token = null;
     let selectedHucFeature = null;
+    let isReviewMode = true;
 
     const dataModel = options.dataModel || null;
     const mapControl = options.mapControl || null;
@@ -49,6 +50,10 @@ export default function Controller(options={}){
     const init = (options={})=>{
         // console.log('init app controller', dataModel, mapControl, view);
 
+        if(isReviewMode){
+            initReviewMode();
+        }
+
         token = options.token || null;
 
         initSpeciesLookupTable();
@@ -58,6 +63,16 @@ export default function Controller(options={}){
         queryFeedbacksByUser();
 
         queryOverallFeedbacksByUser();
+    };
+
+    const initReviewMode = ()=>{
+        view.switchToReviewModeView();
+
+        view.listViewForOverallFeedback.init({
+            onClickHandler: (val)=>{
+                console.log(val);
+            }
+        })
     };
 
     const initSpeciesLookupTable = ()=>{
@@ -76,14 +91,17 @@ export default function Controller(options={}){
                 containerID: config.DOM_ID.speciesSelector,
                 data,
                 onChange: (val)=>{
-                    // console.log(val);
-                    // closeFeedbackManager();
-                    // searchHucsBySpecies(val);
-                    // dataModel.setSelectedSpecies(val);
 
-                    setSelectedSpecies(val);
+                    dataModel.setSelectedSpecies(val);
 
-                    view.enableOpenOverallFeedbackBtnBtn();
+                    speciesOnSelectHandler(val);
+
+                    if(isReviewMode){
+                        queryOverallFeedbacksBySpecies();
+                    } else {
+                        view.enableOpenOverallFeedbackBtnBtn();
+                    }
+
                 }
             });
 
@@ -279,15 +297,15 @@ export default function Controller(options={}){
         });
     };
 
-    const queryFeedbacksByUser = ()=>{
+    const queryFeedbacksByUser = (userID)=>{
 
-        const userID = oauthManager.getUserID();
+        userID = userID || oauthManager.getUserID();
 
         fetchFeedback({
             requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`
         }).then(res=>{
-            // console.log('previous feedbacks', res);
+            console.log('previous feedbacks', res);
 
             const formattedFeedbackData = res.map(d=>{
                 return {
@@ -304,6 +322,21 @@ export default function Controller(options={}){
             console.error(err);
         });
     };
+
+    const queryOverallFeedbacksBySpecies = ()=>{
+
+        const species = dataModel.getSelectedSpecies();
+
+        fetchFeedback({
+            requestUrl: config.URL.overallFeedback + '/query',
+            where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
+        }).then(res=>{
+            console.log('previous overall feedbacks by species', res);
+
+            view.listViewForOverallFeedback.render(res);
+
+        });
+    }; 
 
     const queryOverallFeedbacksByUser = ()=>{
 
@@ -504,8 +537,8 @@ export default function Controller(options={}){
         });
     };
 
-    const setSelectedSpecies = (val)=>{
-        dataModel.setSelectedSpecies(val);
+    const speciesOnSelectHandler = (val)=>{
+        // dataModel.setSelectedSpecies(val);
 
         searchHucsBySpecies(val);
 

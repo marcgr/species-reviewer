@@ -3,6 +3,7 @@ import config from '../config';
 import SpeciesSelector from '../components/SpeciesSelector';
 import FeedbackControlPanel from '../components/FeedbackControlPanel';
 import OverallFeedbackControlPanel from '../components/OverallFeedbackControl';
+import ListViewForOverallFeedback from '../components/ListViewForOverallFeedback';
 
 export default function View(){
 
@@ -12,6 +13,9 @@ export default function View(){
     const speciesSelector = new SpeciesSelector();
     const feedbackControlPanel = new FeedbackControlPanel();
     const overallFeedbackControlPanel = new OverallFeedbackControlPanel();
+    const listViewForOverallFeedback = new ListViewForOverallFeedback({
+        containerID: config.DOM_ID.listViewOverallFeedback
+    });
 
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
 
@@ -25,7 +29,6 @@ export default function View(){
 
         downloadPdfBtnOnClick = options.downloadPdfBtnOnClick;
         openOverallBtnOnclick = options.openOverallBtnOnclick;
-
 
         initEventHandlers();
     };
@@ -133,6 +136,10 @@ export default function View(){
         
     };
 
+    const switchToReviewModeView = ()=>{
+        document.getElementById('openOverallFeedbackBtnDiv').classList.add('hide');
+    };
+
     return {
         init,
         initLegend,
@@ -142,6 +149,8 @@ export default function View(){
         overallFeedbackControlPanel,
         toggleOverallFeeback,
         toggleDownloadAsPdfBtn,
-        enableOpenOverallFeedbackBtnBtn
+        enableOpenOverallFeedbackBtnBtn,
+        listViewForOverallFeedback,
+        switchToReviewModeView
     };
 };

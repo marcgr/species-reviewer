@@ -30,7 +30,8 @@ module.exports = {
         "speciesSelector": 'speciesSelectorDiv',
         'feedbackControl': 'feedbackControlDiv',
         'overallFeedbackControl': 'overallFeedbackDiv',
-        'legend': 'legendDiv'
+        'legend': 'legendDiv',
+        'listViewOverallFeedback': 'listViewForOverallFeedbackDiv'
     },
 
     "URL": {

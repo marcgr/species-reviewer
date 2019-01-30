@@ -35,7 +35,7 @@ export default function Controller(options={}){
 
             postFeedback(data);
 
-            mapControl.showHucFeatureByStatus(data.hucID, data.status);
+            showHucFeatureOnMap(data.hucID, data.status, data);
 
             resetSelectedHucFeature();
         },
@@ -44,7 +44,7 @@ export default function Controller(options={}){
 
             deleteFeedback(data);
 
-            mapControl.showHucFeatureByStatus(data.hucID, 0);
+            showHucFeatureOnMap(data.hucID);
 
             resetSelectedHucFeature();
         }
@@ -238,8 +238,7 @@ export default function Controller(options={}){
             const hucID = data[key].hucID;
             const status = data[key].status;
 
-            mapControl.showHucFeatureByStatus(hucID, status);
-          
+            showHucFeatureOnMap(hucID, status, data[key]);
         });
     };
 
@@ -391,7 +390,8 @@ export default function Controller(options={}){
                 mapControl.clearAllGraphics();
 
                 data.forEach(d=>{
-                    mapControl.showHucFeatureByStatus(d.hucID, d.status);
+                    // console.log(d);
+                    showHucFeatureOnMap(d.hucID, d.status, d);
                 });
 
                 view.openListView(view.listViewForDetailedFeedback, data);
@@ -762,8 +762,60 @@ export default function Controller(options={}){
         mapControl.clearAllGraphics();
 
         features.forEach(feature=>{
-            mapControl.showHucFeatureByStatus(feature.attributes[config.FIELD_NAME.feedbackTable.hucID], feature.attributes[config.FIELD_NAME.feedbackTable.status]);
+            showHucFeatureOnMap(feature.attributes[config.FIELD_NAME.feedbackTable.hucID], feature.attributes[config.FIELD_NAME.feedbackTable.status]);
         });
+    };
+
+    const showHucFeatureOnMap = (hucID='', status=0, data=null)=>{
+        if(!hucID){
+            console.error('hucID is missing...');
+            return
+        }
+
+        const options = data ? getHucFeatureOptions(data) : {};
+
+        mapControl.showHucFeatureByStatus(hucID, status, options);
+    };
+
+    const getHucFeatureOptions = (data)=>{
+        // console.log(data);
+        return {
+            attributes: {
+                "hucID": data.hucID,
+                "status": data.status === 1 ? 'Add' : 'Remove',
+                "comment": data.comment
+            },
+            popupTemplate: {
+                title: "Feedback for {NAME}",
+                content: [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            {
+                                fieldName: "NAME",
+                                label: "NAME",
+                                visible: false
+                            },
+                            {
+                                fieldName: "hucID",
+                                label: "HUCID",
+                                visible: true
+                            },
+                            {
+                                fieldName: "status",
+                                label: "Action",
+                                visible: true
+                            },
+                            {
+                                fieldName: "comment",
+                                label: "Comment",
+                                visible: true
+                            },
+                        ]
+                    }
+                ]
+            }
+        }
     };
 
     return {

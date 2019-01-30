@@ -25,7 +25,9 @@ html, body {
   top: 1rem;
   right: 1rem;
   z-index: 5;
-  width: 300px; }
+  width: 300px;
+  max-height: 85%;
+  overflow-y: auto; }
 
 #feedbackControlDiv,
 #overallFeedbackDiv {
@@ -112,6 +114,18 @@ html, body {
   justify-content: center;
   align-items: center; }
 
+.fancy-scrollbar::-webkit-scrollbar {
+  width: 5px; }
+
+.fancy-scrollbar::-webkit-scrollbar-track {
+  background: rgba(200, 200, 200, 0.5); }
+
+.fancy-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc; }
+
+.fancy-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a9a9a9; }
+
 
 #feedbackControlPanelContainer .fieldset-radio label {
   color: #fff;
@@ -130,4 +144,7 @@ html, body {
   width: 100%; }
   #overallFeedbackControlPanelContainer .action-btn-wrap .btn-half {
     width: 49%; }
+
+tr.review-data-row.is-active td {
+  background-color: #d2e9f9; }
 

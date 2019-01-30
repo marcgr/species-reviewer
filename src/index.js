@@ -1,7 +1,6 @@
 import "./style/index.scss";
 
 import config from './config';
-import DataModel from './core/DataModel';
 import Controller from './core/Controller';
 import View from './core/View';
 
@@ -193,7 +192,7 @@ esriLoader.loadModules([
             }
         };
 
-        const toggleHucGraphicByStatus = (hucID, status)=>{
+        const showHucFeatureByStatus = (hucID, status)=>{
 
             removeHucGraphicByStatus(hucID);
 
@@ -391,7 +390,7 @@ esriLoader.loadModules([
             init,
             highlightHucs,
             cleanPreviewHucGraphic,
-            toggleHucGraphicByStatus,
+            showHucFeatureByStatus,
             addActualModelBoundaryLayer,
             clearAllGraphics,
             disableMapOnHoldEvent,
@@ -493,8 +492,6 @@ esriLoader.loadModules([
 
     (function initApp(){
 
-        const dataModel = new DataModel();
-
         const view = new View();
         
         const mapControl = new MapControl({
@@ -505,7 +502,6 @@ esriLoader.loadModules([
         const oauthManager = new OAuthManager(config.oauthAppID);
 
         const controller = new Controller({
-            dataModel,
             mapControl,
             view,
             oauthManager

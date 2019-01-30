@@ -31,7 +31,8 @@ module.exports = {
         'feedbackControl': 'feedbackControlDiv',
         'overallFeedbackControl': 'overallFeedbackDiv',
         'legend': 'legendDiv',
-        'listViewOverallFeedback': 'listViewForOverallFeedbackDiv'
+        'listViewOverallFeedback': 'listViewForOverallFeedbackDiv',
+        'listViewDeatiledFeedback': 'listViewForDetailedFeedbackDiv'
     },
 
     "URL": {

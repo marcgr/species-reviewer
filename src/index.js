@@ -56,6 +56,7 @@ esriLoader.loadModules([
         });
         let hucPreviewGraphicLayer = new GraphicsLayer();
         let actualModelBoundaryLayer = null;
+        let isOnHoldEventDisabled = false;
 
         const webMapID = options.webMapID || null;
         const mapViewContainerID = options.mapViewContainerID || null;
@@ -92,8 +93,16 @@ esriLoader.loadModules([
         const initMapEventHandlers = ()=>{
             mapView.on('hold', event=>{
                 // console.log('map view on hold', event);
-                queryHucsLayerByMouseEvent(event);
+
+                if(!isOnHoldEventDisabled){
+                    queryHucsLayerByMouseEvent(event);
+                }
+                
             });
+        };
+
+        const disableMapOnHoldEvent = ()=>{
+            isOnHoldEventDisabled = true;
         };
 
         // const initLegend = ()=>{
@@ -179,7 +188,7 @@ esriLoader.loadModules([
 
             addPreviewHucGraphic(feature);
 
-            if(hucFeatureOnSelectHandler){
+            if(hucFeatureOnSelectHandler && !isOnHoldEventDisabled){
                 hucFeatureOnSelectHandler(feature);
             }
         };
@@ -383,7 +392,11 @@ esriLoader.loadModules([
             highlightHucs,
             cleanPreviewHucGraphic,
             toggleHucGraphicByStatus,
-            addActualModelBoundaryLayer
+            addActualModelBoundaryLayer,
+            clearAllGraphics,
+            disableMapOnHoldEvent,
+            queryHucsLayerByHucID,
+            addPreviewHucGraphic
         };
 
     };

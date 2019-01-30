@@ -9,7 +9,7 @@ export default function Controller(options={}){
 
     let token = null;
     let selectedHucFeature = null;
-    let isReviewMode = true;
+    let isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
 
     const dataModel = options.dataModel || null;
     const mapControl = options.mapControl || null;
@@ -66,11 +66,26 @@ export default function Controller(options={}){
     };
 
     const initReviewMode = ()=>{
+
+        mapControl.disableMapOnHoldEvent();
+
         view.switchToReviewModeView();
 
         view.listViewForOverallFeedback.init({
-            onClickHandler: (val)=>{
-                console.log(val);
+            onClickHandler:(userID)=>{
+                // console.log(val);
+                reviewFeedbacksByUser(userID);
+            }
+        });
+
+        view.listViewForDetailedFeedback.init({
+            onCloseHandler:()=>{
+                mapControl.clearAllGraphics();
+                view.openListView(view.listViewForOverallFeedback);
+            },
+            onClickHandler:(hucID)=>{
+                // console.log(hucID);
+                mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
             }
         })
     };
@@ -97,7 +112,7 @@ export default function Controller(options={}){
                     speciesOnSelectHandler(val);
 
                     if(isReviewMode){
-                        queryOverallFeedbacksBySpecies();
+                        reviewOverallFeedbacksBySpecies();
                     } else {
                         view.enableOpenOverallFeedbackBtnBtn();
                     }
@@ -126,6 +141,8 @@ export default function Controller(options={}){
 
                 return statusType;
             });
+
+            // console.log(data);
 
             dataModel.setStatus(data);
 
@@ -196,12 +213,14 @@ export default function Controller(options={}){
         
         mapControl.highlightHucs(hucs);
 
-        renderHucWithFeedbackDataOnMap();
+        if(!isReviewMode){
+            renderHucWithFeedbackDataOnMap();
+        }
     };
 
-    const renderHucWithFeedbackDataOnMap = ()=>{
+    const renderHucWithFeedbackDataOnMap = (data)=>{
         const species = dataModel.getSelectedSpecies();
-        const data = feedbackManager.getFeedbackDataBySpecies(species);
+        data = data || feedbackManager.getFeedbackDataBySpecies(species);
 
         // console.log(data); 
 
@@ -297,15 +316,25 @@ export default function Controller(options={}){
         });
     };
 
-    const queryFeedbacksByUser = (userID)=>{
+    const queryFeedbacksByUser = (options={
+        userID: '', 
+        species: '',
+        onSuccessHandler: null
+    })=>{
 
-        userID = userID || oauthManager.getUserID();
+        const userID = options.userID || oauthManager.getUserID();
+        const onSuccessHandler = options.onSuccessHandler;
+        const whereClauseParts = [`${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`];
+
+        if(options.species){
+            whereClauseParts.push(`${config.FIELD_NAME.feedbackTable.species} = '${options.species}'`)
+        }
 
         fetchFeedback({
             requestUrl: config.URL.feedbackTable + '/query',
-            where: `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`
+            where: whereClauseParts.join(' AND ')
         }).then(res=>{
-            console.log('previous feedbacks', res);
+            // console.log('previous feedbacks from', userID, res);
 
             const formattedFeedbackData = res.map(d=>{
                 return {
@@ -317,13 +346,18 @@ export default function Controller(options={}){
                 }
             });
 
-            feedbackManager.batchAddToDataStore(formattedFeedbackData);
+            if(onSuccessHandler){
+                onSuccessHandler(formattedFeedbackData);
+            } else {
+                feedbackManager.batchAddToDataStore(formattedFeedbackData);
+            }
+            
         }).catch(err=>{
             console.error(err);
         });
     };
 
-    const queryOverallFeedbacksBySpecies = ()=>{
+    const reviewOverallFeedbacksBySpecies = ()=>{
 
         const species = dataModel.getSelectedSpecies();
 
@@ -333,10 +367,32 @@ export default function Controller(options={}){
         }).then(res=>{
             console.log('previous overall feedbacks by species', res);
 
-            view.listViewForOverallFeedback.render(res);
+            // view.listViewForOverallFeedback.render(res);
+
+            view.openListView(view.listViewForOverallFeedback, res);
 
         });
     }; 
+
+    const reviewFeedbacksByUser = (userID='')=>{
+
+        queryFeedbacksByUser({
+            userID,
+            species: dataModel.getSelectedSpecies(),
+            onSuccessHandler: (data)=>{
+
+                mapControl.clearAllGraphics();
+
+                data.forEach(d=>{
+                    mapControl.toggleHucGraphicByStatus(d.hucID, d.status);
+                });
+
+                view.openListView(view.listViewForDetailedFeedback, data);
+
+                // console.log(data);
+            }
+        })
+    }
 
     const queryOverallFeedbacksByUser = ()=>{
 

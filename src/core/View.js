@@ -4,6 +4,7 @@ import SpeciesSelector from '../components/SpeciesSelector';
 import FeedbackControlPanel from '../components/FeedbackControlPanel';
 import OverallFeedbackControlPanel from '../components/OverallFeedbackControl';
 import ListViewForOverallFeedback from '../components/ListViewForOverallFeedback';
+import ListViewForDetailedFeedback from '../components/ListViewForDetailedFeedback';
 
 export default function View(){
 
@@ -15,6 +16,9 @@ export default function View(){
     const overallFeedbackControlPanel = new OverallFeedbackControlPanel();
     const listViewForOverallFeedback = new ListViewForOverallFeedback({
         containerID: config.DOM_ID.listViewOverallFeedback
+    });
+    const listViewForDetailedFeedback = new ListViewForDetailedFeedback({
+        containerID: config.DOM_ID.listViewDeatiledFeedback
     });
 
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
@@ -140,6 +144,34 @@ export default function View(){
         document.getElementById('openOverallFeedbackBtnDiv').classList.add('hide');
     };
 
+    // const openListViewForOverallFeedback = (data)=>{
+    //     listViewForOverallFeedback.toggleVisibility(true);
+    //     listViewForOverallFeedback.render(data);
+
+    //     listViewForDetailedFeedback.toggleVisibility(false);
+    // }
+
+    // const openListViewForDetailedFeedback = (data)=>{
+    //     listViewForOverallFeedback.toggleVisibility(false);
+    //     listViewForDetailedFeedback.toggleVisibility(true);
+    //     listViewForDetailedFeedback.render(data);
+    // }
+
+    const openListView = (targetListView, data)=>{
+        [listViewForOverallFeedback, listViewForDetailedFeedback].forEach(item=>{
+            if(item === targetListView){
+                item.toggleVisibility(true);
+
+                if(data){
+                    item.render(data);
+                }
+                
+            } else {
+                item.toggleVisibility(false);
+            }
+        })
+    };
+
     return {
         init,
         initLegend,
@@ -151,6 +183,10 @@ export default function View(){
         toggleDownloadAsPdfBtn,
         enableOpenOverallFeedbackBtnBtn,
         listViewForOverallFeedback,
-        switchToReviewModeView
+        listViewForDetailedFeedback,
+        switchToReviewModeView,
+        // openListViewForDetailedFeedback,
+        // openListViewForOverallFeedback,
+        openListView
     };
 };

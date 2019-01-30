@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-import FeedbackManager from '../core/FeedbackManager';
+import DataModel from './DataModel';
+import DataModelForReviewMode from './DataModelForReviewMode';
+import FeedbackManager from './FeedbackManager';
 import config from '../config';
 
 const Promise = require('es6-promise').Promise;
@@ -11,7 +13,8 @@ export default function Controller(options={}){
     let selectedHucFeature = null;
     let isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
 
-    const dataModel = options.dataModel || null;
+    const dataModel = new DataModel();
+    const dataModelForReviewMode = new DataModelForReviewMode();
     const mapControl = options.mapControl || null;
     const view = options.view || null;
     const oauthManager = options.oauthManager || null;
@@ -32,7 +35,7 @@ export default function Controller(options={}){
 
             postFeedback(data);
 
-            mapControl.toggleHucGraphicByStatus(data.hucID, data.status);
+            showHucFeatureOnMap(data.hucID, data.status, data);
 
             resetSelectedHucFeature();
         },
@@ -41,7 +44,7 @@ export default function Controller(options={}){
 
             deleteFeedback(data);
 
-            mapControl.toggleHucGraphicByStatus(data.hucID, 0);
+            showHucFeatureOnMap(data.hucID);
 
             resetSelectedHucFeature();
         }
@@ -80,8 +83,10 @@ export default function Controller(options={}){
 
         view.listViewForDetailedFeedback.init({
             onCloseHandler:()=>{
-                mapControl.clearAllGraphics();
+                // mapControl.clearAllGraphics();
                 view.openListView(view.listViewForOverallFeedback);
+
+                renderListOfHucsWithFeedbacks();
             },
             onClickHandler:(hucID)=>{
                 // console.log(hucID);
@@ -102,23 +107,25 @@ export default function Controller(options={}){
     
             dataModel.setSpeciesLookup(data);
 
-            view.speciesSelector.init({
-                containerID: config.DOM_ID.speciesSelector,
-                data,
-                onChange: (val)=>{
+            // view.speciesSelector.init({
+            //     containerID: config.DOM_ID.speciesSelector,
+            //     data,
+            //     onChange: (val)=>{
 
-                    dataModel.setSelectedSpecies(val);
+            //         dataModel.setSelectedSpecies(val);
 
-                    speciesOnSelectHandler(val);
+            //         speciesOnSelectHandler(val);
 
-                    if(isReviewMode){
-                        reviewOverallFeedbacksBySpecies();
-                    } else {
-                        view.enableOpenOverallFeedbackBtnBtn();
-                    }
+            //         if(isReviewMode){
+            //             reviewOverallFeedbacksBySpecies();
+            //         } else {
+            //             view.enableOpenOverallFeedbackBtnBtn();
+            //         }
 
-                }
-            });
+            //     }
+            // });
+
+            initSpeciesSelector(data);
 
         }).catch(err=>{
             console.error(err);
@@ -231,8 +238,7 @@ export default function Controller(options={}){
             const hucID = data[key].hucID;
             const status = data[key].status;
 
-            mapControl.toggleHucGraphicByStatus(hucID, status);
-          
+            showHucFeatureOnMap(hucID, status, data[key]);
         });
     };
 
@@ -384,7 +390,8 @@ export default function Controller(options={}){
                 mapControl.clearAllGraphics();
 
                 data.forEach(d=>{
-                    mapControl.toggleHucGraphicByStatus(d.hucID, d.status);
+                    // console.log(d);
+                    showHucFeatureOnMap(d.hucID, d.status, d);
                 });
 
                 view.openListView(view.listViewForDetailedFeedback, data);
@@ -433,13 +440,16 @@ export default function Controller(options={}){
     const fetchFeedback = (options={})=>{
         const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
         const whereClause = options.where || '1=1';
+        const outFields = options.outFields || '*';
+        const returnDistinctValues = options.returnDistinctValues || false;
 
         return new Promise((resolve, reject)=>{
 
             axios.get(requestUrl, {
                 params: {
                     where: whereClause,
-                    outFields: '*',
+                    outFields,
+                    returnDistinctValues,
                     f: 'json',
                     token
                 }
@@ -702,6 +712,110 @@ export default function Controller(options={}){
         });
 
         // console.log(data);
+    };
+
+    const initSpeciesSelector = (data)=>{
+        view.speciesSelector.init({
+            containerID: config.DOM_ID.speciesSelector,
+            data,
+            onChange: (val)=>{
+
+                dataModel.setSelectedSpecies(val);
+
+                speciesOnSelectHandler(val);
+
+                if(isReviewMode){
+                    reviewOverallFeedbacksBySpecies();
+                    getListOfHucsWithFeedbacks();
+                } else {
+                    view.enableOpenOverallFeedbackBtnBtn();
+                }
+
+            }
+        });
+
+    };
+
+    const getListOfHucsWithFeedbacks = ()=>{
+        const species = dataModel.getSelectedSpecies();
+
+        if(dataModelForReviewMode.getHucsWithFeedbacks(species)){
+            renderListOfHucsWithFeedbacks();
+        } else {
+            fetchFeedback({
+                requestUrl: config.URL.feedbackTable + '/query',
+                where: `${config.FIELD_NAME.feedbackTable.species} = '${species}'`,
+                outFields: `${config.FIELD_NAME.feedbackTable.hucID}, ${config.FIELD_NAME.feedbackTable.status}`,
+                returnDistinctValues: true
+            }).then(res=>{
+                // console.log('getListOfHucsWithFeedbacks', res);
+                dataModelForReviewMode.setHucsWithFeedbacks(species, res);
+                renderListOfHucsWithFeedbacks();
+            });
+        }
+    };
+
+    const renderListOfHucsWithFeedbacks = ()=>{
+        const species = dataModel.getSelectedSpecies();
+        const features = dataModelForReviewMode.getHucsWithFeedbacks(species);
+
+        mapControl.clearAllGraphics();
+
+        features.forEach(feature=>{
+            showHucFeatureOnMap(feature.attributes[config.FIELD_NAME.feedbackTable.hucID], feature.attributes[config.FIELD_NAME.feedbackTable.status]);
+        });
+    };
+
+    const showHucFeatureOnMap = (hucID='', status=0, data=null)=>{
+        if(!hucID){
+            console.error('hucID is missing...');
+            return
+        }
+
+        const options = data ? getHucFeatureOptions(data) : {};
+
+        mapControl.showHucFeatureByStatus(hucID, status, options);
+    };
+
+    const getHucFeatureOptions = (data)=>{
+        // console.log(data);
+        return {
+            attributes: {
+                "hucID": data.hucID,
+                "status": data.status === 1 ? 'Add' : 'Remove',
+                "comment": data.comment
+            },
+            popupTemplate: {
+                title: "Feedback for {NAME}",
+                content: [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            {
+                                fieldName: "NAME",
+                                label: "NAME",
+                                visible: false
+                            },
+                            {
+                                fieldName: "hucID",
+                                label: "HUCID",
+                                visible: true
+                            },
+                            {
+                                fieldName: "status",
+                                label: "Action",
+                                visible: true
+                            },
+                            {
+                                fieldName: "comment",
+                                label: "Comment",
+                                visible: true
+                            },
+                        ]
+                    }
+                ]
+            }
+        }
     };
 
     return {

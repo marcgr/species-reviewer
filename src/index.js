@@ -1,7 +1,6 @@
 import "./style/index.scss";
 
 import config from './config';
-import DataModel from './core/DataModel';
 import Controller from './core/Controller';
 import View from './core/View';
 
@@ -193,13 +192,16 @@ esriLoader.loadModules([
             }
         };
 
-        const toggleHucGraphicByStatus = (hucID, status)=>{
+        const showHucFeatureByStatus = (hucID, status, options={
+            attributes: null,
+            popupTemplate: null
+        })=>{
 
             removeHucGraphicByStatus(hucID);
 
             if(+status > 0){
                 queryHucsLayerByHucID(hucID).then(feature=>{
-                    addHucGraphicByStatus(feature, status);
+                    addHucGraphicByStatus(feature, status, options);
                 });
             } 
 
@@ -208,27 +210,13 @@ esriLoader.loadModules([
             // });
         };
 
-        const addHucGraphicByStatus = (feature, status)=>{
-
-            // console.log('calling addHucGraphicByStatus', status);
+        const addHucGraphicByStatus = (feature, status, options={})=>{
 
             const geometry = feature.geometry;
-            const attributes = feature.attributes;
+            const attributes = options.attributes ? {...feature.attributes, ...options.attributes} : feature.attributes;
+            const popupTemplate = options.popupTemplate || null;
 
-            // const colorLookup = [
-            //     config.COLOR.status0,
-            //     config.COLOR.status1,
-            //     config.COLOR.status2
-            // ];
-
-            // const symbol = {
-            //     type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-            //     color: colorLookup[+status],
-            //     outline: {  // autocasts as new SimpleLineSymbol()
-            //         color: config.COLOR.hucBorder,
-            //         width: "0.5px"
-            //     }
-            // };
+            // console.log('calling addHucGraphicByStatus', attributes);
 
             const symbol = +status === 1 
             ? {
@@ -255,7 +243,8 @@ esriLoader.loadModules([
             const graphic = new Graphic({
                 geometry,
                 symbol,
-                attributes
+                attributes,
+                popupTemplate
             });
 
             hucsByStatusGraphicLayer.add(graphic);
@@ -358,7 +347,7 @@ esriLoader.loadModules([
         };
 
         const addActualModelBoundaryLayer = (url)=>{
-            console.log(url);
+            // console.log(url);
 
             if(actualModelBoundaryLayer){
                 mapView.map.remove(actualModelBoundaryLayer);
@@ -391,7 +380,7 @@ esriLoader.loadModules([
             init,
             highlightHucs,
             cleanPreviewHucGraphic,
-            toggleHucGraphicByStatus,
+            showHucFeatureByStatus,
             addActualModelBoundaryLayer,
             clearAllGraphics,
             disableMapOnHoldEvent,
@@ -493,8 +482,6 @@ esriLoader.loadModules([
 
     (function initApp(){
 
-        const dataModel = new DataModel();
-
         const view = new View();
         
         const mapControl = new MapControl({
@@ -505,7 +492,6 @@ esriLoader.loadModules([
         const oauthManager = new OAuthManager(config.oauthAppID);
 
         const controller = new Controller({
-            dataModel,
             mapControl,
             view,
             oauthManager

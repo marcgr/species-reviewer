@@ -1,3 +1,5 @@
+import './style.scss';
+
 export default function(options={
     containerID: ''
 }){
@@ -27,9 +29,20 @@ export default function(options={
 
             if(evt.target.classList.contains('js-show-huc') && options.onClickHandler){
                 options.onClickHandler(evt.target.dataset.value);
+                setActiveRow(evt.target.dataset.value);
                 // console.log(evt.target.dataset.value);
             }
         });
+    };
+
+    const setActiveRow = (huc)=>{
+        document.querySelectorAll('.review-data-row').forEach(row=>{
+            if(row.dataset.huc === huc){
+                row.classList.add('is-active');
+            } else {
+                row.classList.remove('is-active');
+            }
+        })
     };
 
     const render = (data)=>{
@@ -50,7 +63,7 @@ export default function(options={
                 '2': 'Remove'
             };
             return `
-                <tr class='font-size--3'>
+                <tr class='review-data-row font-size--3' data-huc='${huc}'>
                     <td class='js-show-huc cursor-pointer' data-value='${huc}'>${huc}</td>
                     <td>${statusLable[status]}</td>
                     <td>${comment}</td>

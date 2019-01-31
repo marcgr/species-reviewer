@@ -74,25 +74,7 @@ export default function Controller(options={}){
 
         view.switchToReviewModeView();
 
-        view.listViewForOverallFeedback.init({
-            onClickHandler:(userID)=>{
-                // console.log(val);
-                reviewFeedbacksByUser(userID);
-            }
-        });
-
-        view.listViewForDetailedFeedback.init({
-            onCloseHandler:()=>{
-                // mapControl.clearAllGraphics();
-                view.openListView(view.listViewForOverallFeedback);
-
-                renderListOfHucsWithFeedbacks();
-            },
-            onClickHandler:(hucID)=>{
-                // console.log(hucID);
-                mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
-            }
-        })
+        initViewComponentsForReviewMode();
     };
 
     const initSpeciesLookupTable = ()=>{
@@ -106,24 +88,6 @@ export default function Controller(options={}){
             });
     
             dataModel.setSpeciesLookup(data);
-
-            // view.speciesSelector.init({
-            //     containerID: config.DOM_ID.speciesSelector,
-            //     data,
-            //     onChange: (val)=>{
-
-            //         dataModel.setSelectedSpecies(val);
-
-            //         speciesOnSelectHandler(val);
-
-            //         if(isReviewMode){
-            //             reviewOverallFeedbacksBySpecies();
-            //         } else {
-            //             view.enableOpenOverallFeedbackBtnBtn();
-            //         }
-
-            //     }
-            // });
 
             initSpeciesSelector(data);
 
@@ -160,23 +124,6 @@ export default function Controller(options={}){
         }).catch(error=>{
             console.error(error);
         });
-    };
-
-    const initLegendForStatus = (data)=>{
-        data = data.map((d, i)=>{
-            return {
-                label: d,
-                // color: config.COLOR['status' + i]
-            };
-        });
-
-        data.unshift({
-            label: 'Actual Extent',
-            // color: config.COLOR.actualModeledExtent
-        });
-
-        view.initLegend(data);
-        
     };
 
     const searchHucsBySpecies = (speciesKey)=>{
@@ -371,9 +318,7 @@ export default function Controller(options={}){
             requestUrl: config.URL.overallFeedback + '/query',
             where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
         }).then(res=>{
-            console.log('previous overall feedbacks by species', res);
-
-            // view.listViewForOverallFeedback.render(res);
+            // console.log('previous overall feedbacks by species', res);
 
             view.openListView(view.listViewForOverallFeedback, res);
 
@@ -413,27 +358,10 @@ export default function Controller(options={}){
 
             saveOverallFeedbackToDataModel(res);
 
-            // dataModel.setOverallFeedback(res);
+            initOverallFeedbackControlPanel();
 
-            // const rating = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.rating] ? res[0].attributes[config.FIELD_NAME.overallFeedback.rating] : 0;
-            // const comment = res[0] && res[0].attributes && res[0].attributes[config.FIELD_NAME.overallFeedback.comment] ? res[0].attributes[config.FIELD_NAME.overallFeedback.comment] : 0;
-
-            view.overallFeedbackControlPanel.init({
-                containerID: config.DOM_ID.overallFeedbackControl,
-                // rating,
-                // comment,
-                onCloseHandler: ()=>{
-                    view.toggleOverallFeeback(false);
-                },
-                onSubmitHandler: (data)=>{
-                    // console.log('submit overall feedback', data);
-                    view.toggleOverallFeeback(false);
-                    postOverallFeedback(data);
-                }
-            }).catch(err=>{
-                console.error(err);
-            });
-
+        }).catch(err=>{
+            console.error(err);
         });
     };
 
@@ -714,28 +642,6 @@ export default function Controller(options={}){
         // console.log(data);
     };
 
-    const initSpeciesSelector = (data)=>{
-        view.speciesSelector.init({
-            containerID: config.DOM_ID.speciesSelector,
-            data,
-            onChange: (val)=>{
-
-                dataModel.setSelectedSpecies(val);
-
-                speciesOnSelectHandler(val);
-
-                if(isReviewMode){
-                    reviewOverallFeedbacksBySpecies();
-                    getListOfHucsWithFeedbacks();
-                } else {
-                    view.enableOpenOverallFeedbackBtnBtn();
-                }
-
-            }
-        });
-
-    };
-
     const getListOfHucsWithFeedbacks = ()=>{
         const species = dataModel.getSelectedSpecies();
 
@@ -816,6 +722,86 @@ export default function Controller(options={}){
                 ]
             }
         }
+    };
+
+    const initSpeciesSelector = (data)=>{
+
+        view.speciesSelector.init({
+            containerID: config.DOM_ID.speciesSelector,
+            data,
+            onChange: (val)=>{
+
+                dataModel.setSelectedSpecies(val);
+
+                speciesOnSelectHandler(val);
+
+                if(isReviewMode){
+                    reviewOverallFeedbacksBySpecies();
+                    getListOfHucsWithFeedbacks();
+                } else {
+                    view.enableOpenOverallFeedbackBtnBtn();
+                }
+
+            }
+        });
+
+    };
+
+    const initOverallFeedbackControlPanel = ()=>{
+
+        view.overallFeedbackControlPanel.init({
+            containerID: config.DOM_ID.overallFeedbackControl,
+            // rating,
+            // comment,
+            onCloseHandler: ()=>{
+                view.toggleOverallFeeback(false);
+            },
+            onSubmitHandler: (data)=>{
+                // console.log('submit overall feedback', data);
+                view.toggleOverallFeeback(false);
+                postOverallFeedback(data);
+            }
+        });
+    };
+
+    const initViewComponentsForReviewMode = ()=>{
+
+        view.listViewForOverallFeedback.init({
+            onClickHandler:(userID)=>{
+                // console.log(val);
+                reviewFeedbacksByUser(userID);
+            }
+        });
+
+        view.listViewForDetailedFeedback.init({
+            onCloseHandler:()=>{
+                // mapControl.clearAllGraphics();
+                view.openListView(view.listViewForOverallFeedback);
+
+                renderListOfHucsWithFeedbacks();
+            },
+            onClickHandler:(hucID)=>{
+                // console.log(hucID);
+                mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
+            }
+        })
+    };
+
+    const initLegendForStatus = (data)=>{
+        data = data.map((d, i)=>{
+            return {
+                label: d,
+                // color: config.COLOR['status' + i]
+            };
+        });
+
+        data.unshift({
+            label: 'Actual Extent',
+            // color: config.COLOR.actualModeledExtent
+        });
+
+        view.initLegend(data);
+        
     };
 
     return {

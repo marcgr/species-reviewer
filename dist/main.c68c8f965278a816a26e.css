@@ -57,11 +57,16 @@ html, body {
 
 .legend-icon[data-index='2'] {
   background: url(200c4fd33dcead2a2e51c99f2b5c1e26.png) center center no-repeat;
-  background-size: 80%; }
+  background-size: 90%; }
 
 .legend-icon[data-index='3'] {
   background: url(09df2aff9cfef08eb938d6a6f4c27f24.png) center center no-repeat;
-  background-size: 80%; }
+  background-size: 90%; }
+
+.legend-icon[data-index='4'] {
+  width: 19px;
+  height: 19px;
+  border: solid 2px rgba(239, 35, 60, 0.7); }
 
 #basemapGalleryControl {
   position: absolute;
@@ -139,6 +144,24 @@ html, body {
   top: .3rem;
   right: 0;
   cursor: pointer; }
+
+#feedbackControlPanelContainer .action-dialog .icon-ui-checkbox-checked {
+  display: none; }
+
+#feedbackControlPanelContainer .action-dialog .icon-ui-checkbox-unchecked {
+  display: inline-block; }
+
+#feedbackControlPanelContainer .action-dialog .action-message {
+  color: rgba(255, 255, 255, 0.5); }
+
+#feedbackControlPanelContainer .action-dialog.is-checked .icon-ui-checkbox-checked {
+  display: inline-block; }
+
+#feedbackControlPanelContainer .action-dialog.is-checked .icon-ui-checkbox-unchecked {
+  display: none; }
+
+#feedbackControlPanelContainer .action-dialog.is-checked .action-message {
+  color: #fff; }
 
 #overallFeedbackControlPanelContainer .action-btn-wrap {
   width: 100%; }

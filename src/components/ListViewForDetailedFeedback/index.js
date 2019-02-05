@@ -55,12 +55,13 @@ export default function(options={
         `;
 
         const tableRowsHtml = data.map(d=>{
-            const status = d.status;
+            const status = +d.status;
             const huc = d.hucID;
             const comment = d.comment || 'n/a';
             const statusLable = {
-                '1': 'Add',
-                '2': 'Remove'
+                1: 'Add',
+                2: 'Remove',
+                3: 'n/a'
             };
             return `
                 <tr class='review-data-row font-size--3' data-huc='${huc}'>

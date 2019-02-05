@@ -1,3 +1,5 @@
+import config from '../config';
+
 export default class DataModel {
 
     constructor(options={}){
@@ -20,9 +22,17 @@ export default class DataModel {
         this.speciesLookup = data;
     };
 
+    getSpeciesInfo(speciesCode=''){
+        const speciesInfo = this.speciesLookup.filter(d=>{
+            return d[config.FIELD_NAME.speciesLookup.speciesCode] === speciesCode
+        })[0];
+        return speciesInfo;
+    }
+
     setHucsBySpecies(species, data=[]){
         this.hucsBySpecies[species] = data;
         // this.hucsBySpecies = data;
+        // console.log('hucsBySpecies', species, this.hucsBySpecies[species])
     };
 
     saveToOverallFeedback(key, val){
@@ -77,7 +87,7 @@ export default class DataModel {
 
         // console.log('isHucInModeledRange', hucID);
 
-        const isHucInModeledRange = hucs.filter(d=>{ return d.HUC10 === hucID }).length ? true : false;
+        const isHucInModeledRange = hucs.filter(d=>{ return d[config.FIELD_NAME.speciesDistribution.hucID] === hucID }).length ? true : false;
 
         return isHucInModeledRange;
     };

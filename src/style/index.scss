@@ -63,12 +63,18 @@ html, body{
 
 .legend-icon[data-index='2']{
     background: url('../static/Hatch_Black.png') center center no-repeat;
-    background-size: 80%;
+    background-size: 90%;
 }
 
 .legend-icon[data-index='3']{
     background: url('../static/Hatch_Red.png') center center no-repeat;
-    background-size: 80%;
+    background-size: 90%;
+}
+
+.legend-icon[data-index='4']{
+    width: 19px;
+    height: 19px;
+    border: solid 2px rgba(239,35,60, .7) ;
 }
 
 #basemapGalleryControl{

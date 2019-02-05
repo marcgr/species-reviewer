@@ -1,34 +1,30 @@
 import './style.scss';
 
-export default function SpeciesSelector(){
+export default function SpeciesSelector(options={
+    containerID: ''
+}){
 
-    let container = null;
-    let onChangeHandler = null;
+    const container = options.containerID ? document.getElementById(options.containerID) : null;
 
-    const classNameSpeciesSelectOption = 'species-select-option';
+    let onChangeHandler = null
 
     const init = (options={})=>{
 
-        container = options.containerID ? document.getElementById(options.containerID) : null;
         onChangeHandler = options.onChange || null;
 
-        const data = options.data || null;
+        // initEventHandler();
 
-        if(!container || !data){
-            console.error('containerID and data is required for SpeciesSelector', container, data);
-            return;
-        }
-
-        render(data);
-        initEventHandler();
+        render();
     };
 
-    const render = (data)=>{
+    const render = (data=[])=>{
+
+        // console.log(data);
 
         const optionsHtml = data.map(d=>{
-            const val = d.SpeciesTableID;
-            const label = d.Species;
-            return `<option class='${classNameSpeciesSelectOption}' value="${val}">${label}</option>`
+            const val = d.SpeciesCode;
+            const label = d.SpeciesName;
+            return `<option class='select-option' value="${val}">${label}</option>`
         }).join('');
 
         const compoenetHtml = `
@@ -44,9 +40,11 @@ export default function SpeciesSelector(){
 
         container.innerHTML = compoenetHtml;
 
+        initEventHandler()
+
     };
 
-    const initEventHandler = ()=>{
+    const initEventHandler = (options={})=>{
 
         const changeEventHandler = (event)=>{
             if(event.target.value && onChangeHandler){
@@ -58,7 +56,8 @@ export default function SpeciesSelector(){
     };
 
     return {
-        init
+        init,
+        render
     };
 
 }

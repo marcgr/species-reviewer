@@ -141,8 +141,8 @@ export default function FeedbackControlPanel(){
     const getHtmlForBtns = (isSaved)=>{
         // const newStatus = isHucInModeledRange ? 2 : 1;
         const saveBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Save </button>`;
-        const updateBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Update Feedback </button>`;
-        const removeBtn = `<button class="btn btn-fill js-remove-feedback trailer-half"> Remove Feedback </button>`;
+        const updateBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Save </button>`;
+        const removeBtn = `<button class="btn btn-fill js-remove-feedback trailer-half"> Reset </button>`;
 
         return isSaved ? updateBtn + removeBtn : saveBtn;
     };

@@ -89,7 +89,9 @@ export default function Controller(options={}){
     
             dataModel.setSpeciesLookup(data);
 
-            initSpeciesSelector(data);
+            // initSpeciesSelector(data);
+
+            view.speciesSelector.render(data);
 
         }).catch(err=>{
             console.error(err);
@@ -161,7 +163,8 @@ export default function Controller(options={}){
         const hucs = options.data || dataModel.getHucsBySpecies();
 
         if(options.speciesKey){
-            const actualBoundaryLayerUrl = config.URL.speciesActualBoundaries[options.speciesKey];
+            const speciesInfo = dataModel.getSpeciesInfo(options.speciesKey);
+            const actualBoundaryLayerUrl = speciesInfo[config.FIELD_NAME.speciesLookup.boundaryLayerLink];
             mapControl.addActualModelBoundaryLayer(actualBoundaryLayerUrl);
         }
         
@@ -217,14 +220,17 @@ export default function Controller(options={}){
     };
 
     const queryHucsBySpecies = (speciesKey)=>{
-        const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
+        // const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
+
+        const requestUrl = config.URL.speciesDistribution + '/query';
+        const whereClause = `${config.FIELD_NAME.speciesDistribution.speciesCode} = '${speciesKey}'`;
 
         if(requestUrl){
             return new Promise((resolve, reject)=>{
 
                 axios.get(requestUrl, {
                     params: {
-                        where: '1=1',
+                        where: whereClause,
                         outFields: '*',
                         f: 'json',
                         token
@@ -592,7 +598,8 @@ export default function Controller(options={}){
 
     const getPdfUrlForSelectedSpecies = ()=>{
         const species = dataModel.getSelectedSpecies();
-        const url = config.URL.pdf[species];
+        // const url = config.URL.pdf[species];
+        const url = dataModel.getSpeciesInfo(species)[config.FIELD_NAME.speciesLookup.pdfLink];
         return url;
     }
 
@@ -685,69 +692,83 @@ export default function Controller(options={}){
         // mapControl.showHucFeatureByStatus(hucID, status, options);
     };
 
-    const getHucFeatureOptions = (data)=>{
-        // console.log(data);
-        return {
-            attributes: {
-                "hucID": data.hucID,
-                "status": data.status === 1 ? 'Add' : 'Remove',
-                "comment": data.comment
-            },
-            popupTemplate: {
-                title: "Feedback for {NAME}",
-                content: [
-                    {
-                        type: "fields",
-                        fieldInfos: [
-                            {
-                                fieldName: "NAME",
-                                label: "NAME",
-                                visible: false
-                            },
-                            {
-                                fieldName: "hucID",
-                                label: "HUCID",
-                                visible: true
-                            },
-                            {
-                                fieldName: "status",
-                                label: "Action",
-                                visible: true
-                            },
-                            {
-                                fieldName: "comment",
-                                label: "Comment",
-                                visible: true
-                            },
-                        ]
-                    }
-                ]
-            }
+    // const getHucFeatureOptions = (data)=>{
+    //     // console.log(data);
+    //     return {
+    //         attributes: {
+    //             "hucID": data.hucID,
+    //             "status": data.status === 1 ? 'Add' : 'Remove',
+    //             "comment": data.comment
+    //         },
+    //         popupTemplate: {
+    //             title: "Feedback for {NAME}",
+    //             content: [
+    //                 {
+    //                     type: "fields",
+    //                     fieldInfos: [
+    //                         {
+    //                             fieldName: "NAME",
+    //                             label: "NAME",
+    //                             visible: false
+    //                         },
+    //                         {
+    //                             fieldName: "hucID",
+    //                             label: "HUCID",
+    //                             visible: true
+    //                         },
+    //                         {
+    //                             fieldName: "status",
+    //                             label: "Action",
+    //                             visible: true
+    //                         },
+    //                         {
+    //                             fieldName: "comment",
+    //                             label: "Comment",
+    //                             visible: true
+    //                         },
+    //                     ]
+    //                 }
+    //             ]
+    //         }
+    //     }
+    // };
+
+    const setSelectedSpecies = (val)=>{
+
+        dataModel.setSelectedSpecies(val);
+
+        speciesOnSelectHandler(val);
+
+        if(isReviewMode){
+            reviewOverallFeedbacksBySpecies();
+            getListOfHucsWithFeedbacks();
+        } else {
+            view.enableOpenOverallFeedbackBtnBtn();
         }
-    };
+    }
 
-    const initSpeciesSelector = (data)=>{
+    // const initSpeciesSelector = (data)=>{
 
-        view.speciesSelector.init({
-            containerID: config.DOM_ID.speciesSelector,
-            data,
-            onChange: (val)=>{
+    //     view.speciesSelector.init({
+    //         containerID: config.DOM_ID.speciesSelector,
+    //         data,
+    //         onChange: (val)=>{
 
-                dataModel.setSelectedSpecies(val);
+    //             dataModel.setSelectedSpecies(val);
 
-                speciesOnSelectHandler(val);
+    //             speciesOnSelectHandler(val);
 
-                if(isReviewMode){
-                    reviewOverallFeedbacksBySpecies();
-                    getListOfHucsWithFeedbacks();
-                } else {
-                    view.enableOpenOverallFeedbackBtnBtn();
-                }
+    //             if(isReviewMode){
+    //                 reviewOverallFeedbacksBySpecies();
+    //                 getListOfHucsWithFeedbacks();
+    //             } else {
+    //                 view.enableOpenOverallFeedbackBtnBtn();
+    //             }
 
-            }
-        });
+    //         }
+    //     });
 
-    };
+    // };
 
     const initOverallFeedbackControlPanel = ()=>{
 
@@ -813,7 +834,8 @@ export default function Controller(options={}){
         setSelectedHucFeature,
         resetSelectedHucFeature,
         downloadPdf,
-        openOverallFeedbackPanel
+        openOverallFeedbackPanel,
+        setSelectedSpecies
         // openFeedbackManager
     };
 

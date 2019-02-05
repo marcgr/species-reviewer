@@ -13,8 +13,8 @@ import * as esriLoader from 'esri-loader';
 // import dashRed from './static/dash_red.png';
 // import dashGreen from './static/dash_green.png';
 
-import hatchRed from './static/Hatch_Red.png';
-import hatchBlack from './static/Hatch_Black.png';
+import hatchRed from './static/Hatch_RedAlt.png';
+import hatchBlack from './static/Hatch_BlackAlt.png';
 
 const Promise = require('es6-promise').Promise;
 const esriLoaderOptions = {
@@ -364,7 +364,7 @@ esriLoader.loadModules([
 
             const uniqueValueInfos = data.map(d=>{
                 return {
-                    value: d[config.FIELD_NAME.speciesLookupHucID],
+                    value: d[config.FIELD_NAME.speciesDistribution.hucID],
                     symbol: symbol
                 }
             });
@@ -543,6 +543,13 @@ esriLoader.loadModules([
             });
 
             // view.init();
+
+            view.speciesSelector.init({
+                onChange: (val)=>{
+                    console.log(val);
+                    controller.setSelectedSpecies(val);
+                }
+            });
 
             view.feedbackControlPanel.init({
                 containerID: config.DOM_ID.feedbackControl,

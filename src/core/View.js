@@ -11,12 +11,18 @@ export default function View(){
     let downloadPdfBtnOnClick = null;
     let openOverallBtnOnclick = null;
 
-    const speciesSelector = new SpeciesSelector();
+    const speciesSelector = new SpeciesSelector({
+        containerID: config.DOM_ID.speciesSelector
+    });
+
     const feedbackControlPanel = new FeedbackControlPanel();
+
     const overallFeedbackControlPanel = new OverallFeedbackControlPanel();
+
     const listViewForOverallFeedback = new ListViewForOverallFeedback({
         containerID: config.DOM_ID.listViewOverallFeedback
     });
+    
     const listViewForDetailedFeedback = new ListViewForDetailedFeedback({
         containerID: config.DOM_ID.listViewDeatiledFeedback
     });

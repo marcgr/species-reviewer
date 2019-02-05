@@ -90,7 +90,7 @@ esriLoader.loadModules([
         };
 
         const initMapEventHandlers = ()=>{
-            mapView.on('hold', event=>{
+            mapView.on('click', event=>{
                 // console.log('map view on hold', event);
 
                 if(!isOnHoldEventDisabled){
@@ -214,37 +214,70 @@ esriLoader.loadModules([
 
             const geometry = feature.geometry;
             const attributes = options.attributes ? {...feature.attributes, ...options.attributes} : feature.attributes;
-            const popupTemplate = options.popupTemplate || null;
+            // const popupTemplate = options.popupTemplate || null;
 
-            // console.log('calling addHucGraphicByStatus', attributes);
+            // console.log('calling addHucGraphicByStatus', feature, status);
 
-            const symbol = +status === 1 
-            ? {
-                type: "picture-fill",  // autocasts as new PictureFillSymbol()
-                url: hatchBlack, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
-                width: "24px",
-                height: "24px",
-                outline: {
-                    color: config.COLOR.hucBorderIsModeled,
-                    width: "2px"
+            // const symbol = +status === 1 
+            // ? {
+            //     type: "picture-fill",  // autocasts as new PictureFillSymbol()
+            //     url: hatchBlack, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+            //     width: "24px",
+            //     height: "24px",
+            //     outline: {
+            //         color: config.COLOR.hucBorderIsModeled,
+            //         width: "2px"
+            //     },
+            // } 
+            // : {
+            //     type: "picture-fill",  // autocasts as new PictureFillSymbol()
+            //     url: hatchRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+            //     width: "24px",
+            //     height: "24px",
+            //     outline: {
+            //         color: config.COLOR.hucBorderIsModeled,
+            //         width: "2px"
+            //     },
+            // };
+
+            const symbols = {
+                1: {
+                    type: "picture-fill",  // autocasts as new PictureFillSymbol()
+                    url: hatchBlack, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+                    width: "24px",
+                    height: "24px",
+                    outline: {
+                        color: config.COLOR.hucBorderIsModeled,
+                        width: "2px"
+                    },
                 },
-            } 
-            : {
-                type: "picture-fill",  // autocasts as new PictureFillSymbol()
-                url: hatchRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
-                width: "24px",
-                height: "24px",
-                outline: {
-                    color: config.COLOR.hucBorderIsModeled,
-                    width: "2px"
+                2: {
+                    type: "picture-fill",  // autocasts as new PictureFillSymbol()
+                    url: hatchRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
+                    width: "24px",
+                    height: "24px",
+                    outline: {
+                        color: config.COLOR.hucBorderIsModeled,
+                        width: "2px"
+                    },
                 },
+                3: {
+                    type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                    color: [0, 0, 0, 0],
+                    outline: {  // autocasts as new SimpleLineSymbol()
+                        color: config.COLOR.hucBorderCommentWithoutAction,
+                        width: "4px"
+                    }
+                }
             };
+
+            const symbol = symbols[+status];
 
             const graphic = new Graphic({
                 geometry,
                 symbol,
                 attributes,
-                popupTemplate
+                // popupTemplate
             });
 
             hucsByStatusGraphicLayer.add(graphic);
@@ -268,7 +301,7 @@ esriLoader.loadModules([
                 type: "simple-fill",  // autocasts as new SimpleFillSymbol()
                 color: [0, 0, 0, 0],
                 outline: {  // autocasts as new SimpleLineSymbol()
-                    color: [255, 50, 50, 0.75],
+                    color: [84, 242, 242, 0.75],
                     width: "2.5px"
                 }
             };

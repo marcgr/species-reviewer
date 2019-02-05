@@ -43,6 +43,7 @@ export default class DataModel {
 
     setStatus(data=[]){
         this.status = data;
+        // console.log(this.status);
     };
 
     setSelectedSpecies(val=null){

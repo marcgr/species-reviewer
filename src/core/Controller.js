@@ -117,7 +117,7 @@ export default function Controller(options={}){
 
             dataModel.setStatus(data);
 
-            view.feedbackControlPanel.setStatusData(data);
+            // view.feedbackControlPanel.setStatusData(data);
 
             initLegendForStatus(data);
 
@@ -678,9 +678,11 @@ export default function Controller(options={}){
             return
         }
 
-        const options = data ? getHucFeatureOptions(data) : {};
+        mapControl.showHucFeatureByStatus(hucID, status);
 
-        mapControl.showHucFeatureByStatus(hucID, status, options);
+        // const options = data ? getHucFeatureOptions(data) : {};
+
+        // mapControl.showHucFeatureByStatus(hucID, status, options);
     };
 
     const getHucFeatureOptions = (data)=>{

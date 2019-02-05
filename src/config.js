@@ -38,7 +38,7 @@ module.exports = {
     "URL": {
         "rangeReviewHucServiceBase": "",
         "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesLookup/FeatureServer/1',
-        "statusTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/StatusTable/FeatureServer/0",
+        "statusTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/StatusLookup/FeatureServer/0",
         "feedbackTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesFeedbackTable/FeatureServer/0",
         "overallFeedback": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/OverallFeedback/FeatureServer/0",
 
@@ -60,6 +60,7 @@ module.exports = {
     "COLOR": {
         "hucBorder": [255, 255, 255, 0.3],
         "hucBorderIsModeled": [255, 255, 255, .5],
+        "hucBorderCommentWithoutAction": [239,35,60, 1],
         "hucFill": [217, 217, 217, .4],
         "status0": [200,200,200,.5],
         "status1": [166,219,160,.5],

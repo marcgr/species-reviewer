@@ -4,11 +4,22 @@ export default function FeedbackControlPanel(){
 
     let container = null;
     let onCloseHandler = null;
-    let statusOnChange = null;
+    // let statusOnChange = null;
     let commentOnChange = null;
     let onSubmitHandler = null;
     let onRemoveHandler = null;
-    let statusData = [];
+    // let statusData = [];
+
+    const state = {
+        data: null,
+        isSumbitCommentOnly: false
+    };
+
+    const statusLookup = {
+        1: 'Add to Modeling Extent',
+        2: 'Remove from Modeling Extent',
+        3: 'Comment on Predicted Habitat'
+    };
     
     const init = (options={})=>{
 
@@ -16,7 +27,7 @@ export default function FeedbackControlPanel(){
 
         onCloseHandler = options.onCloseHandler || null;
 
-        statusOnChange = options.statusOnChange || null;
+        // statusOnChange = options.statusOnChange || null;
 
         commentOnChange = options.commentOnChange || null;
 
@@ -34,51 +45,38 @@ export default function FeedbackControlPanel(){
         initEventHandler();
     };
 
-    const render = (data={})=>{
+    const initState = (data)=>{
+        state.data = data;
+        state.isSumbitCommentOnly = +state.data.status === 3 ? true : false;
+    };
 
-        // console.log(data);
+    const toggleIsSumbitCommentOnly = ()=>{
+        state.isSumbitCommentOnly = !state.isSumbitCommentOnly;
+    };
 
-        const hucName = data.hucName || '';
-        const comment = data.comment || '';
+    const resetState = ()=>{
+        state.data = null;
+        state.isSumbitCommentOnly = false;
+    };
+
+    const getStatusByIsInModeledRange = ()=>{
+        return state.data.isHucInModeledRange ? 2 : 1;
+    }
+
+    const getNewStatus = ()=>{
+        if(state.isSumbitCommentOnly){
+            return 3;
+        } else {
+            return getStatusByIsInModeledRange();
+        }
+    }
+
+    const render = ()=>{
+
+        const hucName = state.data.hucName || '';
+        const comment = state.data.comment || '';
         // const statusIdx = +data.status || 0;
-        const message = data.isHucInModeledRange ? `Model is inaccurate, <span class='avenir-demi'>REMOVE</span> this HUC from range` : `Known occurances, <span class='avenir-demi'>ADD</span> this HUC to range`;
-
-        // const radioBtns = statusData.map( (d, i)=>{
-        //     const isChecked = i === statusIdx ? 'checked' : ''
-        //     return `<label><input type="radio" name="status" value="${i}" ${isChecked}>${d}</label>`
-        // }).join('');
-
-        // const compoenetHtml = `
-        //     <div id='feedbackControlPanelContainer' class='panel panel-black'>
-
-        //         <div class='trailer-0 text-right close-btn'>
-        //             <span class='font-size--3 icon-ui-close js-close'></span>
-        //         </div>
-
-        //         <div class='leader-half trailer-half'>
-        //             <span class='font-size-0'>${hucName}</span>
-        //             <hr>
-        //         </div>
-
-        //         <div class='trailer-half'>
-        //             <fieldset class="fieldset-radio trailer-0">
-        //                 <legend class='font-size--2'>Choose Status</legend>
-        //                 ${radioBtns}
-        //             </fieldset>
-        //         </div>
-
-        //         <div>
-        //             <label>
-        //                 <span class='font-size--2'>Comment</span>
-        //                 <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
-        //             </label>
-        //         </div>
-
-        //         <div class='trailer-half'>
-        //             <button class="btn btn-fill js-submit-feedback"> Submit </button>
-        //         </div>
-        //     </div>
-        // `;
+        // const message = data.isHucInModeledRange ? `Model is inaccurate, <span class='avenir-demi'>REMOVE</span> this HUC from range` : `Known occurances, <span class='avenir-demi'>ADD</span> this HUC to range`;
 
         const compoenetHtml = `
             <div id='feedbackControlPanelContainer' class='panel panel-black'>
@@ -92,30 +90,57 @@ export default function FeedbackControlPanel(){
                     <hr>
                 </div>
 
-                <div class='trailer-half'>
-                    <p class='font-size--2 trailer-half'>${message}</p>
+                <div id='actionDialogWrap'>
+                    ${getHtmlForActions()}
                 </div>
 
-                <div>
+                <div class='comment-dialog'>
                     <label>
-                        <span class='font-size--3'>Comment:</span>
+                        <span class='font-size--3'>${getLabelForTextInput()}:</span>
                         <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
                     </label>
                 </div>
 
                 <div class='trailer-half'>
-                    ${getHtmlForBtns(data.isSaved, data.isHucInModeledRange)}
+                    ${getHtmlForBtns(state.data.isSaved)}
                 </div>
             </div>
         `;
 
         container.innerHTML = compoenetHtml;
 
+        // console.log('render feedback control panel', state.data);
+
     };
 
-    const getHtmlForBtns = (isSaved, isHucInModeledRange)=>{
-        const newStatus = isHucInModeledRange ? 2 : 1;
-        const saveBtn = `<button class="btn btn-fill js-submit-feedback trailer-half" data-status='${newStatus}'> Save </button>`;
+    // const refreshActionDialog = ()=>{
+    //     document.getElementById('actionDialogWrap').innerHTML = getHtmlForActions();
+    // };
+
+    const getLabelForTextInput = ()=>{
+        return state.isSumbitCommentOnly ? statusLookup[3] : 'Comment'
+    }
+
+    const getHtmlForActions = ()=>{
+
+        const status = getStatusByIsInModeledRange();
+
+        const isChecked = state.isSumbitCommentOnly ? '' : 'is-checked';
+
+        const outputHtml = `<div class='action-dialog trailer-half font-size--1 ${isChecked}'>
+            <div class='inline-block'>
+                <span class='icon-ui-checkbox-checked js-toggle-is-comment-only'></span>
+                <span class='icon-ui-checkbox-unchecked js-toggle-is-comment-only'></span>
+            </div>
+            <span class='action-message'>${statusLookup[+status]}</span>
+        </div>`
+
+        return outputHtml;
+    }
+
+    const getHtmlForBtns = (isSaved)=>{
+        // const newStatus = isHucInModeledRange ? 2 : 1;
+        const saveBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Save </button>`;
         const updateBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Update Feedback </button>`;
         const removeBtn = `<button class="btn btn-fill js-remove-feedback trailer-half"> Remove Feedback </button>`;
 
@@ -133,7 +158,8 @@ export default function FeedbackControlPanel(){
             }  
             else if (event.target.classList.contains('js-submit-feedback')) {
                 // console.log('close feedback control panel');
-                const newStatus = event.target.dataset.status || null;
+                // const newStatus = event.target.dataset.status || null;
+                const newStatus = getNewStatus();
                 if(onSubmitHandler){
                     onSubmitHandler(newStatus);
                 }
@@ -142,6 +168,10 @@ export default function FeedbackControlPanel(){
                 if(onRemoveHandler){
                     onRemoveHandler();
                 }
+            }
+            else if (event.target.classList.contains('js-toggle-is-comment-only')){
+                toggleIsSumbitCommentOnly();
+                render();
             }
             else {
                 //
@@ -180,23 +210,25 @@ export default function FeedbackControlPanel(){
     };
 
     const open = (data={})=>{
-        render(data);
+        initState(data);
+        render();
     };
 
     const close = ()=>{
+        resetState();
         container.innerHTML = '';
     };
 
-    const setStatusData = (data=[])=>{
-        statusData = data;
-        // console.log('setStatusData', statusData);
-    };
+    // const setStatusData = (data=[])=>{
+    //     statusData = data;
+    //     // console.log('setStatusData', statusData);
+    // };
 
     return {
         init,
         open,
         close,
-        setStatusData
+        // setStatusData
     };
 
 }

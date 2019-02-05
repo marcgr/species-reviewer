@@ -18,31 +18,42 @@
         cursor: pointer;
     }
 
-    .action-dialog {
-        .icon-ui-checkbox-checked {
-            display: none;
-        }
-
-        .icon-ui-checkbox-unchecked {
-            display: inline-block;
-        }
-
-        .action-message {
-            color: rgba(255,255,255,.5);
-        }
+    .action-message {
+        color: rgba(255,255,255,.5);
     }
 
-    .action-dialog.is-checked {
-        .icon-ui-checkbox-checked {
-            display: inline-block;
-        }
-
-        .icon-ui-checkbox-unchecked {
-            display: none;
-        }
+    .is-checked {
 
         .action-message {
             color:#fff;
         }
     }
+
+    // .action-dialog {
+    //     .icon-ui-checkbox-checked {
+    //         display: none;
+    //     }
+
+    //     .icon-ui-checkbox-unchecked {
+    //         display: inline-block;
+    //     }
+
+    //     .action-message {
+    //         color: rgba(255,255,255,.5);
+    //     }
+    // }
+
+    // .action-dialog.is-checked {
+    //     .icon-ui-checkbox-checked {
+    //         display: inline-block;
+    //     }
+
+    //     .icon-ui-checkbox-unchecked {
+    //         display: none;
+    //     }
+
+    //     .action-message {
+    //         color:#fff;
+    //     }
+    // }
 }

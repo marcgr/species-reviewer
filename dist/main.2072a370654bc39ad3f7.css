@@ -145,22 +145,10 @@ html, body {
   right: 0;
   cursor: pointer; }
 
-#feedbackControlPanelContainer .action-dialog .icon-ui-checkbox-checked {
-  display: none; }
-
-#feedbackControlPanelContainer .action-dialog .icon-ui-checkbox-unchecked {
-  display: inline-block; }
-
-#feedbackControlPanelContainer .action-dialog .action-message {
+#feedbackControlPanelContainer .action-message {
   color: rgba(255, 255, 255, 0.5); }
 
-#feedbackControlPanelContainer .action-dialog.is-checked .icon-ui-checkbox-checked {
-  display: inline-block; }
-
-#feedbackControlPanelContainer .action-dialog.is-checked .icon-ui-checkbox-unchecked {
-  display: none; }
-
-#feedbackControlPanelContainer .action-dialog.is-checked .action-message {
+#feedbackControlPanelContainer .is-checked .action-message {
   color: #fff; }
 
 #overallFeedbackControlPanelContainer .action-btn-wrap {

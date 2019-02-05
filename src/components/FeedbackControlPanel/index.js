@@ -109,6 +109,8 @@ export default function FeedbackControlPanel(){
 
         container.innerHTML = compoenetHtml;
 
+        addSwitcherOnChangeHandler();
+
         // console.log('render feedback control panel', state.data);
 
     };
@@ -127,13 +129,25 @@ export default function FeedbackControlPanel(){
 
         const isChecked = state.isSumbitCommentOnly ? '' : 'is-checked';
 
-        const outputHtml = `<div class='action-dialog trailer-half font-size--1 ${isChecked}'>
+        // const outputHtml = `<div class='action-dialog trailer-half font-size--1 ${isChecked}'>
+        //     <div class='inline-block'>
+        //         <span class='icon-ui-checkbox-checked js-toggle-is-comment-only'></span>
+        //         <span class='icon-ui-checkbox-unchecked js-toggle-is-comment-only'></span>
+        //     </div>
+        //     <span class='action-message'>${statusLookup[+status]}</span>
+        // </div>`
+
+        // const isChecked = state.isSumbitCommentOnly ? '' : 'checked';
+
+        const outputHtml = `
             <div class='inline-block'>
-                <span class='icon-ui-checkbox-checked js-toggle-is-comment-only'></span>
-                <span class='icon-ui-checkbox-unchecked js-toggle-is-comment-only'></span>
+                <label class="toggle-switch ${isChecked}">
+                    <input type="checkbox" class="toggle-switch-input" ${state.isSumbitCommentOnly ? '' : 'checked'}>
+                    <span class="toggle-switch-track margin-right-1"></span>
+                    <span class="toggle-switch-label font-size--1 action-message">${statusLookup[+status]}</span>
+                </label>
             </div>
-            <span class='action-message'>${statusLookup[+status]}</span>
-        </div>`
+        `;
 
         return outputHtml;
     }
@@ -141,10 +155,25 @@ export default function FeedbackControlPanel(){
     const getHtmlForBtns = (isSaved)=>{
         // const newStatus = isHucInModeledRange ? 2 : 1;
         const saveBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Save </button>`;
-        const updateBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Save </button>`;
-        const removeBtn = `<button class="btn btn-fill js-remove-feedback trailer-half"> Reset </button>`;
+        // const updateBtn = `<button class="btn btn-fill js-submit-feedback trailer-half"> Save </button>`;
+        // const removeBtn = `<button class="btn btn-fill js-remove-feedback trailer-half"> Reset </button>`;
 
-        return isSaved ? updateBtn + removeBtn : saveBtn;
+        const btnsForExistingItem = `
+            <nav class='trailer-half'>
+                <button class="btn btn-half btn-grouped btn-transparent js-remove-feedback"> Reset </button>
+                <button class="btn btn-half btn-grouped js-submit-feedback"> Save </button>
+            </nav>
+        `;
+
+        return isSaved ? btnsForExistingItem : saveBtn;
+    };
+
+    const addSwitcherOnChangeHandler = ()=>{
+        container.querySelector('.toggle-switch-input').addEventListener('change', (evt)=>{
+            console.log('toggle-switch-input on change');
+            toggleIsSumbitCommentOnly();
+            render();
+        });
     };
 
     const initEventHandler = ()=>{
@@ -169,10 +198,10 @@ export default function FeedbackControlPanel(){
                     onRemoveHandler();
                 }
             }
-            else if (event.target.classList.contains('js-toggle-is-comment-only')){
-                toggleIsSumbitCommentOnly();
-                render();
-            }
+            // else if (event.target.classList.contains('js-toggle-is-comment-only')){
+            //     toggleIsSumbitCommentOnly();
+            //     render();
+            // }
             else {
                 //
             }

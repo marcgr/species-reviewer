@@ -8,7 +8,7 @@
         <meta name="author" content="Living Atlas of the World">
         <title>Species Reviewer</title>
         <link rel="icon" href="//www.esri.com/favicon.ico">
-    <link href="main.2072a370654bc39ad3f7.css" rel="stylesheet"></head>
+    <link href="main.bea5ec53c631a51d004d.css" rel="stylesheet"></head>
     <body class=''>
         <div id='mainControlDiv' class='panel panel-black fancy-scrollbar'>
             <div class='trailer-half'>
@@ -21,9 +21,27 @@
                     </div>
                 </div>
             </div>
+
             <div class=''>
                 <div id='speciesSelectorDiv'></div>
             </div>
+
+            <div id='settingsDiv'>
+                <div class='text-right js-toggle-ui-component' data-target='settingControls'>
+                    <span class='icon-ui-settings cursor-pointer text-light-gray icon-no-right-padding'></span>
+                </div>
+                <div id='settingControls' class='hide'>
+                    <div class='setting-control-item'>
+                        <form class="calcite-slider" id="example1">
+                            <label class='trailer-quarter'>
+                                <span class='font-size--2'>change layers opacity</span>
+                                <input id='sliderForLayerOpacity' type="range" min="0" max="1" value="1" step=".05" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
+                            </label>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <div id='legendDiv'></div>
 
             <div id='listViewForOverallFeedbackDiv'></div>
@@ -50,5 +68,5 @@
         </div>
 
         <div id='viewDiv'></div>
-    <script type="text/javascript" src="bundle.2072a370654bc39ad3f7.js"></script></body>
+    <script type="text/javascript" src="bundle.bea5ec53c631a51d004d.js"></script></body>
 </html>

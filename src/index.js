@@ -409,6 +409,13 @@ esriLoader.loadModules([
 
         };
 
+        const setLayersOpacity = (val)=>{
+            mapView.map.layers.forEach(layer=>{
+                // console.log(layer);
+                layer.opacity = val;
+            });
+        };
+
         return {
             init,
             highlightHucs,
@@ -418,7 +425,8 @@ esriLoader.loadModules([
             clearAllGraphics,
             disableMapOnHoldEvent,
             queryHucsLayerByHucID,
-            addPreviewHucGraphic
+            addPreviewHucGraphic,
+            setLayersOpacity
         };
 
     };
@@ -583,6 +591,10 @@ esriLoader.loadModules([
                 },
                 openOverallBtnOnclick: ()=>{
                     controller.openOverallFeedbackPanel();
+                },
+                layerOpacitySliderOnUpdate: (val)=>{
+                    // console.log(val);
+                    mapControl.setLayersOpacity(val);
                 }
             });
 

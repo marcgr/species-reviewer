@@ -10,6 +10,7 @@ export default function View(){
 
     let downloadPdfBtnOnClick = null;
     let openOverallBtnOnclick = null;
+    let opacitySliderOnUpdate = null;
 
     const speciesSelector = new SpeciesSelector({
         containerID: config.DOM_ID.speciesSelector
@@ -31,7 +32,8 @@ export default function View(){
 
     const init = (options={
         downloadPdfBtnOnClick: null,
-        openOverallBtnOnclick: null
+        openOverallBtnOnclick: null,
+        layerOpacitySliderOnUpdate: null
     })=>{
         // feedbackControlPanel.init({
         //     containerID: config.DOM_ID.feedbackControl
@@ -39,6 +41,7 @@ export default function View(){
 
         downloadPdfBtnOnClick = options.downloadPdfBtnOnClick;
         openOverallBtnOnclick = options.openOverallBtnOnclick;
+        opacitySliderOnUpdate = options.layerOpacitySliderOnUpdate;
 
         initEventHandlers();
     };
@@ -57,6 +60,19 @@ export default function View(){
         document.querySelectorAll('.js-download-pdf').forEach(element=>{
             element.addEventListener('click', downloadPdfBtnOnClick);
         });
+
+        document.querySelectorAll('.js-toggle-ui-component').forEach(element=>{
+
+            element.addEventListener('click', (evt)=>{
+                const targetDomID = element.dataset.target;
+                document.getElementById(targetDomID).classList.toggle('hide');
+            });
+        });
+
+        document.querySelector('#sliderForLayerOpacity').addEventListener('change', (evt)=>{
+            // console.log(evt.target.value);
+            opacitySliderOnUpdate(evt.target.value);
+        })
     };
 
     const toggleOverallFeeback = (isVisible=false, data={})=>{

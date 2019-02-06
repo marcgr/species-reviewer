@@ -98,6 +98,18 @@ html, body {
 #basemapGalleryControl.is-collapsed #basemapGalleryControlHeader .icon-ui-minus {
   display: inline-block; }
 
+#settingsDiv {
+  position: relative;
+  width: 100%; }
+  #settingsDiv #settingControls {
+    position: absolute;
+    top: 1.5rem;
+    right: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.9); }
+    #settingsDiv #settingControls .setting-control-item {
+      padding: 1rem; }
+
 .cursor-pointer {
   cursor: pointer; }
 
@@ -131,6 +143,11 @@ html, body {
 .fancy-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #a9a9a9; }
 
+.icon-no-right-padding[class^="icon-ui-"]:before {
+  padding-right: 0; }
+
+#speciesSelectorContainer label {
+  margin-bottom: .5rem; }
 
 #feedbackControlPanelContainer .fieldset-radio label {
   color: #fff;

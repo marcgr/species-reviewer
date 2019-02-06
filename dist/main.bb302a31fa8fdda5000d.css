@@ -110,6 +110,13 @@ html, body {
     #settingsDiv #settingControls .setting-control-item {
       padding: 1rem; }
 
+.flex-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: center; }
+
 .cursor-pointer {
   cursor: pointer; }
 
@@ -162,12 +169,6 @@ html, body {
   right: 0;
   cursor: pointer; }
 
-#feedbackControlPanelContainer .action-message {
-  color: rgba(255, 255, 255, 0.5); }
-
-#feedbackControlPanelContainer .is-checked .action-message {
-  color: #fff; }
-
 #overallFeedbackControlPanelContainer .action-btn-wrap {
   width: 100%; }
   #overallFeedbackControlPanelContainer .action-btn-wrap .btn-half {
@@ -175,4 +176,5 @@ html, body {
 
 tr.review-data-row.is-active td {
   background-color: #d2e9f9; }
+
 

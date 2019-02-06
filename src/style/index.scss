@@ -144,6 +144,14 @@ html, body{
     }
 }
 
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: center;
+}
+
 .cursor-pointer {
     cursor: pointer;
 }

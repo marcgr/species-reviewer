@@ -18,7 +18,7 @@ export default function FeedbackControlPanel(){
     const statusLookup = {
         1: 'Add to Modeling Extent',
         2: 'Remove from Modeling Extent',
-        3: 'Comment on Predicted Habitat'
+        3: 'Comment on Predicted Habitat Extent'
     };
     
     const init = (options={})=>{
@@ -96,7 +96,7 @@ export default function FeedbackControlPanel(){
 
                 <div class='comment-dialog'>
                     <label>
-                        <span class='font-size--3'>${getLabelForTextInput()}:</span>
+                        <span class='font-size--3'>Comment:</span>
                         <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
                     </label>
                 </div>
@@ -119,15 +119,15 @@ export default function FeedbackControlPanel(){
     //     document.getElementById('actionDialogWrap').innerHTML = getHtmlForActions();
     // };
 
-    const getLabelForTextInput = ()=>{
-        return state.isSumbitCommentOnly ? statusLookup[3] : 'Comment'
-    }
+    // const getLabelForTextInput = ()=>{
+    //     return state.isSumbitCommentOnly ? statusLookup[3] : 'Comment'
+    // }
 
     const getHtmlForActions = ()=>{
 
-        const status = getStatusByIsInModeledRange();
+        const status = getNewStatus();
 
-        const isChecked = state.isSumbitCommentOnly ? '' : 'is-checked';
+        // const isChecked = state.isSumbitCommentOnly ? '' : 'is-checked';
 
         // const outputHtml = `<div class='action-dialog trailer-half font-size--1 ${isChecked}'>
         //     <div class='inline-block'>
@@ -140,12 +140,16 @@ export default function FeedbackControlPanel(){
         // const isChecked = state.isSumbitCommentOnly ? '' : 'checked';
 
         const outputHtml = `
-            <div class='inline-block'>
-                <label class="toggle-switch ${isChecked}">
-                    <input type="checkbox" class="toggle-switch-input" ${state.isSumbitCommentOnly ? '' : 'checked'}>
-                    <span class="toggle-switch-track margin-right-1"></span>
-                    <span class="toggle-switch-label font-size--1 action-message">${statusLookup[+status]}</span>
-                </label>
+            <div class='flex-container'>
+                <div class='inline-block'>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-switch-input" ${state.isSumbitCommentOnly ? '' : 'checked'}>
+                        <span class="toggle-switch-track margin-right-1"></span>
+                    </label>
+                </div>
+                <div class='inline-block'>
+                    <span class="toggle-switch-label font-size--2 action-message">${statusLookup[+status]}</span>
+                </div>
             </div>
         `;
 

@@ -819,7 +819,7 @@ export default function Controller(options={}){
         });
 
         data.unshift({
-            label: 'Actual Extent',
+            label: 'Predicted Habitat Extent',
             // color: config.COLOR.actualModeledExtent
         });
 

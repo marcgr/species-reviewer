@@ -405,7 +405,7 @@ esriLoader.loadModules([
 
             mapView.map.add(actualModelBoundaryLayer);
 
-            mapView.map.reorder(actualModelBoundaryLayer, 0);
+            // mapView.map.reorder(actualModelBoundaryLayer, 0);
 
         };
 

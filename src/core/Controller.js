@@ -70,7 +70,7 @@ export default function Controller(options={}){
 
     const initReviewMode = ()=>{
 
-        mapControl.disableMapOnHoldEvent();
+        // mapControl.disableMapOnHoldEvent();
 
         view.switchToReviewModeView();
 
@@ -350,7 +350,26 @@ export default function Controller(options={}){
                 // console.log(data);
             }
         })
-    }
+    };
+
+    const reviewFeedbacksByHuc = (hucFeature)=>{
+
+        const hucID = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
+        const hucName = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
+        
+        fetchFeedback({
+            requestUrl: config.URL.feedbackTable + '/query',
+            where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${dataModel.getSelectedSpecies()}'`
+        }).then(res=>{
+            // console.log(res);
+            view.openListView(view.listViewForFeedbacksByHuc, {
+                data: res,
+                hucName
+            });
+        }).catch(err=>{
+            console.error(err);
+        })
+    };
 
     const queryOverallFeedbacksByUser = ()=>{
 
@@ -551,14 +570,24 @@ export default function Controller(options={}){
 
         selectedHucFeature = feature;
 
-        if(selectedHucFeature){
-            const hucID = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
+        const hucID = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
 
+        if(!isReviewMode){
+            
             dataModel.setSelectedHuc(hucID);
 
             // console.log(selectedHucFeature);
-
             openFeedbackManager();
+
+        } else {
+            // console.log('query feedbacks for selected huc', hucID);
+
+            if(view.listViewForDetailedFeedback.isVisible()){
+                view.listViewForDetailedFeedback.setActiveRow(hucID);
+            } else {
+                reviewFeedbacksByHuc(selectedHucFeature);
+            }
+    
         }
     };
 
@@ -747,29 +776,6 @@ export default function Controller(options={}){
         }
     }
 
-    // const initSpeciesSelector = (data)=>{
-
-    //     view.speciesSelector.init({
-    //         containerID: config.DOM_ID.speciesSelector,
-    //         data,
-    //         onChange: (val)=>{
-
-    //             dataModel.setSelectedSpecies(val);
-
-    //             speciesOnSelectHandler(val);
-
-    //             if(isReviewMode){
-    //                 reviewOverallFeedbacksBySpecies();
-    //                 getListOfHucsWithFeedbacks();
-    //             } else {
-    //                 view.enableOpenOverallFeedbackBtnBtn();
-    //             }
-
-    //         }
-    //     });
-
-    // };
-
     const initOverallFeedbackControlPanel = ()=>{
 
         view.overallFeedbackControlPanel.init({
@@ -800,14 +806,21 @@ export default function Controller(options={}){
             onCloseHandler:()=>{
                 // mapControl.clearAllGraphics();
                 view.openListView(view.listViewForOverallFeedback);
-
                 renderListOfHucsWithFeedbacks();
             },
             onClickHandler:(hucID)=>{
                 // console.log(hucID);
                 mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
             }
-        })
+        });
+
+        view.listViewForFeedbacksByHuc.init({
+            onCloseHandler:()=>{
+                view.openListView(view.listViewForOverallFeedback);
+                resetSelectedHucFeature();
+                // renderListOfHucsWithFeedbacks();
+            }
+        });
     };
 
     const initLegendForStatus = (data)=>{

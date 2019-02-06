@@ -93,28 +93,22 @@ esriLoader.loadModules([
             mapView.on('click', event=>{
                 // console.log('map view on hold', event);
 
-                if(!isOnHoldEventDisabled){
-                    queryHucsLayerByMouseEvent(event);
-                }
+                // if(!isOnHoldEventDisabled){
+                //     queryHucsLayerByMouseEvent(event);
+                // }
+
+                queryHucsLayerByMouseEvent(event)
+                .then(queryHucsLayerByMouseEventOnSuccessHandler)
+                .catch(err=>{
+                    console.log(err);
+                });
                 
             });
         };
 
-        const disableMapOnHoldEvent = ()=>{
-            isOnHoldEventDisabled = true;
-        };
-
-        // const initLegend = ()=>{
-        //     var legend = new Legend({
-        //         view: mapView,
-        //         layerInfos: [{
-        //             layer: hucsLayer,
-        //             title: "Legend"
-        //         }]
-        //     });
-              
-        //     mapView.ui.add(legend, "bottom-right");
-        // }
+        // const disableMapOnHoldEvent = ()=>{
+        //     isOnHoldEventDisabled = true;
+        // };
 
         const initBasemapGallery = (view)=>{
             const basemapGallery = new BasemapGallery({
@@ -145,12 +139,15 @@ esriLoader.loadModules([
             query.returnGeometry = true;
             query.outFields = [ "*" ];
             
-            hucsLayer.queryFeatures(query).then(function(response){
-                // console.log(response);
+            return new Promise((resolve, reject)=>{
 
-                if(response.features && response.features.length){
-                    setPreviewHuc(response.features[0]);
-                }
+                hucsLayer.queryFeatures(query).then(function(response){
+                    // console.log(response);
+    
+                    if(response.features && response.features.length){
+                        resolve(response.features[0]);
+                    }
+                });
             });
 
         };
@@ -167,7 +164,11 @@ esriLoader.loadModules([
                     if(response.features && response.features.length){
                         // console.log(response.features[0]);
                         resolve(response.features[0]);
+                    } else {
+                        reject('no huc feature is found');
                     }
+                }).catch(err=>{
+                    reject(err);
                 });
             });
 
@@ -183,11 +184,11 @@ esriLoader.loadModules([
             // console.log(hucsLayer);
         };
 
-        const setPreviewHuc = (feature)=>{
+        const queryHucsLayerByMouseEventOnSuccessHandler = (feature)=>{
 
             addPreviewHucGraphic(feature);
 
-            if(hucFeatureOnSelectHandler && !isOnHoldEventDisabled){
+            if(hucFeatureOnSelectHandler){
                 hucFeatureOnSelectHandler(feature);
             }
         };
@@ -423,7 +424,7 @@ esriLoader.loadModules([
             showHucFeatureByStatus,
             addActualModelBoundaryLayer,
             clearAllGraphics,
-            disableMapOnHoldEvent,
+            // disableMapOnHoldEvent,
             queryHucsLayerByHucID,
             addPreviewHucGraphic,
             setLayersOpacity

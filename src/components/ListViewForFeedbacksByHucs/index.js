@@ -1,4 +1,5 @@
 import './style.scss';
+import config from '../../config';
 
 export default function(options={
     containerID: ''
@@ -13,8 +14,6 @@ export default function(options={
             console.error('containerID is required to init List View for overall feedback...');
         }
 
-        // const onClickHandler = options.onClickHandler;
-
         initEventHandlers(options);
     }
 
@@ -24,48 +23,45 @@ export default function(options={
 
             if(evt.target.classList.contains('js-close') && options.onCloseHandler){
                 options.onCloseHandler();
-                // console.log(evt.target.dataset.value);
             }
 
-            if(evt.target.classList.contains('js-show-huc') && options.onClickHandler){
-                options.onClickHandler(evt.target.dataset.value);
-                setActiveRow(evt.target.dataset.value);
-                // console.log(evt.target.dataset.value);
-            }
+            // if(evt.target.classList.contains('js-show-huc') && options.onClickHandler){
+            //     options.onClickHandler(evt.target.dataset.value);
+            //     setActiveRow(evt.target.dataset.value);
+            //     // console.log(evt.target.dataset.value);
+            // }
         });
     };
 
-    const setActiveRow = (huc)=>{
-        container.querySelectorAll('.review-data-row').forEach(row=>{
-            if(row.dataset.huc === huc){
-                row.classList.add('is-active');
-            } else {
-                row.classList.remove('is-active');
-            }
-        })
-    };
 
-    const render = (data)=>{
+    const render = (options={
+        data: [],
+        hucName: ''
+    })=>{
+
+        console.log(options);
 
         const headerHtml = `
             <div class='trailer-quarter'>
                 <span class='icon-ui-left cursor-pointer js-close'></span>
-                <span class='font-size--1'>All feedbacks by ${data[0].userID}</span>
+                <span class='font-size--1'>All feedbacks for ${options.hucName}</span>
             </div>
         `;
 
-        const tableRowsHtml = data.map(d=>{
-            const status = +d.status;
-            const huc = d.hucID;
-            const comment = d.comment || 'n/a';
+        const tableRowsHtml = options.data.map(d=>{
+            const status = +d.attributes[config.FIELD_NAME.feedbackTable.status];
+            const userID = d.attributes[config.FIELD_NAME.feedbackTable.userID];
+            const comment = d.attributes[config.FIELD_NAME.feedbackTable.comment];
+
             const statusLable = {
                 1: 'Add',
                 2: 'Remove',
                 3: 'n/a'
             };
+
             return `
-                <tr class='review-data-row font-size--3' data-huc='${huc}'>
-                    <td class='js-show-huc cursor-pointer' data-value='${huc}'>${huc}</td>
+                <tr class='review-data-row font-size--3'>
+                    <td>${userID}</td>
                     <td>${statusLable[status]}</td>
                     <td>${comment}</td>
                 </tr>
@@ -76,7 +72,7 @@ export default function(options={
             <table class="table table-striped">
                 <thead>
                     <tr class='font-size--2'>
-                        <th>HUC</th>
+                        <th>User</th>
                         <th>Action</th>
                         <th>Comment</th>
                     </tr>
@@ -109,7 +105,6 @@ export default function(options={
         init,
         render,
         toggleVisibility,
-        setActiveRow,
         isVisible
     };
 }

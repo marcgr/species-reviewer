@@ -5,6 +5,7 @@ import FeedbackControlPanel from '../components/FeedbackControlPanel';
 import OverallFeedbackControlPanel from '../components/OverallFeedbackControl';
 import ListViewForOverallFeedback from '../components/ListViewForOverallFeedback';
 import ListViewForDetailedFeedback from '../components/ListViewForDetailedFeedback';
+import ListViewForFeedbacksByHucs from '../components/ListViewForFeedbacksByHucs';
 
 export default function View(){
 
@@ -26,6 +27,10 @@ export default function View(){
     
     const listViewForDetailedFeedback = new ListViewForDetailedFeedback({
         containerID: config.DOM_ID.listViewDeatiledFeedback
+    });
+
+    const listViewForFeedbacksByHuc = new ListViewForFeedbacksByHucs({
+        containerID: config.DOM_ID.listViewForFeedbacksByHuc
     });
 
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
@@ -180,7 +185,8 @@ export default function View(){
     // }
 
     const openListView = (targetListView, data)=>{
-        [listViewForOverallFeedback, listViewForDetailedFeedback].forEach(item=>{
+        [listViewForOverallFeedback, listViewForDetailedFeedback, listViewForFeedbacksByHuc].forEach(item=>{
+
             if(item === targetListView){
                 item.toggleVisibility(true);
 
@@ -206,6 +212,7 @@ export default function View(){
         enableOpenOverallFeedbackBtnBtn,
         listViewForOverallFeedback,
         listViewForDetailedFeedback,
+        listViewForFeedbacksByHuc,
         switchToReviewModeView,
         // openListViewForDetailedFeedback,
         // openListViewForOverallFeedback,

@@ -14,6 +14,7 @@ const OAuthManager = function(oauth_appid){
     let isAnonymous = true;
     let poralUser = null;
     let info = null;
+    let esriId = null;
     
     const signIn = ()=>{
         esriId.getCredential(info.portalUrl + "/sharing").then((res)=>{
@@ -63,14 +64,18 @@ const OAuthManager = function(oauth_appid){
 
     const init = ()=>{
 
+        console.log('init oauth manager');
+
         return new Promise((resolve, reject)=>{
 
             esriLoader.loadModules([
                 "esri/identity/OAuthInfo",
                 "esri/identity/IdentityManager",
             ], esriLoaderOptions).then(([
-                OAuthInfo, esriId
+                OAuthInfo, IdentityManager
             ]) => {
+
+                esriId = IdentityManager;
 
                 info = new OAuthInfo({
                     appId: oauth_appid,
@@ -92,7 +97,9 @@ const OAuthManager = function(oauth_appid){
                     signIn();
                 });
             
-            });
+            }).catch(err=>{
+                console.error(err);
+            })
 
         });
 

@@ -107,8 +107,6 @@ export default function Controller(props={}){
 
         controllerProps.speciesDataOnReady(data);
 
-        // view.speciesSelector.render(data);
-
     };
 
     const initStatusTable = (data)=>{
@@ -392,7 +390,7 @@ export default function Controller(props={}){
 
             saveOverallFeedbackToDataModel(res);
 
-            initOverallFeedbackControlPanel();
+            // initOverallFeedbackControlPanel();
 
         }).catch(err=>{
             console.error(err);
@@ -655,7 +653,7 @@ export default function Controller(props={}){
         }
     };
 
-    const openOverallFeedbackPanel = ()=>{
+    const getOverallFeedback = ()=>{
         const species = dataModel.getSelectedSpecies();
 
         const prevFeedbackData = dataModel.getOverallFeedback(species);
@@ -669,7 +667,7 @@ export default function Controller(props={}){
         }
         : {};
 
-        view.toggleOverallFeeback(true, data);
+        return data;
     };
 
     const saveOverallFeedbackToDataModel = (features)=>{
@@ -791,23 +789,6 @@ export default function Controller(props={}){
         }
     }
 
-    const initOverallFeedbackControlPanel = ()=>{
-
-        view.overallFeedbackControlPanel.init({
-            containerID: config.DOM_ID.overallFeedbackControl,
-            // rating,
-            // comment,
-            onCloseHandler: ()=>{
-                view.toggleOverallFeeback(false);
-            },
-            onSubmitHandler: (data)=>{
-                // console.log('submit overall feedback', data);
-                view.toggleOverallFeeback(false);
-                postOverallFeedback(data);
-            }
-        });
-    };
-
     const initViewComponentsForReviewMode = ()=>{
 
         view.listViewForOverallFeedback.init({
@@ -862,8 +843,9 @@ export default function Controller(props={}){
         setSelectedHucFeature,
         resetSelectedHucFeature,
         downloadPdf,
-        openOverallFeedbackPanel,
-        setSelectedSpecies
+        getOverallFeedback,
+        setSelectedSpecies,
+        postOverallFeedback
         // openFeedbackManager
     };
 

@@ -71,11 +71,6 @@ import OAuthManager from './core/OauthManager';
         onCloseHandler: ()=>{
             controller.resetSelectedHucFeature();
         },
-        // statusOnChange: (val)=>{
-        //     // console.log(val);
-        //     // const status = controller.dataModel.getStatusByIndex(val);
-        //     controller.feedbackManager.feedbackDataModel.setStatus(val);
-        // },
         commentOnChange: (val)=>{
             // console.log(val);
             controller.feedbackManager.feedbackDataModel.setComment(val);
@@ -92,12 +87,25 @@ import OAuthManager from './core/OauthManager';
         }
     });
 
+    view.overallFeedbackControlPanel.init({
+        containerID: config.DOM_ID.overallFeedbackControl,
+        onCloseHandler: ()=>{
+            view.toggleOverallFeeback(false);
+        },
+        onSubmitHandler: (data)=>{
+            // console.log('submit overall feedback', data);
+            view.toggleOverallFeeback(false);
+            controller.postOverallFeedback(data);
+        }
+    });
+
     view.init({
         downloadPdfBtnOnClick: ()=>{
             controller.downloadPdf();
         },
         openOverallBtnOnclick: ()=>{
-            controller.openOverallFeedbackPanel();
+            const data = controller.getOverallFeedback();
+            view.toggleOverallFeeback(true, data);
         },
         layerOpacitySliderOnUpdate: (val)=>{
             // console.log(val);

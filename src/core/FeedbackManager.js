@@ -5,10 +5,19 @@ export default function(options={}){
     const feedbackDataStore = {};
     const feedbackDataModel = new FeedbackDataModel();
 
-    const onOpenHandler = options.onOpenHandler || null;
-    const onCloseHandler = options.onCloseHandler || null;
-    const onSubmitHandler = options.onSubmitHandler || null;
-    const onRemoveHandler = options.onRemoveHandler || null;
+    const eventHandlers = {
+        onAdd: null,
+        onClose: null,
+        onSubmit: null,
+        onRemove: null
+    };
+
+    const init = (options={})=>{
+        eventHandlers['onAdd'] = options.onOpenHandler || null;
+        eventHandlers['onClose'] = options.onCloseHandler || null;
+        eventHandlers['onSubmit'] = options.onSubmitHandler || null;
+        eventHandlers['onRemove'] = options.onRemoveHandler || null;
+    };
 
     const open = (data={})=>{
 
@@ -17,8 +26,8 @@ export default function(options={}){
 
         feedbackDataModel.init(data);
 
-        if(onOpenHandler){
-            onOpenHandler(feedbackDataModel.getFeedbackData());
+        if(eventHandlers['onAdd']){
+            eventHandlers['onAdd'](feedbackDataModel.getFeedbackData());
         }
 
         // console.log(feedbackDataModel.getFeedbackData());
@@ -27,8 +36,8 @@ export default function(options={}){
     const close = ()=>{
         feedbackDataModel.reset();
 
-        if(onCloseHandler){
-            onCloseHandler()
+        if(eventHandlers['onClose']){
+            eventHandlers['onClose']()
         }
     };
 
@@ -38,8 +47,8 @@ export default function(options={}){
 
         save(feedbackData);
 
-        if(onSubmitHandler){
-            onSubmitHandler(feedbackData);
+        if(eventHandlers['onSubmit']){
+            eventHandlers['onSubmit'](feedbackData);
         }
     };
 
@@ -63,8 +72,8 @@ export default function(options={}){
 
         // console.log('remove feedback', feedbackData);
 
-        if(onRemoveHandler){
-            onRemoveHandler(feedbackData);
+        if(eventHandlers['onRemove']){
+            eventHandlers['onRemove'](feedbackData);
         }
     };
 
@@ -110,6 +119,7 @@ export default function(options={}){
     };
 
     return {
+        init,
         open,
         close,
         save,

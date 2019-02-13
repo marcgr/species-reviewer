@@ -110,13 +110,18 @@ const OAuthManager = function(oauth_appid){
         return poralUser ? poralUser.username : userCredential.userId;
     };
 
+    const getToken = ()=>{
+        return userCredential.token;
+    }
+
     return {
         init,
         signIn,
         signOut,
         getUserContentUrl,
         isAnonymous: checkIsAnonymous,
-        getUserID
+        getUserID,
+        getToken
     };
 
 };

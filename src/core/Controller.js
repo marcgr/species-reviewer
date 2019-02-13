@@ -7,125 +7,129 @@ import config from '../config';
 
 const Promise = require('es6-promise').Promise;
 
-export default function Controller(options={}){
+export default function Controller(props={}){
 
-    let token = null;
+    // let token = null;
     let selectedHucFeature = null;
     let isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
+    
+
+    const controllerProps = props;
+    // const mapControl = props.mapControl || null;
+    const view = props.view || null;
+    const oauthManager = props.oauthManager || null;
 
     const dataModel = new DataModel();
     const dataModelForReviewMode = new DataModelForReviewMode();
-    const mapControl = options.mapControl || null;
-    const view = options.view || null;
-    const oauthManager = options.oauthManager || null;
+    const feedbackManager = new FeedbackManager();
+
+    // const speciesDataOnReady = props.speciesDataOnReady || null;
+    // const legendDataOnReady = props.legendDataOnReady || null;
+    // const hucsBySpeciesDataOnReady = props.hucsBySpeciesDataOnReady || null;
     
-    const feedbackManager = new FeedbackManager({
-        onOpenHandler: (data)=>{
-            view.feedbackControlPanel.open(data);
-            view.toggleMainControl(false);
-            // console.log('feedbackManager onOpenHandler', data);
-        },
-        onCloseHandler: ()=>{
-            // console.log('feedbackManager is closed');
-            view.feedbackControlPanel.close();
-            view.toggleMainControl(true);
-        },
-        onSubmitHandler:(data)=>{
-            // console.log('feedback manager onSubmitHandler', data);
-
-            postFeedback(data);
-
-            showHucFeatureOnMap(data.hucID, data.status, data);
-
-            resetSelectedHucFeature();
-        },
-        onRemoveHandler: (data)=>{
-            // console.log('feedback manager onRemoveHandler', data);
-
-            deleteFeedback(data);
-
-            showHucFeatureOnMap(data.hucID);
-
-            resetSelectedHucFeature();
-        }
-    });
-
-    const init = (options={})=>{
+    const init = async (options={})=>{
         // console.log('init app controller', dataModel, mapControl, view);
+        // console.log('oauth manager', oauthManager.getToken());
 
         if(isReviewMode){
             initReviewMode();
         }
 
-        token = options.token || null;
+        try{
+            const sepeciesData = await querySpeciesLookupTable();
 
-        initSpeciesLookupTable();
+            const statusData = await queryStatusTable();
+    
+            initSpeciesLookupTable(sepeciesData);
+    
+            initStatusTable(statusData);
 
-        initStatusTable();
+            initFeedbackManager();
+    
+            queryFeedbacksByUser();
+    
+            queryOverallFeedbacksByUser();
 
-        queryFeedbacksByUser();
+        } catch(err){
+            console.error(err);
+        }
 
-        queryOverallFeedbacksByUser();
+    };
+
+    const initFeedbackManager = ()=>{
+
+        feedbackManager.init({
+
+            onOpenHandler: (data)=>{
+                view.feedbackControlPanel.open(data);
+                view.toggleMainControl(false);
+                // console.log('feedbackManager onOpenHandler', data);
+            },
+
+            onCloseHandler: ()=>{
+                // console.log('feedbackManager is closed');
+                view.feedbackControlPanel.close();
+                view.toggleMainControl(true);
+            },
+
+            onSubmitHandler:(data)=>{
+                // console.log('feedback manager onSubmitHandler', data);
+                postFeedback(data);
+                showHucFeatureOnMap(data.hucID, data.status, data);
+                resetSelectedHucFeature();
+            },
+
+            onRemoveHandler: (data)=>{
+                // console.log('feedback manager onRemoveHandler', data);
+                deleteFeedback(data);
+                showHucFeatureOnMap(data.hucID);
+                resetSelectedHucFeature();
+            }
+        });
     };
 
     const initReviewMode = ()=>{
-
-        // mapControl.disableMapOnHoldEvent();
 
         view.switchToReviewModeView();
 
         initViewComponentsForReviewMode();
     };
 
-    const initSpeciesLookupTable = ()=>{
+    const initSpeciesLookupTable = (data)=>{
 
         // console.log('init species lookup table');
 
-        querySpeciesLookupTable().then(data=>{
-
-            data = data.map(d=>{
-                return d.attributes
-            });
-    
-            dataModel.setSpeciesLookup(data);
-
-            // initSpeciesSelector(data);
-
-            view.speciesSelector.render(data);
-
-        }).catch(err=>{
-            console.error(err);
+        data = data.map(d=>{
+            return d.attributes
         });
+
+        dataModel.setSpeciesLookup(data);
+
+        controllerProps.speciesDataOnReady(data);
+
+        // view.speciesSelector.render(data);
 
     };
 
-    const initStatusTable = ()=>{
+    const initStatusTable = (data)=>{
 
-        queryStatusTable().then(data=>{
+        data = data.map(d=>{
+            const lineBreakPattern = /(\r\n\t|\n|\r\t)/g;
 
-            data = data.map(d=>{
-                const lineBreakPattern = /(\r\n\t|\n|\r\t)/g;
+            let statusType = d.attributes[config.FIELD_NAME.statusType];
 
-                let statusType = d.attributes[config.FIELD_NAME.statusType];
+            if(lineBreakPattern.test(statusType)){
+                statusType = statusType.replace(lineBreakPattern, ' ');
+            }
 
-                if(lineBreakPattern.test(statusType)){
-                    statusType = statusType.replace(lineBreakPattern, ' ');
-                }
-
-                return statusType;
-            });
-
-            // console.log(data);
-
-            dataModel.setStatus(data);
-
-            // view.feedbackControlPanel.setStatusData(data);
-
-            initLegendForStatus(data);
-
-        }).catch(error=>{
-            console.error(error);
+            return statusType;
         });
+
+        // console.log(data);
+
+        dataModel.setStatus(data);
+
+        controllerProps.legendDataOnReady(getStatusDataForLegend(data));
     };
 
     const searchHucsBySpecies = (speciesKey)=>{
@@ -165,10 +169,13 @@ export default function Controller(options={}){
         if(options.speciesKey){
             const speciesInfo = dataModel.getSpeciesInfo(options.speciesKey);
             const actualBoundaryLayerUrl = speciesInfo[config.FIELD_NAME.speciesLookup.boundaryLayerLink];
-            mapControl.addActualModelBoundaryLayer(actualBoundaryLayerUrl);
+            // mapControl.addActualModelBoundaryLayer(actualBoundaryLayerUrl);
+            controllerProps.addActualBoundaryLayerToMap(actualBoundaryLayerUrl);
         }
         
-        mapControl.highlightHucs(hucs);
+        // mapControl.highlightHucs(hucs);
+
+        controllerProps.highligtHucsOnMap(hucs);
 
         if(!isReviewMode){
             renderHucWithFeedbackDataOnMap();
@@ -203,7 +210,7 @@ export default function Controller(options={}){
                     where: '1=1',
                     outFields: '*',
                     f: 'json',
-                    token
+                    token: oauthManager.getToken()
                 }
             }).then(function (response) {
                 // console.log(response);
@@ -233,7 +240,7 @@ export default function Controller(options={}){
                         where: whereClause,
                         outFields: '*',
                         f: 'json',
-                        token
+                        token: oauthManager.getToken()
                     }
                 }).then(function (response) {
                     if(response.data && response.data.features && response.data.features.length){
@@ -260,7 +267,7 @@ export default function Controller(options={}){
                     where: '1=1',
                     outFields: '*',
                     f: 'json',
-                    token
+                    token: oauthManager.getToken()
                 }
             }).then(function (response) {
                 // console.log(response);
@@ -338,7 +345,9 @@ export default function Controller(options={}){
             species: dataModel.getSelectedSpecies(),
             onSuccessHandler: (data)=>{
 
-                mapControl.clearAllGraphics();
+                // mapControl.clearAllGraphics();
+
+                controllerProps.clearMapGraphics();
 
                 data.forEach(d=>{
                     // console.log(d);
@@ -404,7 +413,7 @@ export default function Controller(options={}){
                     outFields,
                     returnDistinctValues,
                     f: 'json',
-                    token
+                    token: oauthManager.getToken()
                 }
             }).then(function (response) {
                 // console.log(response);
@@ -523,7 +532,7 @@ export default function Controller(options={}){
         bodyFormData.append('objectIds', objectID); 
         bodyFormData.append('rollbackOnFailure', false); 
         bodyFormData.append('f', 'pjson'); 
-        bodyFormData.append('token', token); 
+        bodyFormData.append('token', oauthManager.getToken()); 
 
         return new Promise((resolve, reject)=>{
 
@@ -543,7 +552,7 @@ export default function Controller(options={}){
         bodyFormData.append('features', JSON.stringify(feature)); 
         bodyFormData.append('rollbackOnFailure', false); 
         bodyFormData.append('f', 'pjson'); 
-        bodyFormData.append('token', token); 
+        bodyFormData.append('token', oauthManager.getToken()); 
 
         return new Promise((resolve, reject)=>{
 
@@ -596,7 +605,9 @@ export default function Controller(options={}){
 
         dataModel.setSelectedHuc();
 
-        mapControl.cleanPreviewHucGraphic();
+        // mapControl.cleanPreviewHucGraphic();
+
+        controllerProps.clearMapGraphics('hucPreview');
 
         feedbackManager.close();
     };
@@ -701,7 +712,9 @@ export default function Controller(options={}){
         const species = dataModel.getSelectedSpecies();
         const features = dataModelForReviewMode.getHucsWithFeedbacks(species);
 
-        mapControl.clearAllGraphics();
+        // mapControl.clearAllGraphics();
+
+        controllerProps.clearMapGraphics();
 
         features.forEach(feature=>{
             showHucFeatureOnMap(feature.attributes[config.FIELD_NAME.feedbackTable.hucID], feature.attributes[config.FIELD_NAME.feedbackTable.status]);
@@ -714,7 +727,9 @@ export default function Controller(options={}){
             return
         }
 
-        mapControl.showHucFeatureByStatus(hucID, status);
+        controllerProps.showHucFeatureOnMap(hucID, status)
+
+        // mapControl.showHucFeatureByStatus(hucID, status);
 
         // const options = data ? getHucFeatureOptions(data) : {};
 
@@ -810,7 +825,8 @@ export default function Controller(options={}){
             },
             onClickHandler:(hucID)=>{
                 // console.log(hucID);
-                mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
+                // mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
+                controllerProps.addPreviewHucByID(hucID);
             }
         });
 
@@ -823,7 +839,7 @@ export default function Controller(options={}){
         });
     };
 
-    const initLegendForStatus = (data)=>{
+    const getStatusDataForLegend = (data)=>{
         data = data.map((d, i)=>{
             return {
                 label: d,
@@ -836,8 +852,7 @@ export default function Controller(options={}){
             // color: config.COLOR.actualModeledExtent
         });
 
-        view.initLegend(data);
-        
+        return data;
     };
 
     return {

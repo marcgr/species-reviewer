@@ -280,6 +280,11 @@ const MapControl = function(options={}){
         })
     };
 
+    const addPreviewHucByID = async (hucID)=>{
+        const hucFeature = await queryHucsLayerByHucID(hucID);
+        addPreviewHucGraphic(hucFeature)
+    }
+
     const addPreviewHucGraphic = (feature)=>{
         // const attributes = feature.attributes;
 
@@ -307,6 +312,18 @@ const MapControl = function(options={}){
             hucPreviewGraphicLayer.add(graphicForSelectedHuc);
         });
     };
+
+    const clearMapGraphics = (targetLayer='')=>{
+        const layersLookup = {
+            'hucPreview': hucPreviewGraphicLayer
+        };
+
+        if(layersLookup[targetLayer]){
+            layersLookup[targetLayer].removeAll();
+        } else {
+            clearAllGraphics();
+        }
+    }
 
     const clearAllGraphics = ()=>{
         hucsByStatusGraphicLayer.removeAll();
@@ -428,7 +445,9 @@ const MapControl = function(options={}){
         // disableMapOnHoldEvent,
         queryHucsLayerByHucID,
         addPreviewHucGraphic,
-        setLayersOpacity
+        setLayersOpacity,
+        clearMapGraphics,
+        addPreviewHucByID
     };
 
 };

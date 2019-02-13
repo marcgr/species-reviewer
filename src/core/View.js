@@ -9,9 +9,10 @@ import ListViewForFeedbacksByHucs from '../components/ListViewForFeedbacksByHucs
 
 export default function View(){
 
-    let downloadPdfBtnOnClick = null;
-    let openOverallBtnOnclick = null;
-    let opacitySliderOnUpdate = null;
+    let viewProps = null;
+    // let downloadPdfBtnOnClick = null;
+    // let openOverallBtnOnclick = null;
+    // let opacitySliderOnUpdate = null;
 
     const speciesSelector = new SpeciesSelector({
         containerID: config.DOM_ID.speciesSelector
@@ -36,17 +37,19 @@ export default function View(){
     const $mainControlPanel = document.getElementById(config.DOM_ID.mainControl);
 
     const init = (options={
-        downloadPdfBtnOnClick: null,
-        openOverallBtnOnclick: null,
-        layerOpacitySliderOnUpdate: null
+        // downloadPdfBtnOnClick: null,
+        // openOverallBtnOnclick: null,
+        // layerOpacitySliderOnUpdate: null
     })=>{
         // feedbackControlPanel.init({
         //     containerID: config.DOM_ID.feedbackControl
         // });
 
-        downloadPdfBtnOnClick = options.downloadPdfBtnOnClick;
-        openOverallBtnOnclick = options.openOverallBtnOnclick;
-        opacitySliderOnUpdate = options.layerOpacitySliderOnUpdate;
+        viewProps = options;
+
+        // downloadPdfBtnOnClick = options.downloadPdfBtnOnClick;
+        // openOverallBtnOnclick = options.openOverallBtnOnclick;
+        // opacitySliderOnUpdate = options.layerOpacitySliderOnUpdate;
 
         initEventHandlers();
     };
@@ -59,11 +62,11 @@ export default function View(){
 
         document.querySelectorAll('.js-open-overall-feedback').forEach(element=>{
             // console.log('js-open-overall-feedback on click');
-            element.addEventListener('click', openOverallBtnOnclick);
+            element.addEventListener('click', viewProps.openOverallBtnOnclick);
         });
 
         document.querySelectorAll('.js-download-pdf').forEach(element=>{
-            element.addEventListener('click', downloadPdfBtnOnClick);
+            element.addEventListener('click', viewProps.downloadPdfBtnOnClick);
         });
 
         document.querySelectorAll('.js-toggle-ui-component').forEach(element=>{
@@ -76,18 +79,38 @@ export default function View(){
 
         document.querySelector('#sliderForLayerOpacity').addEventListener('change', (evt)=>{
             // console.log(evt.target.value);
-            opacitySliderOnUpdate(evt.target.value);
+            // opacitySliderOnUpdate(evt.target.value);
+            viewProps.layerOpacitySliderOnUpdate(evt.target.value)
         })
     };
 
-    const toggleOverallFeeback = (isVisible=false, data={})=>{
-        if(isVisible){
-            overallFeedbackControlPanel.open(data);
-        } else {
-            overallFeedbackControlPanel.close();
-        }
+    // const toggleOverallFeeback = (isVisible=false, data={})=>{
+    //     if(isVisible){
+    //         overallFeedbackControlPanel.open(data);
+    //     } else {
+    //         overallFeedbackControlPanel.close();
+    //     }
         
-        toggleMainControl(!isVisible);
+    //     toggleMainControl(!isVisible);
+    // };
+
+    const toggleControlPanel = (options={
+        target: null,
+        isVisible: false,
+        data: null
+    })=>{
+
+        if(options.target){
+
+            if(options.isVisible){
+                options.target.open(options.data);
+            } else {
+                options.target.close();
+            }
+            
+            toggleMainControl(!options.isVisible);
+        }
+
     };
 
     const toggleBasemapGallery = ()=>{
@@ -171,6 +194,36 @@ export default function View(){
         document.getElementById('openOverallFeedbackBtnDiv').classList.add('hide');
     };
 
+    const initViewComponentsForReviewMode = ()=>{
+
+        listViewForOverallFeedback.init({
+            onClickHandler:(userID)=>{
+                // reviewFeedbacksByUser(userID);
+                viewProps.listViewForOverallFeedbackOnClick(userID);
+            }
+        });
+
+        listViewForDetailedFeedback.init({
+            onCloseHandler:()=>{
+                openListView(listViewForOverallFeedback);
+                // renderListOfHucsWithFeedbacks();
+                viewProps.listViewForDetailedFeedbackOnClose();
+            },
+            onClickHandler:(hucID)=>{
+                // controllerProps.addPreviewHucByID(hucID);
+                viewProps.listViewForDetailedFeedbackOnClick(hucID);
+            }
+        });
+
+        listViewForFeedbacksByHuc.init({
+            onCloseHandler:()=>{
+                openListView(listViewForOverallFeedback);
+                // resetSelectedHucFeature();
+                viewProps.listViewForFeedbacksByHucOnClose();
+            }
+        });
+    };
+
     // const openListViewForOverallFeedback = (data)=>{
     //     listViewForOverallFeedback.toggleVisibility(true);
     //     listViewForOverallFeedback.render(data);
@@ -207,15 +260,15 @@ export default function View(){
         feedbackControlPanel,
         toggleMainControl,
         overallFeedbackControlPanel,
-        toggleOverallFeeback,
+        // toggleOverallFeeback,
         toggleDownloadAsPdfBtn,
         enableOpenOverallFeedbackBtnBtn,
         listViewForOverallFeedback,
         listViewForDetailedFeedback,
         listViewForFeedbacksByHuc,
         switchToReviewModeView,
-        // openListViewForDetailedFeedback,
-        // openListViewForOverallFeedback,
-        openListView
+        initViewComponentsForReviewMode,
+        openListView,
+        toggleControlPanel
     };
 };

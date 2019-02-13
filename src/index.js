@@ -32,7 +32,34 @@ import OAuthManager from './core/OauthManager';
         legendDataOnReady:(data)=>{
             view.initLegend(data);
         },
+        feedbackManagerOnOpen:(data)=>{
+            view.toggleControlPanel({
+                target: view.feedbackControlPanel,
+                isVisible: true,
+                data
+            });
+        },
+        feedbackManagerOnClose:()=>{
+            view.toggleControlPanel({
+                target: view.feedbackControlPanel,
+                isVisible: false
+            });
+        },
 
+        onReviewMode:()=>{
+            view.switchToReviewModeView();
+            view.initViewComponentsForReviewMode();
+        },
+        overallFeedbackForReviewModeOnReady: (data=null)=>{
+            view.openListView(view.listViewForOverallFeedback, data);
+        },
+        feedbackByUsersForReviewModeOnReady: (data=null)=>{
+            view.openListView(view.listViewForDetailedFeedback, data);
+        },
+        feedbackByHucsForReviewModeOnReady: (data=null)=>{
+            view.openListView(view.listViewForFeedbacksByHuc, data);
+        },
+        
 
         highligtHucsOnMap:(data)=>{
             mapControl.highlightHucs(data);
@@ -48,6 +75,10 @@ import OAuthManager from './core/OauthManager';
         },
         addPreviewHucByID:(hucID)=>{
             mapControl.addPreviewHucByID(hucID);
+        },
+
+        pdfUrlOnChange: (url='')=>{
+            view.toggleDownloadAsPdfBtn(url);
         }
 
     });
@@ -90,11 +121,22 @@ import OAuthManager from './core/OauthManager';
     view.overallFeedbackControlPanel.init({
         containerID: config.DOM_ID.overallFeedbackControl,
         onCloseHandler: ()=>{
-            view.toggleOverallFeeback(false);
+            // view.toggleOverallFeeback(false);
+
+            view.toggleControlPanel({
+                target: view.overallFeedbackControlPanel,
+                isVisible: false
+            });
         },
         onSubmitHandler: (data)=>{
             // console.log('submit overall feedback', data);
-            view.toggleOverallFeeback(false);
+            // view.toggleOverallFeeback(false);
+
+            view.toggleControlPanel({
+                target: view.overallFeedbackControlPanel,
+                isVisible: false
+            });
+
             controller.postOverallFeedback(data);
         }
     });
@@ -104,13 +146,30 @@ import OAuthManager from './core/OauthManager';
             controller.downloadPdf();
         },
         openOverallBtnOnclick: ()=>{
-            const data = controller.getOverallFeedback();
-            view.toggleOverallFeeback(true, data);
+            // const data = controller.getOverallFeedback();
+            // view.toggleOverallFeeback(true, data);
+            view.toggleControlPanel({
+                target: view.overallFeedbackControlPanel,
+                isVisible: true,
+                data: controller.getOverallFeedback()
+            });
         },
         layerOpacitySliderOnUpdate: (val)=>{
             // console.log(val);
             mapControl.setLayersOpacity(val);
-        }
+        },
+        listViewForOverallFeedbackOnClick:(userID)=>{
+            controller.reviewFeedbacksByUser(userID);
+        },
+        listViewForDetailedFeedbackOnClose:()=>{
+            controller.renderListOfHucsWithFeedbacks();
+        },
+        listViewForDetailedFeedbackOnClick:(hucID)=>{
+            mapControl.addPreviewHucByID(hucID);
+        },
+        listViewForFeedbacksByHucOnClose:()=>{
+            controller.resetSelectedHucFeature();
+        },
     });
 
     controller.init({

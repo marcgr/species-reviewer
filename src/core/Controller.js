@@ -32,7 +32,8 @@ export default function Controller(props={}){
         // console.log('oauth manager', oauthManager.getToken());
 
         if(isReviewMode){
-            initReviewMode();
+            // initReviewMode();
+            controllerProps.onReviewMode();
         }
 
         try{
@@ -61,15 +62,13 @@ export default function Controller(props={}){
         feedbackManager.init({
 
             onOpenHandler: (data)=>{
-                view.feedbackControlPanel.open(data);
-                view.toggleMainControl(false);
                 // console.log('feedbackManager onOpenHandler', data);
+                controllerProps.feedbackManagerOnOpen(data);
             },
 
             onCloseHandler: ()=>{
                 // console.log('feedbackManager is closed');
-                view.feedbackControlPanel.close();
-                view.toggleMainControl(true);
+                controllerProps.feedbackManagerOnClose();
             },
 
             onSubmitHandler:(data)=>{
@@ -88,12 +87,12 @@ export default function Controller(props={}){
         });
     };
 
-    const initReviewMode = ()=>{
+    // const initReviewMode = ()=>{
 
-        view.switchToReviewModeView();
+    //     view.switchToReviewModeView();
 
-        initViewComponentsForReviewMode();
-    };
+    //     initViewComponentsForReviewMode();
+    // };
 
     const initSpeciesLookupTable = (data)=>{
 
@@ -330,9 +329,8 @@ export default function Controller(props={}){
             where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
         }).then(res=>{
             // console.log('previous overall feedbacks by species', res);
-
-            view.openListView(view.listViewForOverallFeedback, res);
-
+            // view.openListView(view.listViewForOverallFeedback, res);
+            controllerProps.overallFeedbackForReviewModeOnReady(res);
         });
     }; 
 
@@ -352,7 +350,9 @@ export default function Controller(props={}){
                     showHucFeatureOnMap(d.hucID, d.status, d);
                 });
 
-                view.openListView(view.listViewForDetailedFeedback, data);
+                // view.openListView(view.listViewForDetailedFeedback, data);
+
+                controllerProps.feedbackByUsersForReviewModeOnReady(data);
 
                 // console.log(data);
             }
@@ -369,10 +369,15 @@ export default function Controller(props={}){
             where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${dataModel.getSelectedSpecies()}'`
         }).then(res=>{
             // console.log(res);
-            view.openListView(view.listViewForFeedbacksByHuc, {
+            // view.openListView(view.listViewForFeedbacksByHuc, {
+            //     data: res,
+            //     hucName
+            // });
+            controllerProps.feedbackByHucsForReviewModeOnReady({
                 data: res,
                 hucName
             });
+
         }).catch(err=>{
             console.error(err);
         })
@@ -570,7 +575,9 @@ export default function Controller(props={}){
 
         resetSelectedHucFeature();
 
-        view.toggleDownloadAsPdfBtn(getPdfUrlForSelectedSpecies());
+        // view.toggleDownloadAsPdfBtn(getPdfUrlForSelectedSpecies());
+
+        controllerProps.pdfUrlOnChange(getPdfUrlForSelectedSpecies());
     };
 
     const setSelectedHucFeature = (feature=null)=>{
@@ -789,36 +796,36 @@ export default function Controller(props={}){
         }
     }
 
-    const initViewComponentsForReviewMode = ()=>{
+    // const initViewComponentsForReviewMode = ()=>{
 
-        view.listViewForOverallFeedback.init({
-            onClickHandler:(userID)=>{
-                // console.log(val);
-                reviewFeedbacksByUser(userID);
-            }
-        });
+    //     view.listViewForOverallFeedback.init({
+    //         onClickHandler:(userID)=>{
+    //             // console.log(val);
+    //             reviewFeedbacksByUser(userID);
+    //         }
+    //     });
 
-        view.listViewForDetailedFeedback.init({
-            onCloseHandler:()=>{
-                // mapControl.clearAllGraphics();
-                view.openListView(view.listViewForOverallFeedback);
-                renderListOfHucsWithFeedbacks();
-            },
-            onClickHandler:(hucID)=>{
-                // console.log(hucID);
-                // mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
-                controllerProps.addPreviewHucByID(hucID);
-            }
-        });
+    //     view.listViewForDetailedFeedback.init({
+    //         onCloseHandler:()=>{
+    //             // mapControl.clearAllGraphics();
+    //             view.openListView(view.listViewForOverallFeedback);
+    //             renderListOfHucsWithFeedbacks();
+    //         },
+    //         onClickHandler:(hucID)=>{
+    //             // console.log(hucID);
+    //             // mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
+    //             controllerProps.addPreviewHucByID(hucID);
+    //         }
+    //     });
 
-        view.listViewForFeedbacksByHuc.init({
-            onCloseHandler:()=>{
-                view.openListView(view.listViewForOverallFeedback);
-                resetSelectedHucFeature();
-                // renderListOfHucsWithFeedbacks();
-            }
-        });
-    };
+    //     view.listViewForFeedbacksByHuc.init({
+    //         onCloseHandler:()=>{
+    //             view.openListView(view.listViewForOverallFeedback);
+    //             resetSelectedHucFeature();
+    //             // renderListOfHucsWithFeedbacks();
+    //         }
+    //     });
+    // };
 
     const getStatusDataForLegend = (data)=>{
         data = data.map((d, i)=>{
@@ -845,7 +852,9 @@ export default function Controller(props={}){
         downloadPdf,
         getOverallFeedback,
         setSelectedSpecies,
-        postOverallFeedback
+        postOverallFeedback,
+        reviewFeedbacksByUser,
+        renderListOfHucsWithFeedbacks
         // openFeedbackManager
     };
 

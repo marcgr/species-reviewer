@@ -73,15 +73,19 @@ import MapControl from './core/MapControl';
         
 
         highligtHucsOnMap:(data)=>{
+            // console.log('highligtHucsOnMap', data);
             mapControl.highlightHucs(data);
         },
         addActualBoundaryLayerToMap:(url='')=>{
+            // console.log('addActualBoundaryLayerToMap', url);
             mapControl.addActualModelBoundaryLayer(url);
         },
         clearMapGraphics:(targetLayer='')=>{
+            // console.log('clearMapGraphics', targetLayer);
             mapControl.clearMapGraphics(targetLayer);
         },
         showHucFeatureOnMap:(hucID='', status)=>{
+            // console.log('showHucFeatureOnMap', hucID);
             mapControl.showHucFeatureByStatus(hucID, status);
         },
         addPreviewHucByID:(hucID)=>{

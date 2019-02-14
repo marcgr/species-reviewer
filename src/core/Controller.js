@@ -437,15 +437,6 @@ export default function Controller(props={}){
         });
     };
 
-    const speciesOnSelectHandler = (val)=>{
-
-        searchHucsBySpecies(val);
-
-        resetSelectedHucFeature();
-
-        controllerProps.pdfUrlOnChange(getPdfUrlForSelectedSpecies());
-    };
-
     const setSelectedHucFeature = (feature=null)=>{
 
         state.selectedHucFeature = feature;
@@ -575,12 +566,16 @@ export default function Controller(props={}){
 
         controllerProps.showHucFeatureOnMap(hucID, status);
     };
-
+    
     const setSelectedSpecies = (val)=>{
 
         dataModel.setSelectedSpecies(val);
 
-        speciesOnSelectHandler(val);
+        searchHucsBySpecies(val);
+
+        resetSelectedHucFeature();
+
+        controllerProps.pdfUrlOnChange(getPdfUrlForSelectedSpecies());
 
         controllerProps.speciesOnSelect();
 

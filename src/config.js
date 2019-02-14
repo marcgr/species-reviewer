@@ -38,7 +38,7 @@ module.exports = {
     'DOM_ID': {
         'mainControl': 'mainControlDiv',
         'mapViewContainer': 'viewDiv',
-        "speciesSelector": 'speciesSelectorDiv',
+        "speciesSelector": 'selectorsDiv',
         'feedbackControl': 'feedbackControlDiv',
         'overallFeedbackControl': 'overallFeedbackDiv',
         'legend': 'legendDiv',

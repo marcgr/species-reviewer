@@ -27,7 +27,7 @@ import MapControl from './core/MapControl';
 
         speciesDataOnReady:(data)=>{
             // console.log('speciesDataOnReady', data);
-            view.speciesSelector.render(data);
+            view.speciesSelector.render({ data });
         },
         legendDataOnReady:(data)=>{
             view.initLegend(data);

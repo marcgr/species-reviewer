@@ -1,12 +1,13 @@
-import axios from 'axios';
+// import axios from 'axios';
 
 import DataModel from './DataModel';
 import DataModelForReviewMode from './DataModelForReviewMode';
 import FeedbackManager from './FeedbackManager';
 import config from '../config';
 import OAuthManager from './OauthManager';
+import ApiManager from './ApiManager';
 
-const Promise = require('es6-promise').Promise;
+// const Promise = require('es6-promise').Promise;
 
 export default function Controller(props={}){
 
@@ -17,6 +18,7 @@ export default function Controller(props={}){
     const dataModel = new DataModel();
     const dataModelForReviewMode = new DataModelForReviewMode();
     const feedbackManager = new FeedbackManager();
+    const apiManager = new ApiManager({oauthManager});
 
     const controllerProps = props;
     const state = {
@@ -35,9 +37,9 @@ export default function Controller(props={}){
         try{
             const credential = await oauthManager.init();
 
-            const sepeciesData = await querySpeciesLookupTable();
+            const sepeciesData = await apiManager.querySpeciesLookupTable();
 
-            const statusData = await queryStatusTable();
+            const statusData = await apiManager.queryStatusTable();
     
             initSpeciesLookupTable(sepeciesData);
     
@@ -130,7 +132,7 @@ export default function Controller(props={}){
                 speciesKey
             });
         } else {
-            queryHucsBySpecies(speciesKey).then(data=>{
+            apiManager.queryHucsBySpecies(speciesKey).then(data=>{
 
                 data = data.map(d=>{
                     return d.attributes
@@ -187,88 +189,88 @@ export default function Controller(props={}){
         });
     };
 
-    const querySpeciesLookupTable = ()=>{
+    // const querySpeciesLookupTable = ()=>{
 
-        const requestUrl = config.URL.speciesLookupTable + '/query';
+    //     const requestUrl = config.URL.speciesLookupTable + '/query';
 
-        return new Promise((resolve, reject)=>{
+    //     return new Promise((resolve, reject)=>{
 
-            axios.get(requestUrl, {
-                params: {
-                    where: '1=1',
-                    outFields: '*',
-                    f: 'json',
-                    token: oauthManager.getToken()
-                }
-            }).then(function (response) {
-                // console.log(response);
+    //         axios.get(requestUrl, {
+    //             params: {
+    //                 where: '1=1',
+    //                 outFields: '*',
+    //                 f: 'json',
+    //                 token: oauthManager.getToken()
+    //             }
+    //         }).then(function (response) {
+    //             // console.log(response);
 
-                if(response.data && response.data.features && response.data.features.length){
-                    // console.log(response.data.features);
-                    resolve(response.data.features) 
-                }
-            }).catch(err=>{
-                console.error(err);
-            });
-        });
+    //             if(response.data && response.data.features && response.data.features.length){
+    //                 // console.log(response.data.features);
+    //                 resolve(response.data.features) 
+    //             }
+    //         }).catch(err=>{
+    //             console.error(err);
+    //         });
+    //     });
 
-    };
+    // };
 
-    const queryHucsBySpecies = (speciesKey)=>{
-        // const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
+    // const queryHucsBySpecies = (speciesKey)=>{
+    //     // const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
 
-        const requestUrl = config.URL.speciesDistribution + '/query';
-        const whereClause = `${config.FIELD_NAME.speciesDistribution.speciesCode} = '${speciesKey}'`;
+    //     const requestUrl = config.URL.speciesDistribution + '/query';
+    //     const whereClause = `${config.FIELD_NAME.speciesDistribution.speciesCode} = '${speciesKey}'`;
 
-        if(requestUrl){
-            return new Promise((resolve, reject)=>{
+    //     if(requestUrl){
+    //         return new Promise((resolve, reject)=>{
 
-                axios.get(requestUrl, {
-                    params: {
-                        where: whereClause,
-                        outFields: '*',
-                        f: 'json',
-                        token: oauthManager.getToken()
-                    }
-                }).then(function (response) {
-                    if(response.data && response.data.features && response.data.features.length){
-                        // console.log(response.data.features);
-                        resolve(response.data.features) 
-                    }
-                }).catch(err=>{
-                    console.error(err);
-                });
-            });
+    //             axios.get(requestUrl, {
+    //                 params: {
+    //                     where: whereClause,
+    //                     outFields: '*',
+    //                     f: 'json',
+    //                     token: oauthManager.getToken()
+    //                 }
+    //             }).then(function (response) {
+    //                 if(response.data && response.data.features && response.data.features.length){
+    //                     // console.log(response.data.features);
+    //                     resolve(response.data.features) 
+    //                 }
+    //             }).catch(err=>{
+    //                 console.error(err);
+    //             });
+    //         });
 
-        } else {
-            console.log('species extent table url is not found for', speciesKey);
-        }
-    };
+    //     } else {
+    //         console.log('species extent table url is not found for', speciesKey);
+    //     }
+    // };
 
-    const queryStatusTable = ()=>{
-        const requestUrl = config.URL.statusTable + '/query';
+    // const queryStatusTable = ()=>{
+    //     const requestUrl = config.URL.statusTable + '/query';
 
-        return new Promise((resolve, reject)=>{
+    //     return new Promise((resolve, reject)=>{
 
-            axios.get(requestUrl, {
-                params: {
-                    where: '1=1',
-                    outFields: '*',
-                    f: 'json',
-                    token: oauthManager.getToken()
-                }
-            }).then(function (response) {
-                // console.log(response);
+    //         axios.get(requestUrl, {
+    //             params: {
+    //                 where: '1=1',
+    //                 outFields: '*',
+    //                 f: 'json',
+    //                 token: oauthManager.getToken()
+    //             }
+    //         }).then(function (response) {
+    //             // console.log(response);
 
-                if(response.data && response.data.features && response.data.features.length){
-                    // console.log(response.data.features);
-                    resolve(response.data.features) 
-                }
-            }).catch(err=>{
-                console.error(err);
-            });
-        });
-    };
+    //             if(response.data && response.data.features && response.data.features.length){
+    //                 // console.log(response.data.features);
+    //                 resolve(response.data.features) 
+    //             }
+    //         }).catch(err=>{
+    //             console.error(err);
+    //         });
+    //     });
+    // };
 
     const queryFeedbacksByUser = (options={
         userID: '', 
@@ -284,7 +286,7 @@ export default function Controller(props={}){
             whereClauseParts.push(`${config.FIELD_NAME.feedbackTable.species} = '${options.species}'`)
         }
 
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.feedbackTable + '/query',
             where: whereClauseParts.join(' AND ')
         }).then(res=>{
@@ -315,7 +317,7 @@ export default function Controller(props={}){
 
         const species = dataModel.getSelectedSpecies();
 
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.overallFeedback + '/query',
             where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
         }).then(res=>{
@@ -350,7 +352,7 @@ export default function Controller(props={}){
         const hucID = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
         const hucName = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
         
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${dataModel.getSelectedSpecies()}'`
         }).then(res=>{
@@ -369,7 +371,7 @@ export default function Controller(props={}){
 
         const userID = oauthManager.getUserID();
 
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.overallFeedback + '/query',
             where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
         }).then(res=>{
@@ -384,38 +386,38 @@ export default function Controller(props={}){
         });
     };
 
-    const fetchFeedback = (options={})=>{
-        const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
-        const whereClause = options.where || '1=1';
-        const outFields = options.outFields || '*';
-        const returnDistinctValues = options.returnDistinctValues || false;
+    // const fetchFeedback = (options={})=>{
+    //     const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
+    //     const whereClause = options.where || '1=1';
+    //     const outFields = options.outFields || '*';
+    //     const returnDistinctValues = options.returnDistinctValues || false;
 
-        return new Promise((resolve, reject)=>{
+    //     return new Promise((resolve, reject)=>{
 
-            axios.get(requestUrl, {
-                params: {
-                    where: whereClause,
-                    outFields,
-                    returnDistinctValues,
-                    f: 'json',
-                    token: oauthManager.getToken()
-                }
-            }).then(function (response) {
-                // console.log(response);
+    //         axios.get(requestUrl, {
+    //             params: {
+    //                 where: whereClause,
+    //                 outFields,
+    //                 returnDistinctValues,
+    //                 f: 'json',
+    //                 token: oauthManager.getToken()
+    //             }
+    //         }).then(function (response) {
+    //             // console.log(response);
 
-                if(response.data && response.data.features){
-                    // console.log(response.data.features);
-                    resolve(response.data.features);
-                } else {
-                    reject('no features found from the feedback table');
-                }
-            });
-        });
-    };
+    //             if(response.data && response.data.features){
+    //                 // console.log(response.data.features);
+    //                 resolve(response.data.features);
+    //             } else {
+    //                 reject('no features found from the feedback table');
+    //             }
+    //         });
+    //     });
+    // };
 
     const deleteFeedback = (data={})=>{
         // // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
         }).then(features=>{
@@ -425,7 +427,7 @@ export default function Controller(props={}){
                 const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
                 const objectID = features[0].attributes.ObjectId;
 
-                deleteFromFeedbackTable(requestUrl, objectID).then(res=>{
+                apiManager.deleteFromFeedbackTable(requestUrl, objectID).then(res=>{
                     // console.log('deleted from feedback table', res);
                 });
             } 
@@ -452,7 +454,7 @@ export default function Controller(props={}){
 
         saveOverallFeedbackToDataModel([feature]);
 
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.overallFeedback + '/query',
             where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.species} = '${species}'`
         }).then(features=>{
@@ -465,7 +467,7 @@ export default function Controller(props={}){
                 feature.attributes.ObjectId = features[0].attributes.ObjectId;
             } 
 
-            applyEditToFeatureTable(requestUrl, feature).then(res=>{
+            apiManager.applyEditToFeatureTable(requestUrl, feature).then(res=>{
                 // console.log('post edit to OverallFeedback table', res);
             });
         }).catch(err=>{
@@ -487,7 +489,7 @@ export default function Controller(props={}){
         };
 
         // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
-        fetchFeedback({
+        apiManager.fetchFeedback({
             requestUrl: config.URL.feedbackTable + '/query',
             where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
         }).then(features=>{
@@ -500,7 +502,7 @@ export default function Controller(props={}){
                 feedbackFeature.attributes.ObjectId = features[0].attributes.ObjectId;
             } 
 
-            applyEditToFeatureTable(requestUrl, feedbackFeature).then(res=>{
+            apiManager.applyEditToFeatureTable(requestUrl, feedbackFeature).then(res=>{
                 // console.log(applyEditToFeatureTable, res);
             });
 
@@ -510,45 +512,45 @@ export default function Controller(props={}){
         })
     };
 
-    const deleteFromFeedbackTable = (requestUrl, objectID)=>{
-        // const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
+    // const deleteFromFeedbackTable = (requestUrl, objectID)=>{
+    //     // const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
 
-        const bodyFormData = new FormData();
-        bodyFormData.append('objectIds', objectID); 
-        bodyFormData.append('rollbackOnFailure', false); 
-        bodyFormData.append('f', 'pjson'); 
-        bodyFormData.append('token', oauthManager.getToken()); 
+    //     const bodyFormData = new FormData();
+    //     bodyFormData.append('objectIds', objectID); 
+    //     bodyFormData.append('rollbackOnFailure', false); 
+    //     bodyFormData.append('f', 'pjson'); 
+    //     bodyFormData.append('token', oauthManager.getToken()); 
 
-        return new Promise((resolve, reject)=>{
+    //     return new Promise((resolve, reject)=>{
 
-            axios.post(requestUrl, bodyFormData).then(function (response) {
-                // console.log(response);
-                resolve(response);
-            }).catch(err=>{
-                console.error(err);
-            });
-        });
-    }
+    //         axios.post(requestUrl, bodyFormData).then(function (response) {
+    //             // console.log(response);
+    //             resolve(response);
+    //         }).catch(err=>{
+    //             console.error(err);
+    //         });
+    //     });
+    // }
 
-    const applyEditToFeatureTable = (requestUrl, feature)=>{
-        // const requestUrl = config.URL.feedbackTable + '/' + operationName;
+    // const applyEditToFeatureTable = (requestUrl, feature)=>{
+    //     // const requestUrl = config.URL.feedbackTable + '/' + operationName;
 
-        const bodyFormData = new FormData();
-        bodyFormData.append('features', JSON.stringify(feature)); 
-        bodyFormData.append('rollbackOnFailure', false); 
-        bodyFormData.append('f', 'pjson'); 
-        bodyFormData.append('token', oauthManager.getToken()); 
+    //     const bodyFormData = new FormData();
+    //     bodyFormData.append('features', JSON.stringify(feature)); 
+    //     bodyFormData.append('rollbackOnFailure', false); 
+    //     bodyFormData.append('f', 'pjson'); 
+    //     bodyFormData.append('token', oauthManager.getToken()); 
 
-        return new Promise((resolve, reject)=>{
+    //     return new Promise((resolve, reject)=>{
 
-            axios.post(requestUrl, bodyFormData).then(function (response) {
-                // console.log(response);
-                resolve(response);
-            }).catch(err=>{
-                console.error(err);
-            });
-        });
-    };
+    //         axios.post(requestUrl, bodyFormData).then(function (response) {
+    //             // console.log(response);
+    //             resolve(response);
+    //         }).catch(err=>{
+    //             console.error(err);
+    //         });
+    //     });
+    // };
 
     const speciesOnSelectHandler = (val)=>{
 
@@ -681,7 +683,7 @@ export default function Controller(props={}){
         if(dataModelForReviewMode.getHucsWithFeedbacks(species)){
             renderListOfHucsWithFeedbacks();
         } else {
-            fetchFeedback({
+            apiManager.fetchFeedback({
                 requestUrl: config.URL.feedbackTable + '/query',
                 where: `${config.FIELD_NAME.feedbackTable.species} = '${species}'`,
                 outFields: `${config.FIELD_NAME.feedbackTable.hucID}, ${config.FIELD_NAME.feedbackTable.status}`,

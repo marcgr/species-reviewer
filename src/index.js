@@ -6,12 +6,12 @@ import config from './config';
 import Controller from './core/Controller';
 import View from './core/View';
 import MapControl from './core/MapControl';
-import OAuthManager from './core/OauthManager';
+// import OAuthManager from './core/OauthManager';
 
 (async function initApp(){
 
-    const oauthManager = new OAuthManager(config.oauthAppID);
-    const credential = await oauthManager.init();
+    // const oauthManager = new OAuthManager(config.oauthAppID);
+    // const credential = await oauthManager.init();
 
     const view = new View();
     
@@ -22,8 +22,8 @@ import OAuthManager from './core/OauthManager';
 
     const controller = new Controller({
         // mapControl,
-        view,
-        oauthManager,
+        // view,
+        // oauthManager,
 
         speciesDataOnReady:(data)=>{
             // console.log('speciesDataOnReady', data);
@@ -45,6 +45,10 @@ import OAuthManager from './core/OauthManager';
                 isVisible: false
             });
         },
+        speciesOnSelect:()=>{
+            view.enableOpenOverallFeedbackBtnBtn();
+        },
+
 
         onReviewMode:()=>{
             view.switchToReviewModeView();
@@ -58,6 +62,13 @@ import OAuthManager from './core/OauthManager';
         },
         feedbackByHucsForReviewModeOnReady: (data=null)=>{
             view.openListView(view.listViewForFeedbacksByHuc, data);
+        },
+        hucFeatureOnSelectForReviewMode:(feature)=>{
+            if(view.listViewForDetailedFeedback.isVisible()){
+                view.listViewForDetailedFeedback.setActiveRow(feature.attributes[config.FIELD_NAME.huc10LayerHucID]);
+            } else {
+                controller.reviewFeedbacksByHuc(feature);
+            }
         },
         
 
@@ -176,8 +187,8 @@ import OAuthManager from './core/OauthManager';
         // token: credential.token
     });
 
-    window.appDebugger = {
-        signOut: oauthManager.signOut
-    };
+    // window.appDebugger = {
+    //     signOut: oauthManager.signOut
+    // };
 
 })();

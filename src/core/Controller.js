@@ -4,32 +4,28 @@ import DataModel from './DataModel';
 import DataModelForReviewMode from './DataModelForReviewMode';
 import FeedbackManager from './FeedbackManager';
 import config from '../config';
+import OAuthManager from './OauthManager';
 
 const Promise = require('es6-promise').Promise;
 
 export default function Controller(props={}){
 
     // let token = null;
-    let selectedHucFeature = null;
-    let isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
-    
+    // let selectedHucFeature = null;
 
-    const controllerProps = props;
-    // const mapControl = props.mapControl || null;
-    const view = props.view || null;
-    const oauthManager = props.oauthManager || null;
-
+    const oauthManager = new OAuthManager(config.oauthAppID);
     const dataModel = new DataModel();
     const dataModelForReviewMode = new DataModelForReviewMode();
     const feedbackManager = new FeedbackManager();
 
-    // const speciesDataOnReady = props.speciesDataOnReady || null;
-    // const legendDataOnReady = props.legendDataOnReady || null;
-    // const hucsBySpeciesDataOnReady = props.hucsBySpeciesDataOnReady || null;
-    
-    const init = async (options={})=>{
-        // console.log('init app controller', dataModel, mapControl, view);
-        // console.log('oauth manager', oauthManager.getToken());
+    const controllerProps = props;
+    const state = {
+        selectedHucFeature: null
+    };
+    const isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
+
+    const init = async ()=>{
+        // console.log('init app controller');
 
         if(isReviewMode){
             // initReviewMode();
@@ -37,6 +33,8 @@ export default function Controller(props={}){
         }
 
         try{
+            const credential = await oauthManager.init();
+
             const sepeciesData = await querySpeciesLookupTable();
 
             const statusData = await queryStatusTable();
@@ -86,13 +84,6 @@ export default function Controller(props={}){
             }
         });
     };
-
-    // const initReviewMode = ()=>{
-
-    //     view.switchToReviewModeView();
-
-    //     initViewComponentsForReviewMode();
-    // };
 
     const initSpeciesLookupTable = (data)=>{
 
@@ -329,7 +320,6 @@ export default function Controller(props={}){
             where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
         }).then(res=>{
             // console.log('previous overall feedbacks by species', res);
-            // view.openListView(view.listViewForOverallFeedback, res);
             controllerProps.overallFeedbackForReviewModeOnReady(res);
         });
     }; 
@@ -341,16 +331,12 @@ export default function Controller(props={}){
             species: dataModel.getSelectedSpecies(),
             onSuccessHandler: (data)=>{
 
-                // mapControl.clearAllGraphics();
-
                 controllerProps.clearMapGraphics();
 
                 data.forEach(d=>{
                     // console.log(d);
                     showHucFeatureOnMap(d.hucID, d.status, d);
                 });
-
-                // view.openListView(view.listViewForDetailedFeedback, data);
 
                 controllerProps.feedbackByUsersForReviewModeOnReady(data);
 
@@ -369,10 +355,6 @@ export default function Controller(props={}){
             where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${dataModel.getSelectedSpecies()}'`
         }).then(res=>{
             // console.log(res);
-            // view.openListView(view.listViewForFeedbacksByHuc, {
-            //     data: res,
-            //     hucName
-            // });
             controllerProps.feedbackByHucsForReviewModeOnReady({
                 data: res,
                 hucName
@@ -569,22 +551,19 @@ export default function Controller(props={}){
     };
 
     const speciesOnSelectHandler = (val)=>{
-        // dataModel.setSelectedSpecies(val);
 
         searchHucsBySpecies(val);
 
         resetSelectedHucFeature();
-
-        // view.toggleDownloadAsPdfBtn(getPdfUrlForSelectedSpecies());
 
         controllerProps.pdfUrlOnChange(getPdfUrlForSelectedSpecies());
     };
 
     const setSelectedHucFeature = (feature=null)=>{
 
-        selectedHucFeature = feature;
+        state.selectedHucFeature = feature;
 
-        const hucID = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
+        const hucID = state.selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
 
         if(!isReviewMode){
             
@@ -596,17 +575,19 @@ export default function Controller(props={}){
         } else {
             // console.log('query feedbacks for selected huc', hucID);
 
-            if(view.listViewForDetailedFeedback.isVisible()){
-                view.listViewForDetailedFeedback.setActiveRow(hucID);
-            } else {
-                reviewFeedbacksByHuc(selectedHucFeature);
-            }
+            controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeature);
+
+            // if(view.listViewForDetailedFeedback.isVisible()){
+            //     view.listViewForDetailedFeedback.setActiveRow(hucID);
+            // } else {
+            //     reviewFeedbacksByHuc(selectedHucFeature);
+            // }
     
         }
     };
 
     const resetSelectedHucFeature = ()=>{
-        selectedHucFeature = null;
+        state.selectedHucFeature = null;
 
         dataModel.setSelectedHuc();
 
@@ -621,7 +602,7 @@ export default function Controller(props={}){
         const userID = oauthManager.getUserID();
         const species = dataModel.getSelectedSpecies();
         const hucID = dataModel.getSelectedHuc();
-        const hucName = selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
+        const hucName = state.selectedHucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
         const isHucInModeledRange = dataModel.isHucInModeledRange(hucID, species);
 
         // console.log('isHucInModeledRange', isHucInModeledRange);
@@ -732,55 +713,8 @@ export default function Controller(props={}){
             return
         }
 
-        controllerProps.showHucFeatureOnMap(hucID, status)
-
-        // mapControl.showHucFeatureByStatus(hucID, status);
-
-        // const options = data ? getHucFeatureOptions(data) : {};
-
-        // mapControl.showHucFeatureByStatus(hucID, status, options);
+        controllerProps.showHucFeatureOnMap(hucID, status);
     };
-
-    // const getHucFeatureOptions = (data)=>{
-    //     // console.log(data);
-    //     return {
-    //         attributes: {
-    //             "hucID": data.hucID,
-    //             "status": data.status === 1 ? 'Add' : 'Remove',
-    //             "comment": data.comment
-    //         },
-    //         popupTemplate: {
-    //             title: "Feedback for {NAME}",
-    //             content: [
-    //                 {
-    //                     type: "fields",
-    //                     fieldInfos: [
-    //                         {
-    //                             fieldName: "NAME",
-    //                             label: "NAME",
-    //                             visible: false
-    //                         },
-    //                         {
-    //                             fieldName: "hucID",
-    //                             label: "HUCID",
-    //                             visible: true
-    //                         },
-    //                         {
-    //                             fieldName: "status",
-    //                             label: "Action",
-    //                             visible: true
-    //                         },
-    //                         {
-    //                             fieldName: "comment",
-    //                             label: "Comment",
-    //                             visible: true
-    //                         },
-    //                     ]
-    //                 }
-    //             ]
-    //         }
-    //     }
-    // };
 
     const setSelectedSpecies = (val)=>{
 
@@ -788,44 +722,13 @@ export default function Controller(props={}){
 
         speciesOnSelectHandler(val);
 
+        controllerProps.speciesOnSelect();
+
         if(isReviewMode){
             reviewOverallFeedbacksBySpecies();
             getListOfHucsWithFeedbacks();
-        } else {
-            view.enableOpenOverallFeedbackBtnBtn();
         }
-    }
-
-    // const initViewComponentsForReviewMode = ()=>{
-
-    //     view.listViewForOverallFeedback.init({
-    //         onClickHandler:(userID)=>{
-    //             // console.log(val);
-    //             reviewFeedbacksByUser(userID);
-    //         }
-    //     });
-
-    //     view.listViewForDetailedFeedback.init({
-    //         onCloseHandler:()=>{
-    //             // mapControl.clearAllGraphics();
-    //             view.openListView(view.listViewForOverallFeedback);
-    //             renderListOfHucsWithFeedbacks();
-    //         },
-    //         onClickHandler:(hucID)=>{
-    //             // console.log(hucID);
-    //             // mapControl.queryHucsLayerByHucID(hucID).then(mapControl.addPreviewHucGraphic);
-    //             controllerProps.addPreviewHucByID(hucID);
-    //         }
-    //     });
-
-    //     view.listViewForFeedbacksByHuc.init({
-    //         onCloseHandler:()=>{
-    //             view.openListView(view.listViewForOverallFeedback);
-    //             resetSelectedHucFeature();
-    //             // renderListOfHucsWithFeedbacks();
-    //         }
-    //     });
-    // };
+    };
 
     const getStatusDataForLegend = (data)=>{
         data = data.map((d, i)=>{
@@ -854,7 +757,8 @@ export default function Controller(props={}){
         setSelectedSpecies,
         postOverallFeedback,
         reviewFeedbacksByUser,
-        renderListOfHucsWithFeedbacks
+        renderListOfHucsWithFeedbacks,
+        reviewFeedbacksByHuc
         // openFeedbackManager
     };
 

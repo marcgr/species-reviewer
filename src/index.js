@@ -67,7 +67,7 @@ import MapControl from './core/MapControl';
             if(view.listViewForDetailedFeedback.isVisible()){
                 view.listViewForDetailedFeedback.setActiveRow(feature.attributes[config.FIELD_NAME.huc10LayerHucID]);
             } else {
-                controller.reviewFeedbacksByHuc(feature);
+                controller.getFeedbacksByHucForReviewMode(feature);
             }
         },
         
@@ -170,7 +170,7 @@ import MapControl from './core/MapControl';
             mapControl.setLayersOpacity(val);
         },
         listViewForOverallFeedbackOnClick:(userID)=>{
-            controller.reviewFeedbacksByUser(userID);
+            controller.getFeedbacksByUserForReviewMode(userID);
         },
         listViewForDetailedFeedbackOnClose:()=>{
             controller.renderListOfHucsWithFeedbacks();

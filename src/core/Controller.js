@@ -1,4 +1,4 @@
-// import axios from 'axios';
+'use strict';
 
 import DataModel from './DataModel';
 import DataModelForReviewMode from './DataModelForReviewMode';
@@ -7,12 +7,7 @@ import config from '../config';
 import OAuthManager from './OauthManager';
 import ApiManager from './ApiManager';
 
-// const Promise = require('es6-promise').Promise;
-
 export default function Controller(props={}){
-
-    // let token = null;
-    // let selectedHucFeature = null;
 
     const oauthManager = new OAuthManager(config.oauthAppID);
     const dataModel = new DataModel();
@@ -122,32 +117,285 @@ export default function Controller(props={}){
         controllerProps.legendDataOnReady(getStatusDataForLegend(data));
     };
 
-    const searchHucsBySpecies = (speciesKey)=>{
+    // get list of hucs by the species code (modelling extent), then render these hucs on map
+    const searchHucsBySpecies = async (speciesKey)=>{
 
-        const hucsBySpecies = dataModel.getHucsBySpecies(speciesKey);
+        let data = dataModel.getHucsBySpecies(speciesKey);
 
-        if(hucsBySpecies){
-            renderHucsBySpeciesDataOnMap({
-                data: hucsBySpecies,
-                speciesKey
-            });
+        if(data){
+            renderHucsBySpeciesDataOnMap({ data,  speciesKey });
         } else {
-            apiManager.queryHucsBySpecies(speciesKey).then(data=>{
 
-                data = data.map(d=>{
-                    return d.attributes
-                });
+            try {
+
+                data = await apiManager.queryHucsBySpecies(speciesKey);
+
+                data = data.map(d=>{ return d.attributes });
     
                 dataModel.setHucsBySpecies(speciesKey, data);
     
-                renderHucsBySpeciesDataOnMap({
-                    speciesKey
-                });
-            }).catch(err=>{
-                console.log(err);
-            })
+                renderHucsBySpeciesDataOnMap({ data, speciesKey });
+
+            } catch(err){
+                console.error(err);
+            }
         }
 
+    };
+
+    // get previous feedbacks provided by the user
+    const queryFeedbacksByUser = async(options={
+        userID: '', 
+        species: '',
+        onSuccessHandler: null
+    })=>{
+
+        const userID = options.userID || oauthManager.getUserID();
+        const onSuccessHandler = options.onSuccessHandler;
+        const whereClauseParts = [`${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`];
+
+        if(options.species){
+            whereClauseParts.push(`${config.FIELD_NAME.feedbackTable.species} = '${options.species}'`)
+        }
+
+        try {
+
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.feedbackTable + '/query',
+                where: whereClauseParts.join(' AND ')
+            });
+
+            const formattedFeedbackData = feedbacks.map(d=>{
+                return {
+                    userID: d.attributes[config.FIELD_NAME.feedbackTable.userID],
+                    hucID: d.attributes[config.FIELD_NAME.feedbackTable.hucID],
+                    species: d.attributes[config.FIELD_NAME.feedbackTable.species],
+                    status: d.attributes[config.FIELD_NAME.feedbackTable.status],
+                    comment: d.attributes[config.FIELD_NAME.feedbackTable.comment]
+                }
+            });
+
+            if(onSuccessHandler){
+                onSuccessHandler(formattedFeedbackData);
+            } else {
+                feedbackManager.batchAddToDataStore(formattedFeedbackData);
+            }
+
+        } catch(err){
+            console.error(err);
+        }
+
+    };
+
+    const queryOverallFeedbacksByUser = async()=>{
+
+        const userID = oauthManager.getUserID();
+
+        try {
+            
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.overallFeedback + '/query',
+                where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
+            });
+
+            saveOverallFeedbackToDataModel(feedbacks);
+
+        } catch(err){
+            console.error(err);
+        }
+
+    };
+
+    // get overall feedbacks for the selected species that are from all users 
+    const getOverallFeedbacksForReviewMode = async ()=>{
+
+        const species = dataModel.getSelectedSpecies();
+
+        try {
+
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.overallFeedback + '/query',
+                where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
+            });
+
+            controllerProps.overallFeedbackForReviewModeOnReady(feedbacks);
+
+        } catch(err){
+            console.error(err);
+        }
+
+    }; 
+
+    const postOverallFeedback = async(data={
+        rating: 0,
+        comment: ''
+    })=>{
+        const userID = oauthManager.getUserID();
+        const species = dataModel.getSelectedSpecies();
+
+        const feature = {
+            "attributes": {
+                [config.FIELD_NAME.overallFeedback.userID]: userID,
+                [config.FIELD_NAME.overallFeedback.species]: species,
+                [config.FIELD_NAME.overallFeedback.rating]: data.rating,
+                [config.FIELD_NAME.overallFeedback.comment]: data.comment,
+            }
+        };
+
+        saveOverallFeedbackToDataModel([feature]);
+
+        try {
+            
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.overallFeedback + '/query',
+                where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.species} = '${species}'`
+            });
+
+            const requestUrl = feedbacks[0] ? config.URL.overallFeedback + '/updateFeatures' : config.URL.overallFeedback + '/addFeatures' ;
+            // let operationName = 'addFeatures';
+
+            if(feedbacks[0]){
+                feature.attributes.ObjectId = feedbacks[0].attributes.ObjectId;
+            } 
+
+            apiManager.applyEditToFeatureTable(requestUrl, feature).then(res=>{
+                console.log('post edit to OverallFeedback table', res);
+            });
+
+        } catch(err){
+            console.error(err);
+        }
+
+    }
+
+    const getFeedbacksByUserForReviewMode = (userID='')=>{
+
+        queryFeedbacksByUser({
+            userID,
+            species: dataModel.getSelectedSpecies(),
+            onSuccessHandler: (data)=>{
+
+                controllerProps.clearMapGraphics();
+
+                data.forEach(d=>{
+                    // console.log(d);
+                    showHucFeatureOnMap(d.hucID, d.status, d);
+                });
+
+                controllerProps.feedbackByUsersForReviewModeOnReady(data);
+
+                // console.log(data);
+            }
+        })
+    };
+
+    const getFeedbacksByHucForReviewMode = async(hucFeature)=>{
+
+        const hucID = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
+        const hucName = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
+
+        try {
+
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.feedbackTable + '/query',
+                where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${dataModel.getSelectedSpecies()}'`
+            });
+
+            controllerProps.feedbackByHucsForReviewModeOnReady({
+                data: feedbacks,
+                hucName
+            });
+
+        } catch(err){
+            console.error(err);
+        }
+
+    };
+
+    const deleteFeedback = async(data={})=>{
+        // // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
+
+        try {
+            
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.feedbackTable + '/query',
+                where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
+            });
+
+            if(feedbacks[0]){
+                const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
+                const objectID = feedbacks[0].attributes.ObjectId;
+
+                apiManager.deleteFromFeedbackTable(requestUrl, objectID).then(res=>{
+                    console.log('deleted from feedback table', res);
+                });
+            } 
+
+        } catch(err){
+            console.error(err);
+        }
+    };
+
+    const postFeedback = async(data={})=>{
+        // console.log(data);
+
+        const feedbackFeature = {
+            "attributes": {
+                [config.FIELD_NAME.feedbackTable.userID]: data.userID,
+                [config.FIELD_NAME.feedbackTable.hucID]: data.hucID,
+                [config.FIELD_NAME.feedbackTable.status]: data.status,
+                [config.FIELD_NAME.feedbackTable.comment]: data.comment,
+                [config.FIELD_NAME.feedbackTable.species]: data.species
+            }
+        };
+
+        try {
+
+            const feedbacks = await apiManager.fetchFeedback({
+                requestUrl: config.URL.feedbackTable + '/query',
+                where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
+            });
+
+            const requestUrl = feedbacks[0] ? config.URL.feedbackTable + '/updateFeatures' : config.URL.feedbackTable + '/addFeatures' ;
+            // let operationName = 'addFeatures';
+
+            if(feedbacks[0]){
+                feedbackFeature.attributes.ObjectId = feedbacks[0].attributes.ObjectId;
+            } 
+
+            apiManager.applyEditToFeatureTable(requestUrl, feedbackFeature).then(res=>{
+                console.log('post edit to Feedback table', res);
+            });
+
+
+        } catch(err){
+            console.error(err);
+        }
+    };
+
+    const getHucsWithFeedbacksForReviewMode = async()=>{
+        const species = dataModel.getSelectedSpecies();
+
+        if(dataModelForReviewMode.getHucsWithFeedbacks(species)){
+            renderListOfHucsWithFeedbacks();
+        } else {
+
+            try {
+                const feedbacks = await apiManager.fetchFeedback({
+                    requestUrl: config.URL.feedbackTable + '/query',
+                    where: `${config.FIELD_NAME.feedbackTable.species} = '${species}'`,
+                    outFields: `${config.FIELD_NAME.feedbackTable.hucID}, ${config.FIELD_NAME.feedbackTable.status}`,
+                    returnDistinctValues: true
+                });
+
+                dataModelForReviewMode.setHucsWithFeedbacks(species, feedbacks);
+
+                renderListOfHucsWithFeedbacks();
+
+            } catch(err){
+                console.error(err);
+            }
+        }
     };
 
     const renderHucsBySpeciesDataOnMap = (options={
@@ -189,369 +437,6 @@ export default function Controller(props={}){
         });
     };
 
-    // const querySpeciesLookupTable = ()=>{
-
-    //     const requestUrl = config.URL.speciesLookupTable + '/query';
-
-    //     return new Promise((resolve, reject)=>{
-
-    //         axios.get(requestUrl, {
-    //             params: {
-    //                 where: '1=1',
-    //                 outFields: '*',
-    //                 f: 'json',
-    //                 token: oauthManager.getToken()
-    //             }
-    //         }).then(function (response) {
-    //             // console.log(response);
-
-    //             if(response.data && response.data.features && response.data.features.length){
-    //                 // console.log(response.data.features);
-    //                 resolve(response.data.features) 
-    //             }
-    //         }).catch(err=>{
-    //             console.error(err);
-    //         });
-    //     });
-
-    // };
-
-    // const queryHucsBySpecies = (speciesKey)=>{
-    //     // const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
-
-    //     const requestUrl = config.URL.speciesDistribution + '/query';
-    //     const whereClause = `${config.FIELD_NAME.speciesDistribution.speciesCode} = '${speciesKey}'`;
-
-    //     if(requestUrl){
-    //         return new Promise((resolve, reject)=>{
-
-    //             axios.get(requestUrl, {
-    //                 params: {
-    //                     where: whereClause,
-    //                     outFields: '*',
-    //                     f: 'json',
-    //                     token: oauthManager.getToken()
-    //                 }
-    //             }).then(function (response) {
-    //                 if(response.data && response.data.features && response.data.features.length){
-    //                     // console.log(response.data.features);
-    //                     resolve(response.data.features) 
-    //                 }
-    //             }).catch(err=>{
-    //                 console.error(err);
-    //             });
-    //         });
-
-    //     } else {
-    //         console.log('species extent table url is not found for', speciesKey);
-    //     }
-    // };
-
-    // const queryStatusTable = ()=>{
-    //     const requestUrl = config.URL.statusTable + '/query';
-
-    //     return new Promise((resolve, reject)=>{
-
-    //         axios.get(requestUrl, {
-    //             params: {
-    //                 where: '1=1',
-    //                 outFields: '*',
-    //                 f: 'json',
-    //                 token: oauthManager.getToken()
-    //             }
-    //         }).then(function (response) {
-    //             // console.log(response);
-
-    //             if(response.data && response.data.features && response.data.features.length){
-    //                 // console.log(response.data.features);
-    //                 resolve(response.data.features) 
-    //             }
-    //         }).catch(err=>{
-    //             console.error(err);
-    //         });
-    //     });
-    // };
-
-    const queryFeedbacksByUser = (options={
-        userID: '', 
-        species: '',
-        onSuccessHandler: null
-    })=>{
-
-        const userID = options.userID || oauthManager.getUserID();
-        const onSuccessHandler = options.onSuccessHandler;
-        const whereClauseParts = [`${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`];
-
-        if(options.species){
-            whereClauseParts.push(`${config.FIELD_NAME.feedbackTable.species} = '${options.species}'`)
-        }
-
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.feedbackTable + '/query',
-            where: whereClauseParts.join(' AND ')
-        }).then(res=>{
-            // console.log('previous feedbacks from', userID, res);
-
-            const formattedFeedbackData = res.map(d=>{
-                return {
-                    userID: d.attributes[config.FIELD_NAME.feedbackTable.userID],
-                    hucID: d.attributes[config.FIELD_NAME.feedbackTable.hucID],
-                    species: d.attributes[config.FIELD_NAME.feedbackTable.species],
-                    status: d.attributes[config.FIELD_NAME.feedbackTable.status],
-                    comment: d.attributes[config.FIELD_NAME.feedbackTable.comment]
-                }
-            });
-
-            if(onSuccessHandler){
-                onSuccessHandler(formattedFeedbackData);
-            } else {
-                feedbackManager.batchAddToDataStore(formattedFeedbackData);
-            }
-            
-        }).catch(err=>{
-            console.error(err);
-        });
-    };
-
-    const reviewOverallFeedbacksBySpecies = ()=>{
-
-        const species = dataModel.getSelectedSpecies();
-
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.overallFeedback + '/query',
-            where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
-        }).then(res=>{
-            // console.log('previous overall feedbacks by species', res);
-            controllerProps.overallFeedbackForReviewModeOnReady(res);
-        });
-    }; 
-
-    const reviewFeedbacksByUser = (userID='')=>{
-
-        queryFeedbacksByUser({
-            userID,
-            species: dataModel.getSelectedSpecies(),
-            onSuccessHandler: (data)=>{
-
-                controllerProps.clearMapGraphics();
-
-                data.forEach(d=>{
-                    // console.log(d);
-                    showHucFeatureOnMap(d.hucID, d.status, d);
-                });
-
-                controllerProps.feedbackByUsersForReviewModeOnReady(data);
-
-                // console.log(data);
-            }
-        })
-    };
-
-    const reviewFeedbacksByHuc = (hucFeature)=>{
-
-        const hucID = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucID];
-        const hucName = hucFeature.attributes[config.FIELD_NAME.huc10LayerHucName];
-        
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.feedbackTable + '/query',
-            where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${dataModel.getSelectedSpecies()}'`
-        }).then(res=>{
-            // console.log(res);
-            controllerProps.feedbackByHucsForReviewModeOnReady({
-                data: res,
-                hucName
-            });
-
-        }).catch(err=>{
-            console.error(err);
-        })
-    };
-
-    const queryOverallFeedbacksByUser = ()=>{
-
-        const userID = oauthManager.getUserID();
-
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.overallFeedback + '/query',
-            where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
-        }).then(res=>{
-            // console.log('previous overall feedbacks', res);
-
-            saveOverallFeedbackToDataModel(res);
-
-            // initOverallFeedbackControlPanel();
-
-        }).catch(err=>{
-            console.error(err);
-        });
-    };
-
-    // const fetchFeedback = (options={})=>{
-    //     const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
-    //     const whereClause = options.where || '1=1';
-    //     const outFields = options.outFields || '*';
-    //     const returnDistinctValues = options.returnDistinctValues || false;
-
-    //     return new Promise((resolve, reject)=>{
-
-    //         axios.get(requestUrl, {
-    //             params: {
-    //                 where: whereClause,
-    //                 outFields,
-    //                 returnDistinctValues,
-    //                 f: 'json',
-    //                 token: oauthManager.getToken()
-    //             }
-    //         }).then(function (response) {
-    //             // console.log(response);
-
-    //             if(response.data && response.data.features){
-    //                 // console.log(response.data.features);
-    //                 resolve(response.data.features);
-    //             } else {
-    //                 reject('no features found from the feedback table');
-    //             }
-    //         });
-    //     });
-    // };
-
-    const deleteFeedback = (data={})=>{
-        // // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.feedbackTable + '/query',
-            where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
-        }).then(features=>{
-            // console.log('found feature to delete', features);
-
-            if(features[0]){
-                const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
-                const objectID = features[0].attributes.ObjectId;
-
-                apiManager.deleteFromFeedbackTable(requestUrl, objectID).then(res=>{
-                    // console.log('deleted from feedback table', res);
-                });
-            } 
-        }).catch(err=>{
-            console.error(err);
-        });
-    };
-
-    const postOverallFeedback = (data={
-        rating: 0,
-        comment: ''
-    })=>{
-        const userID = oauthManager.getUserID();
-        const species = dataModel.getSelectedSpecies();
-
-        const feature = {
-            "attributes": {
-                [config.FIELD_NAME.overallFeedback.userID]: userID,
-                [config.FIELD_NAME.overallFeedback.species]: species,
-                [config.FIELD_NAME.overallFeedback.rating]: data.rating,
-                [config.FIELD_NAME.overallFeedback.comment]: data.comment,
-            }
-        };
-
-        saveOverallFeedbackToDataModel([feature]);
-
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.overallFeedback + '/query',
-            where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.species} = '${species}'`
-        }).then(features=>{
-            // console.log(features);
-
-            const requestUrl = features[0] ? config.URL.overallFeedback + '/updateFeatures' : config.URL.overallFeedback + '/addFeatures' ;
-            // let operationName = 'addFeatures';
-
-            if(features[0]){
-                feature.attributes.ObjectId = features[0].attributes.ObjectId;
-            } 
-
-            apiManager.applyEditToFeatureTable(requestUrl, feature).then(res=>{
-                // console.log('post edit to OverallFeedback table', res);
-            });
-        }).catch(err=>{
-            console.error(err);
-        });
-    }
-
-    const postFeedback = (data={})=>{
-        // console.log(data);
-
-        const feedbackFeature = {
-            "attributes": {
-                [config.FIELD_NAME.feedbackTable.userID]: data.userID,
-                [config.FIELD_NAME.feedbackTable.hucID]: data.hucID,
-                [config.FIELD_NAME.feedbackTable.status]: data.status,
-                [config.FIELD_NAME.feedbackTable.comment]: data.comment,
-                [config.FIELD_NAME.feedbackTable.species]: data.species
-            }
-        };
-
-        // query feedback table to see if such feature already exists, if so, call update feature operation, otherwise, call add feature operation
-        apiManager.fetchFeedback({
-            requestUrl: config.URL.feedbackTable + '/query',
-            where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
-        }).then(features=>{
-            // console.log(features);
-
-            let requestUrl = features[0] ? config.URL.feedbackTable + '/updateFeatures' : config.URL.feedbackTable + '/addFeatures' ;
-            // let operationName = 'addFeatures';
-
-            if(features[0]){
-                feedbackFeature.attributes.ObjectId = features[0].attributes.ObjectId;
-            } 
-
-            apiManager.applyEditToFeatureTable(requestUrl, feedbackFeature).then(res=>{
-                // console.log(applyEditToFeatureTable, res);
-            });
-
-        }).catch(err=>{
-            console.error(err);
-
-        })
-    };
-
-    // const deleteFromFeedbackTable = (requestUrl, objectID)=>{
-    //     // const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
-
-    //     const bodyFormData = new FormData();
-    //     bodyFormData.append('objectIds', objectID); 
-    //     bodyFormData.append('rollbackOnFailure', false); 
-    //     bodyFormData.append('f', 'pjson'); 
-    //     bodyFormData.append('token', oauthManager.getToken()); 
-
-    //     return new Promise((resolve, reject)=>{
-
-    //         axios.post(requestUrl, bodyFormData).then(function (response) {
-    //             // console.log(response);
-    //             resolve(response);
-    //         }).catch(err=>{
-    //             console.error(err);
-    //         });
-    //     });
-    // }
-
-    // const applyEditToFeatureTable = (requestUrl, feature)=>{
-    //     // const requestUrl = config.URL.feedbackTable + '/' + operationName;
-
-    //     const bodyFormData = new FormData();
-    //     bodyFormData.append('features', JSON.stringify(feature)); 
-    //     bodyFormData.append('rollbackOnFailure', false); 
-    //     bodyFormData.append('f', 'pjson'); 
-    //     bodyFormData.append('token', oauthManager.getToken()); 
-
-    //     return new Promise((resolve, reject)=>{
-
-    //         axios.post(requestUrl, bodyFormData).then(function (response) {
-    //             // console.log(response);
-    //             resolve(response);
-    //         }).catch(err=>{
-    //             console.error(err);
-    //         });
-    //     });
-    // };
-
     const speciesOnSelectHandler = (val)=>{
 
         searchHucsBySpecies(val);
@@ -576,15 +461,7 @@ export default function Controller(props={}){
 
         } else {
             // console.log('query feedbacks for selected huc', hucID);
-
             controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeature);
-
-            // if(view.listViewForDetailedFeedback.isVisible()){
-            //     view.listViewForDetailedFeedback.setActiveRow(hucID);
-            // } else {
-            //     reviewFeedbacksByHuc(selectedHucFeature);
-            // }
-    
         }
     };
 
@@ -677,25 +554,6 @@ export default function Controller(props={}){
         // console.log(data);
     };
 
-    const getListOfHucsWithFeedbacks = ()=>{
-        const species = dataModel.getSelectedSpecies();
-
-        if(dataModelForReviewMode.getHucsWithFeedbacks(species)){
-            renderListOfHucsWithFeedbacks();
-        } else {
-            apiManager.fetchFeedback({
-                requestUrl: config.URL.feedbackTable + '/query',
-                where: `${config.FIELD_NAME.feedbackTable.species} = '${species}'`,
-                outFields: `${config.FIELD_NAME.feedbackTable.hucID}, ${config.FIELD_NAME.feedbackTable.status}`,
-                returnDistinctValues: true
-            }).then(res=>{
-                // console.log('getListOfHucsWithFeedbacks', res);
-                dataModelForReviewMode.setHucsWithFeedbacks(species, res);
-                renderListOfHucsWithFeedbacks();
-            });
-        }
-    };
-
     const renderListOfHucsWithFeedbacks = ()=>{
         const species = dataModel.getSelectedSpecies();
         const features = dataModelForReviewMode.getHucsWithFeedbacks(species);
@@ -727,8 +585,8 @@ export default function Controller(props={}){
         controllerProps.speciesOnSelect();
 
         if(isReviewMode){
-            reviewOverallFeedbacksBySpecies();
-            getListOfHucsWithFeedbacks();
+            getOverallFeedbacksForReviewMode();
+            getHucsWithFeedbacksForReviewMode();
         }
     };
 
@@ -758,9 +616,9 @@ export default function Controller(props={}){
         getOverallFeedback,
         setSelectedSpecies,
         postOverallFeedback,
-        reviewFeedbacksByUser,
+        getFeedbacksByUserForReviewMode,
         renderListOfHucsWithFeedbacks,
-        reviewFeedbacksByHuc
+        getFeedbacksByHucForReviewMode
         // openFeedbackManager
     };
 

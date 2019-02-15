@@ -594,7 +594,7 @@ export default function Controller(props={}){
         });
 
         data.unshift({
-            label: 'Predicted Habitat Extent',
+            label: 'Predicted Habitat',
             // color: config.COLOR.actualModeledExtent
         });
 

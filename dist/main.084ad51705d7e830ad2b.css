@@ -56,7 +56,7 @@ html, body {
   background-color: white; }
 
 .legend-icon[data-index='2'] {
-  background: url(200c4fd33dcead2a2e51c99f2b5c1e26.png) center center no-repeat;
+  background: url(dc7d4b1b6f1ca5e5f8b61b4607c273f5.png) center center no-repeat;
   background-size: 90%; }
 
 .legend-icon[data-index='3'] {
@@ -152,9 +152,6 @@ html, body {
 
 .icon-no-right-padding[class^="icon-ui-"]:before {
   padding-right: 0; }
-
-#speciesSelectorContainer label {
-  margin-bottom: .5rem; }
 
 #feedbackControlPanelContainer .fieldset-radio label {
   color: #fff;

@@ -47,9 +47,10 @@ export default function(options={
 
     const render = (data)=>{
 
-        const headerHtml = `<h6>Overall Feedbacks from all users</h6>`
+        const headerHtml = `<h6>Overall Feedback from all users</h6>`
 
-        const listViewCardsHtml = data.map(d=>{
+        const listViewCardsHtml = data.length ? 
+        data.map(d=>{
             const user = d.attributes[config.FIELD_NAME.overallFeedback.userID];
             const rating = d.attributes[config.FIELD_NAME.overallFeedback.rating];
             const comment = d.attributes[config.FIELD_NAME.overallFeedback.comment];
@@ -64,7 +65,8 @@ export default function(options={
                     </div>
                 </div>
             `
-        }).join('');
+        }).join('') : 
+        `<p class='font-size--2'>No overall feedback for selected species</p>`
 
         const componentHtml = `
             <div class='leader-1'>

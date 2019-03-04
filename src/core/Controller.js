@@ -30,9 +30,13 @@ export default function Controller(props={}){
         }
 
         try{
-            const credential = await oauthManager.init();
+            const portalUser = await oauthManager.init();
 
-            const sepeciesData = await apiManager.querySpeciesLookupTable();
+            const speciesByUsers = await apiManager.querySpeciesByUser({email: portalUser.email});
+
+            const sepeciesData = await apiManager.querySpeciesLookupTable({
+                speciesCode: getDistinctSpeciesCodeToReview(speciesByUsers)
+            });
 
             const statusData = await apiManager.queryStatusTable();
     
@@ -405,6 +409,7 @@ export default function Controller(props={}){
         const hucs = options.data || dataModel.getHucsBySpecies();
 
         if(options.speciesKey){
+
             // // TODO: need to use a single feature service instead of separate ones
             // const speciesInfo = dataModel.getSpeciesInfo(options.speciesKey);
             // const actualBoundaryLayerUrl = speciesInfo[config.FIELD_NAME.speciesLookup.boundaryLayerLink];
@@ -609,6 +614,13 @@ export default function Controller(props={}){
         });
 
         return data;
+    };
+
+    const getDistinctSpeciesCodeToReview = (data)=>{
+        const distinctSpeciesCode = data.map(d=>{
+            return d.attributes[config.FIELD_NAME.speciesByUser.speciesCode];
+        });
+        return distinctSpeciesCode;
     };
 
     return {

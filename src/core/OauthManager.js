@@ -44,19 +44,24 @@ const OAuthManager = function(oauth_appid){
 
     const setPortalUser = ()=>{
 
-        esriLoader.loadModules([
-            "esri/portal/Portal"
-        ], esriLoaderOptions).then(([
-            Portal
-        ])=>{
-            const portal = new Portal();
+        return new Promise((resolve, reject)=>{
 
-            // Setting authMode to immediate signs the user in once loaded
-            portal.authMode = "immediate";
+            esriLoader.loadModules([
+                "esri/portal/Portal"
+            ], esriLoaderOptions).then(([
+                Portal
+            ])=>{
+                const portal = new Portal();
     
-            // Once loaded, user is signed in
-            portal.load().then(()=>{
-                poralUser = portal.user;
+                // Setting authMode to immediate signs the user in once loaded
+                portal.authMode = "immediate";
+        
+                // Once loaded, user is signed in
+                portal.load().then(()=>{
+                    resolve(portal.user);
+                }).catch(err=>{
+                    reject(err);
+                });
             });
         });
 
@@ -64,7 +69,7 @@ const OAuthManager = function(oauth_appid){
 
     const init = ()=>{
 
-        console.log('init oauth manager');
+        // console.log('init oauth manager');
 
         return new Promise((resolve, reject)=>{
 
@@ -89,15 +94,19 @@ const OAuthManager = function(oauth_appid){
                 esriId.checkSignInStatus(info.portalUrl + "/sharing").then((res)=>{
                     // console.log('already signed in as', res.userId);
                     setUserCredential(res);
-                    setPortalUser();
-                    resolve(res);
-    
+
+                    setPortalUser().then(res=>{
+                        poralUser = res;
+                        resolve(res);
+                    });
+                    
                 }).catch(()=>{
                     // console.log('Anonymous view, sign in first');
                     signIn();
                 });
             
             }).catch(err=>{
+                reject(err);
                 console.error(err);
             })
 
@@ -112,7 +121,7 @@ const OAuthManager = function(oauth_appid){
 
     const getToken = ()=>{
         return userCredential.token;
-    }
+    };
 
     return {
         init,

@@ -5,21 +5,54 @@ const Promise = require('es6-promise').Promise;
 
 export default function ApiManager(props={}){
 
-    const querySpeciesLookupTable = ()=>{
-
-        const requestUrl = config.URL.speciesLookupTable + '/query';
+    const querySpeciesByUser = (options={
+        email: ''
+    })=>{
+        const requestUrl = config.URL.speciesByUser + '/query';
+        const whereClause = `${config.FIELD_NAME.speciesByUser.email} = '${options.email}'`
 
         return new Promise((resolve, reject)=>{
 
             axios.get(requestUrl, {
                 params: {
-                    // where: '1=1',
-                    where: `ELEMENT_GLOBAL_ID = '137976' OR ELEMENT_GLOBAL_ID = '941975'`,
+                    where: whereClause,
                     outFields: '*',
                     f: 'json',
                     token: props.oauthManager.getToken()
                 }
             }).then(function (response) {
+                // console.log(response);
+
+                if(response.data && response.data.features){
+                    // console.log(response.data.features);
+                    resolve(response.data.features);
+                } 
+            }).catch(err=>{
+                // console.error(err);
+                reject(err);
+            });
+        });
+    }
+
+    const querySpeciesLookupTable = (options={
+        speciesCode: []
+    })=>{
+
+        const requestUrl = config.URL.speciesLookupTable + '/query';
+
+        const whereClause = options.speciesCode.map(d=>{
+            return `${config.FIELD_NAME.speciesLookup.speciesCode} = '${d}'`;
+        }).join(' OR ');
+
+        return new Promise((resolve, reject)=>{
+
+            const bodyFormData = new FormData();
+            bodyFormData.append('where', whereClause); 
+            bodyFormData.append('outFields', '*'); 
+            bodyFormData.append('f', 'json'); 
+            bodyFormData.append('token', props.oauthManager.getToken()); 
+
+            axios.post(requestUrl, bodyFormData).then(function (response) {
                 // console.log(response);
 
                 if(response.data && response.data.features && response.data.features.length){
@@ -171,7 +204,8 @@ export default function ApiManager(props={}){
         queryStatusTable,
         fetchFeedback,
         deleteFromFeedbackTable,
-        applyEditToFeatureTable
+        applyEditToFeatureTable,
+        querySpeciesByUser
     }
 
 };

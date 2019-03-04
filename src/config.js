@@ -33,6 +33,10 @@ module.exports = {
             'species': 'Species',
             'comment': 'Comment',
             'rating': 'Rating'
+        },
+        'speciesByUser': {
+            'speciesCode': 'ELEMENT_GLOBAL_ID',
+            'email': 'Email'
         }
     },
 
@@ -54,6 +58,8 @@ module.exports = {
 
         // "speciesDistribution": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesDistribution/FeatureServer/0",
         "speciesDistribution": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Species_Modeling_Extent/FeatureServer/0",
+
+        "speciesByUser": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Species_by_Reviewers/FeatureServer/0",
         
         "statusTable": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Status_Code_Lookup/FeatureServer/0",
         "feedbackTable": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Detailed_Feedback/FeatureServer/0",

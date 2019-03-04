@@ -1,7 +1,8 @@
 'use strict';
 
 module.exports = {
-    'oauthAppID': 'pXyO9t8Sf4goOQiu',
+    // 'oauthAppID': 'pXyO9t8Sf4goOQiu', // old one under content org
+    'oauthAppID': 'Dks28Xk6zIbYoWbO',
     'webMapID': 'dc559da0f101490eb2aed03d063a290d',
 
     'FIELD_NAME': {
@@ -10,9 +11,9 @@ module.exports = {
         'speciesLookupHucID': 'HUC10',
         'statusType': 'StatusType',
         'speciesLookup': {
-            'speciesCode': 'SpeciesCode',
-            'speciesName': 'SpeciesName',
-            'taxa': 'Taxa',
+            'speciesCode': 'ELEMENT_GLOBAL_ID',
+            'speciesName': 'Scientific_Name',
+            'taxa': 'Taxonomic_Group',
             'boundaryLayerLink': 'BoundaryLayerLink',
             'pdfLink': 'PdfLink'
         },
@@ -48,27 +49,20 @@ module.exports = {
     },
 
     "URL": {
-        "rangeReviewHucServiceBase": "",
-        "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesLookupTable/FeatureServer/0',
-        "speciesDistribution": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesDistribution/FeatureServer/0",
-        // "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesLookup/FeatureServer/1',
-        "statusTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/StatusLookup/FeatureServer/0",
-        "feedbackTable": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesFeedbackTable/FeatureServer/0",
-        "overallFeedback": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/OverallFeedback/FeatureServer/0",
+        // "speciesLookupTable": 'https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesLookupTable/FeatureServer/0',
+        "speciesLookupTable": 'https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Species_Master_Lookup/FeatureServer/0',
 
-        // "speciesExtent": {
-        //     "IsotriaMedeoloides": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/IsotriaMedeoloides/FeatureServer/4",
-        //     "LithobatesKauffeldi": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/LithobatesKauffeldi/FeatureServer/3",
-        // },
+        // "speciesDistribution": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/SpeciesDistribution/FeatureServer/0",
+        "speciesDistribution": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Species_Modeling_Extent/FeatureServer/0",
+        
+        "statusTable": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Status_Code_Lookup/FeatureServer/0",
+        "feedbackTable": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Detailed_Feedback/FeatureServer/0",
+        "overallFeedback": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Overall_Feedback/FeatureServer/0",
 
-        // "speciesActualBoundaries": {
-        //     "IsotriaMedeoloides": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Isotria_medeloides_Boundary/FeatureServer/0",
-        //     "LithobatesKauffeldi": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Lithobates_kauffeldi_Boundary/FeatureServer/0"
-        // },
-
-        // "pdf": {
-        //     "IsotriaMedeoloides":'https://arcgis-content.maps.arcgis.com/sharing/rest/content/items/36b79f8ad4bd4157b85fadb2317fcb6b/data'
-        // }
+        "PredictedHabitat": {
+            "137976": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Isotria_medeloides_Boundary/FeatureServer/0",
+            "941975": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Lithobates_kauffeldi_Boundary/FeatureServer/0",
+        }
     },
 
     "COLOR": {

@@ -84,8 +84,6 @@ export default function Controller(props={}){
 
     const initSpeciesLookupTable = (data)=>{
 
-        // console.log('init species lookup table');
-
         data = data.map(d=>{
             return d.attributes
         });
@@ -93,6 +91,8 @@ export default function Controller(props={}){
         dataModel.setSpeciesLookup(data);
 
         controllerProps.speciesDataOnReady(data);
+
+        // console.log('init species lookup table', data);
 
     };
 
@@ -405,10 +405,15 @@ export default function Controller(props={}){
         const hucs = options.data || dataModel.getHucsBySpecies();
 
         if(options.speciesKey){
-            const speciesInfo = dataModel.getSpeciesInfo(options.speciesKey);
-            const actualBoundaryLayerUrl = speciesInfo[config.FIELD_NAME.speciesLookup.boundaryLayerLink];
-            // mapControl.addActualModelBoundaryLayer(actualBoundaryLayerUrl);
-            controllerProps.addActualBoundaryLayerToMap(actualBoundaryLayerUrl);
+            // // TODO: need to use a single feature service instead of separate ones
+            // const speciesInfo = dataModel.getSpeciesInfo(options.speciesKey);
+            // const actualBoundaryLayerUrl = speciesInfo[config.FIELD_NAME.speciesLookup.boundaryLayerLink];
+            const actualBoundaryLayerUrl =config.URL.PredictedHabitat[options.speciesKey];
+
+            // // TODO: need to create the boundary layer in nature serve's org
+            // if(actualBoundaryLayerUrl){
+            //     controllerProps.addActualBoundaryLayerToMap(actualBoundaryLayerUrl);
+            // }
         }
         
         // mapControl.highlightHucs(hucs);
@@ -424,17 +429,20 @@ export default function Controller(props={}){
         const species = dataModel.getSelectedSpecies();
         data = data || feedbackManager.getFeedbackDataBySpecies(species);
 
-        // console.log(data); 
+        // console.log('renderHucWithFeedbackDataOnMap >>> species', species); 
+        // console.log('renderHucWithFeedbackDataOnMap >>> data', data); 
 
-        Object.keys(data).forEach(function(key) {
+        if(data){
+            Object.keys(data).forEach(function(key) {
 
-            // console.log(key, data[key]);
-
-            const hucID = data[key].hucID;
-            const status = data[key].status;
-
-            showHucFeatureOnMap(hucID, status, data[key]);
-        });
+                // console.log(key, data[key]);
+    
+                const hucID = data[key].hucID;
+                const status = data[key].status;
+    
+                showHucFeatureOnMap(hucID, status, data[key]);
+            });
+        }
     };
 
     const setSelectedHucFeature = (feature=null)=>{
@@ -568,6 +576,8 @@ export default function Controller(props={}){
     };
     
     const setSelectedSpecies = (val)=>{
+
+        // console.log('setSelectedSpecies', val);
 
         dataModel.setSelectedSpecies(val);
 

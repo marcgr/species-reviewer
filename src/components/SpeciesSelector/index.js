@@ -21,15 +21,19 @@ export default function SpeciesSelector(props={
 
     const getHtmlForTaxaSelector = ()=>{
 
-        const taxa = [];
+        const distinctTaxa = [];
 
         data.forEach(d=>{
-            if(taxa.indexOf(d[config.FIELD_NAME.speciesLookup.taxa] === -1)){
-                taxa.push(d[config.FIELD_NAME.speciesLookup.taxa]);
-            }
-        })
+            const value = d[config.FIELD_NAME.speciesLookup.taxa];
 
-        const optionsHtml = taxa.map(d=>{
+            if(distinctTaxa.indexOf(value) === -1){
+                distinctTaxa.push(value);
+            }
+        });
+
+        // console.log(distinctTaxa);
+
+        const optionsHtml = distinctTaxa.map(d=>{
             return `<option class='select-option' value="${d}">${d}</option>`
         }).join('');
 
@@ -48,7 +52,7 @@ export default function SpeciesSelector(props={
     const getHtmlForSpeciesSelector = ()=>{
 
         const optionsHtml = data
-            .filter(d=>{return d.Taxa === selectedTaxa})
+            .filter(d=>{return d[config.FIELD_NAME.speciesLookup.taxa] === selectedTaxa})
             .map(d=>{
                 const val = d[config.FIELD_NAME.speciesLookup.speciesCode];
                 const label = d[config.FIELD_NAME.speciesLookup.speciesName];
@@ -73,7 +77,7 @@ export default function SpeciesSelector(props={
 
         data = options.data || data;
 
-        console.log(data);
+        // console.log(data);
 
         // const options = data.map(d=>{
         //     const val = d.SpeciesCode;

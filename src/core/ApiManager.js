@@ -13,7 +13,8 @@ export default function ApiManager(props={}){
 
             axios.get(requestUrl, {
                 params: {
-                    where: '1=1',
+                    // where: '1=1',
+                    where: `ELEMENT_GLOBAL_ID = '137976' OR ELEMENT_GLOBAL_ID = '941975'`,
                     outFields: '*',
                     f: 'json',
                     token: props.oauthManager.getToken()
@@ -80,6 +81,8 @@ export default function ApiManager(props={}){
                     if(response.data && response.data.features && response.data.features.length){
                         // console.log(response.data.features);
                         resolve(response.data.features) 
+                    } else {
+                        reject('no huc features for selected species');
                     }
                 }).catch(err=>{
                     console.error(err);

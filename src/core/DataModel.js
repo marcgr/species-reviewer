@@ -87,9 +87,15 @@ export default class DataModel {
 
         // console.log('isHucInModeledRange', hucID);
 
-        const isHucInModeledRange = hucs.filter(d=>{ return d[config.FIELD_NAME.speciesDistribution.hucID] === hucID }).length ? true : false;
+        if(hucs){
+            return hucs.filter(d=>{ return d[config.FIELD_NAME.speciesDistribution.hucID] === hucID }).length ? true : false;
+        } else {
+            return false;
+        }
 
-        return isHucInModeledRange;
+        // const isHucInModeledRange = hucs.filter(d=>{ return d[config.FIELD_NAME.speciesDistribution.hucID] === hucID }).length ? true : false;
+
+        // return isHucInModeledRange;
     };
 
     getOverallFeedback(key){

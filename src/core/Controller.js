@@ -156,7 +156,10 @@ export default function Controller(props={}){
 
         const userID = options.userID || oauthManager.getUserID();
         const onSuccessHandler = options.onSuccessHandler;
-        const whereClauseParts = [`${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`];
+        const whereClauseParts = [
+            `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`
+            `${config.FIELD_NAME.feedbackTable.retirementDate} = ''`
+        ];
 
         if(options.species){
             whereClauseParts.push(`${config.FIELD_NAME.feedbackTable.species} = '${options.species}'`)
@@ -199,7 +202,7 @@ export default function Controller(props={}){
             
             const feedbacks = await apiManager.fetchFeedback({
                 requestUrl: config.URL.overallFeedback + '/query',
-                where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}'`
+                where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.retirementDate} = ''`
             });
 
             saveOverallFeedbackToDataModel(feedbacks);
@@ -413,7 +416,7 @@ export default function Controller(props={}){
             // // TODO: need to use a single feature service instead of separate ones
             // const speciesInfo = dataModel.getSpeciesInfo(options.speciesKey);
             // const actualBoundaryLayerUrl = speciesInfo[config.FIELD_NAME.speciesLookup.boundaryLayerLink];
-            const actualBoundaryLayerUrl =config.URL.PredictedHabitat[options.speciesKey];
+            // const actualBoundaryLayerUrl =config.URL.PredictedHabitat[options.speciesKey];
 
             // // TODO: need to create the boundary layer in nature serve's org
             // if(actualBoundaryLayerUrl){

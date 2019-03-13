@@ -11,7 +11,7 @@ module.exports = {
         'speciesLookupHucID': 'HUC10',
         'statusType': 'StatusType',
         'speciesLookup': {
-            'speciesCode': 'ELEMENT_GLOBAL_ID',
+            'speciesCode': 'cutecode',
             'speciesName': 'Scientific_Name',
             'taxa': 'Taxonomic_Group',
             'boundaryLayerLink': 'BoundaryLayerLink',
@@ -26,17 +26,19 @@ module.exports = {
             'userID': 'UserID',
             'species': 'Species',
             'comment': 'Comment',
-            'status': 'StatusType'
+            'status': 'StatusType',
+            'retirementDate': 'RetirementDate'
         },
         'overallFeedback': {
             'userID': 'UserID',
             'species': 'Species',
             'comment': 'Comment',
-            'rating': 'Rating'
+            'rating': 'Rating',
+            'retirementDate': 'RetirementDate'
         },
         'speciesByUser': {
-            'speciesCode': 'ELEMENT_GLOBAL_ID',
-            'email': 'Email'
+            'speciesCode': 'cutecode',
+            'email': 'Reviewer_email'
         }
     },
 

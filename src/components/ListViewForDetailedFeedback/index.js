@@ -47,10 +47,12 @@ export default function(options={
 
     const render = (data)=>{
 
+        const userID = data && data[0] ? data[0].userID : '';
+
         const headerHtml = `
             <div class='trailer-quarter'>
                 <span class='icon-ui-left cursor-pointer js-close'></span>
-                <span class='font-size--1'>All feedbacks by ${data[0].userID}</span>
+                <span class='font-size--1'>All feedbacks by ${userID}</span>
             </div>
         `;
 

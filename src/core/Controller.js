@@ -157,8 +157,8 @@ export default function Controller(props={}){
         const userID = options.userID || oauthManager.getUserID();
         const onSuccessHandler = options.onSuccessHandler;
         const whereClauseParts = [
-            `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`
-            `${config.FIELD_NAME.feedbackTable.retirementDate} = ''`
+            `${config.FIELD_NAME.feedbackTable.userID} = '${userID}'`,
+            `${config.FIELD_NAME.feedbackTable.retirementDate} IS NULL`
         ];
 
         if(options.species){
@@ -202,7 +202,7 @@ export default function Controller(props={}){
             
             const feedbacks = await apiManager.fetchFeedback({
                 requestUrl: config.URL.overallFeedback + '/query',
-                where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.retirementDate} = ''`
+                where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${config.FIELD_NAME.overallFeedback.retirementDate} IS NULL`
             });
 
             saveOverallFeedbackToDataModel(feedbacks);
@@ -291,7 +291,6 @@ export default function Controller(props={}){
 
                 controllerProps.feedbackByUsersForReviewModeOnReady(data);
 
-                // console.log(data);
             }
         })
     };

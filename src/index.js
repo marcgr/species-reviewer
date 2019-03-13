@@ -76,9 +76,12 @@ import MapControl from './core/MapControl';
             // console.log('highligtHucsOnMap', data);
             mapControl.highlightHucs(data);
         },
-        addActualBoundaryLayerToMap:(url='')=>{
-            // console.log('addActualBoundaryLayerToMap', url);
-            mapControl.addActualModelBoundaryLayer(url);
+        // addActualBoundaryLayerToMap:(url='')=>{
+        //     // console.log('addActualBoundaryLayerToMap', url);
+        //     // mapControl.addActualModelBoundaryLayer(url);
+        // },
+        showToPredictedHabitatOnMap:(speciesCode='')=>{
+            mapControl.showPredictedHabitatLayers(speciesCode);
         },
         clearMapGraphics:(targetLayer='')=>{
             // console.log('clearMapGraphics', targetLayer);

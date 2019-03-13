@@ -421,6 +421,8 @@ export default function Controller(props={}){
             // if(actualBoundaryLayerUrl){
             //     controllerProps.addActualBoundaryLayerToMap(actualBoundaryLayerUrl);
             // }
+
+            controllerProps.showToPredictedHabitatOnMap(options.speciesKey);
         }
         
         // mapControl.highlightHucs(hucs);

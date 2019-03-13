@@ -26,7 +26,7 @@ const MapControl = function(options={}){
     let hucsLayer = null;
     let hucsByStatusGraphicLayer = null;
     let hucPreviewGraphicLayer = null;
-    let actualModelBoundaryLayer = null;
+    // let actualModelBoundaryLayer = null;
     let hucFeatureOnSelectHandler = null;
     // let isOnHoldEventDisabled = false;
 
@@ -126,6 +126,8 @@ const MapControl = function(options={}){
         setHucsLayer(mapView.map);
 
         mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
+
+        initPredictedHabitatLayers();
 
         // initLegend();
     };
@@ -390,12 +392,12 @@ const MapControl = function(options={}){
         return renderer;
     };
 
-    const addActualModelBoundaryLayer = (url)=>{
+    const initPredictedHabitatLayers = ()=>{
         // console.log(url);
 
-        if(actualModelBoundaryLayer){
-            mapView.map.remove(actualModelBoundaryLayer);
-        }
+        // if(actualModelBoundaryLayer){
+        //     mapView.map.remove(actualModelBoundaryLayer);
+        // }
 
         esriLoader.loadModules([
             "esri/layers/FeatureLayer",
@@ -403,30 +405,38 @@ const MapControl = function(options={}){
             FeatureLayer
         ])=>{
 
-            actualModelBoundaryLayer = new FeatureLayer({
-                url: url,
-                opacity: .65,
-                renderer: {
-                    type: 'simple',
-                    symbol: {
-                        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                        color: config.COLOR.actualModeledExtent,
-                        style: "solid",
-                        outline: {  // autocasts as new SimpleLineSymbol()
-                            color: "white",
-                            width: '.5px'
-                        }
-                    }
-                }
+            const predictedHabitatLayers = [config.URL.PredictedHabitat.line, config.URL.PredictedHabitat.polygon].map(url=>{
+
+                return new FeatureLayer({
+                    url,
+                    opacity: .8,
+                    definitionExpression: `cutecode=''`,
+                    isPredictedHabitatLayer: true
+                });
             });
     
-            mapView.map.add(actualModelBoundaryLayer);
+            mapView.map.addMany(predictedHabitatLayers);
 
         });
 
         // mapView.map.reorder(actualModelBoundaryLayer, 0);
 
     };
+
+    const showPredictedHabitatLayers = (speciesCode='')=>{
+        mapView.map.layers.forEach(layer=>{
+            // console.log(layer);
+
+            if(layer.isPredictedHabitatLayer){
+                // console.log(la)
+
+                layer.definitionExpression = `cutecode='${speciesCode}'`;
+            }
+
+            layer.refresh();
+
+        });
+    }
 
     const setLayersOpacity = (val)=>{
         mapView.map.layers.forEach(layer=>{
@@ -440,14 +450,15 @@ const MapControl = function(options={}){
         highlightHucs,
         cleanPreviewHucGraphic,
         showHucFeatureByStatus,
-        addActualModelBoundaryLayer,
+        // addActualModelBoundaryLayer,
         clearAllGraphics,
         // disableMapOnHoldEvent,
         queryHucsLayerByHucID,
         addPreviewHucGraphic,
         setLayersOpacity,
         clearMapGraphics,
-        addPreviewHucByID
+        addPreviewHucByID,
+        showPredictedHabitatLayers
     };
 
 };

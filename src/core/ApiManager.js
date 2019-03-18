@@ -198,6 +198,38 @@ export default function ApiManager(props={}){
         });
     };
 
+    const queryPdfTable = (speciesKey='')=>{
+        
+        const requestUrl = config.URL.pdfLookup + '/query';
+        const whereClause = `${config.FIELD_NAME.pdfLookup.speciesCode} = '${speciesKey}'`;
+
+        if(requestUrl){
+            return new Promise((resolve, reject)=>{
+
+                axios.get(requestUrl, {
+                    params: {
+                        where: whereClause,
+                        outFields: '*',
+                        f: 'json',
+                        token: props.oauthManager.getToken()
+                    }
+                }).then(function (response) {
+                    if(response.data && response.data.features && response.data.features.length){
+                        // console.log(response.data.features);
+                        resolve(response.data.features) 
+                    } else {
+                        reject('no PDF resouce found for selected species');
+                    }
+                }).catch(err=>{
+                    console.error(err);
+                });
+            });
+
+        } else {
+            console.log('pdf lookup table url is not found for', speciesKey);
+        }
+    }
+
     return {
         querySpeciesLookupTable,
         queryHucsBySpecies,
@@ -205,7 +237,8 @@ export default function ApiManager(props={}){
         fetchFeedback,
         deleteFromFeedbackTable,
         applyEditToFeatureTable,
-        querySpeciesByUser
+        querySpeciesByUser,
+        queryPdfTable
     }
 
 };

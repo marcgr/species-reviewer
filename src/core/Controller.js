@@ -509,17 +509,32 @@ export default function Controller(props={}){
 
     };
 
-    const getPdfUrlForSelectedSpecies = ()=>{
+    const getPdfUrlForSelectedSpecies = async()=>{
         const species = dataModel.getSelectedSpecies();
         // const url = config.URL.pdf[species];
-        const url = dataModel.getSpeciesInfo(species)[config.FIELD_NAME.speciesLookup.pdfLink];
-        return url;
+        // const url = dataModel.getSpeciesInfo(species)[config.FIELD_NAME.speciesLookup.pdfLink];
+        try {
+            const pdfLookupFeatures = await apiManager.queryPdfTable(species);
+
+            if(pdfLookupFeatures[0] && pdfLookupFeatures[0].attributes[config.FIELD_NAME.pdfLookup.url]){
+                // console.log('pdfLookupFeatures[0].url', pdfLookupFeatures[0].attributes[config.FIELD_NAME.pdfLookup.url])
+                return pdfLookupFeatures[0].attributes[config.FIELD_NAME.pdfLookup.url];
+            } else {
+                return null;
+            }
+
+        } catch(err){
+            return null;
+        }
+        
     }
 
-    const downloadPdf = ()=>{
+    const downloadPdf = async()=>{
         // console.log('controller: download pdf');
 
-        const url = getPdfUrlForSelectedSpecies();
+        const url = await getPdfUrlForSelectedSpecies();
+
+        console.log(url);
 
         if(url){
             window.open(url);
@@ -584,7 +599,7 @@ export default function Controller(props={}){
         controllerProps.showHucFeatureOnMap(hucID, status);
     };
     
-    const setSelectedSpecies = (val)=>{
+    const setSelectedSpecies = async(val)=>{
 
         // console.log('setSelectedSpecies', val);
 
@@ -594,9 +609,9 @@ export default function Controller(props={}){
 
         resetSelectedHucFeature();
 
-        controllerProps.pdfUrlOnChange(getPdfUrlForSelectedSpecies());
-
         controllerProps.speciesOnSelect();
+
+        controllerProps.pdfUrlOnChange(await getPdfUrlForSelectedSpecies());
 
         if(isReviewMode){
             getOverallFeedbacksForReviewMode();

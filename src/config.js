@@ -39,6 +39,10 @@ module.exports = {
         'speciesByUser': {
             'speciesCode': 'cutecode',
             'email': 'Reviewer_email'
+        },
+        'pdfLookup': {
+            'speciesCode': 'cutecode',
+            'url': 'url'
         }
     },
 
@@ -72,7 +76,8 @@ module.exports = {
             // "941975": "https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Lithobates_kauffeldi_Boundary/FeatureServer/0",
             "line": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Predicted_Habitat_Line/FeatureServer/0",
             "polygon": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Predicted_Habitat_Polygon/FeatureServer/0"
-        }
+        },
+        "pdfLookup": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/PDF_Lookup/FeatureServer/0"
     },
 
     "COLOR": {

@@ -34,9 +34,13 @@ export default function Controller(props={}){
 
             const speciesByUsers = await apiManager.querySpeciesByUser({email: portalUser.email});
 
-            const sepeciesData = await apiManager.querySpeciesLookupTable({
+            const sepeciesData = portalUser.username === 'MobiAdmin8' 
+            ? await apiManager.queryAllFeaturesFromSpeciesLookupTable()
+            : await apiManager.querySpeciesLookupTable({
                 speciesCode: getDistinctSpeciesCodeToReview(speciesByUsers)
             });
+
+            // console.log(sepeciesData);
 
             const statusData = await apiManager.queryStatusTable();
     

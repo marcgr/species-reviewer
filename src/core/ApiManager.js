@@ -69,6 +69,69 @@ export default function ApiManager(props={}){
 
     };
 
+    const queryAllFeaturesFromSpeciesLookupTable = ()=>{
+        const requestUrl = config.URL.speciesLookupTable + '/query';
+
+        return new Promise((resolve, reject)=>{
+
+            // const bodyFormData = new FormData();
+            // bodyFormData.append('where', '1=1'); 
+            // bodyFormData.append('outFields', '*'); 
+            // bodyFormData.append('f', 'json'); 
+            // bodyFormData.append('token', props.oauthManager.getToken()); 
+
+            // axios.post(requestUrl, bodyFormData).then(function (response) {
+            //     // console.log(response);
+
+            //     if(response.data && response.data.features && response.data.features.length){
+            //         // console.log(response.data.features);
+            //         resolve(response.data.features) 
+            //     } else {
+            //         reject('no featurs in species lookup table');
+            //     }
+            // }).catch(err=>{
+            //     // console.error(err);
+            //     reject(err);
+            // });
+
+            let arrOfAllFeatures = [];
+
+            const getFeatures = (resultOffset)=>{
+
+                const bodyFormData = new FormData();
+                bodyFormData.append('where', '1=1'); 
+                bodyFormData.append('outFields', '*'); 
+                bodyFormData.append('f', 'json'); 
+                bodyFormData.append('token', props.oauthManager.getToken()); 
+
+                if(resultOffset){
+                    bodyFormData.append('resultOffset', resultOffset); 
+                }
+    
+                axios.post(requestUrl, bodyFormData).then(function (response) {
+                    // console.log(response);
+    
+                    if(response.data && response.data.features && response.data.features.length){
+                        // console.log(response.data.features);
+                        arrOfAllFeatures = [...arrOfAllFeatures, ...response.data.features];
+                    } 
+    
+                    if(response.data.exceededTransferLimit){
+                        getFeatures(response.data.features[response.data.features.length - 1].attributes.ObjectId);
+                    } else {
+                        resolve(arrOfAllFeatures) 
+                    }
+    
+                }).catch(err=>{
+                    // console.error(err);
+                    reject(err);
+                });
+            };
+
+            getFeatures();
+        });
+    };
+
     const queryStatusTable = ()=>{
         const requestUrl = config.URL.statusTable + '/query';
 
@@ -232,6 +295,7 @@ export default function ApiManager(props={}){
 
     return {
         querySpeciesLookupTable,
+        queryAllFeaturesFromSpeciesLookupTable,
         queryHucsBySpecies,
         queryStatusTable,
         fetchFeedback,

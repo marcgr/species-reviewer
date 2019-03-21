@@ -146,6 +146,11 @@ export default function Controller(props={}){
 
             } catch(err){
                 console.error(err);
+                // if no hucs features returned, pass an empty array so the map will re-render the hucs layers with no highlighted features
+                renderHucsBySpeciesDataOnMap({
+                    data: [],
+                    speciesKey
+                })
             }
         }
 

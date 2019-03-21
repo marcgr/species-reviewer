@@ -55,7 +55,8 @@ module.exports = {
         'legend': 'legendDiv',
         'listViewOverallFeedback': 'listViewForOverallFeedbackDiv',
         'listViewDeatiledFeedback': 'listViewForDetailedFeedbackDiv',
-        'listViewForFeedbacksByHuc': 'listViewForFeedbacksByHucDiv'
+        'listViewForFeedbacksByHuc': 'listViewForFeedbacksByHucDiv',
+        'searchWidgetDiv': 'searchWidgetDiv'
     },
 
     "URL": {

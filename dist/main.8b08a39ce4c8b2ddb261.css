@@ -25,9 +25,7 @@ html, body {
   top: 1rem;
   right: 1rem;
   z-index: 5;
-  width: 300px;
-  max-height: 85%;
-  overflow-y: auto; }
+  width: 300px; }
 
 #feedbackControlDiv,
 #overallFeedbackDiv {
@@ -106,9 +104,13 @@ html, body {
     top: 1.5rem;
     right: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.9); }
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10; }
     #settingsDiv #settingControls .setting-control-item {
-      padding: 1rem; }
+      padding: 1rem;
+      position: relative; }
+    #settingsDiv #settingControls input[type="range"] {
+      z-index: 0; }
 
 .flex-container {
   display: flex;
@@ -132,6 +134,9 @@ html, body {
   cursor: pointer; }
   .download-pdf-btn.is-active svg {
     fill: #56a5d8; }
+
+#searchWidgetDiv {
+  width: 100%; }
 
 .center-align {
   display: flex;

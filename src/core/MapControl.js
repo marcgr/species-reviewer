@@ -1,3 +1,5 @@
+'use strict';
+
 import config from '../config';
 import * as esriLoader from 'esri-loader';
 import hatchRed from '../static/Hatch_RedAlt.png';
@@ -64,6 +66,8 @@ const MapControl = function(options={}){
             mapView.when(mapViewOnReadyHandler);
     
             initBasemapGallery(mapView);
+
+            initSearch(mapView);
         });
 
     };
@@ -116,6 +120,24 @@ const MapControl = function(options={}){
                 container: 'basemapGalleryDiv'
             });
         });
+    };
+
+    const initSearch = (view)=>{
+
+        esriLoader.loadModules([
+            "esri/widgets/Search",
+        ], esriLoaderOptions).then(([
+            Search
+        ])=>{
+            const searchWidget = new Search({ view, container: config.DOM_ID.searchWidgetDiv });
+
+            // view.ui.add(searchWidget, {
+            //     position: "top-left",
+            //     index: 0
+            // });
+        }).catch(err=>{
+            console.log(err);
+        })
     };
 
     const mapViewOnReadyHandler = ()=>{

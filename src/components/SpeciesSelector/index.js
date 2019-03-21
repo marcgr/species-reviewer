@@ -132,12 +132,12 @@ export default function SpeciesSelector(props={
             const actionsByElementID = {
                 'taxaSelector': ()=>{
                     // console.log('taxtSelector on change', event.target.value);
-                    selectedTaxa = event.target.value;
+                    selectedTaxa = evt.target.value;
                     updateSpeciesSelector();
                 },
                 'speciesSelector': ()=>{
                     // console.log('speciesSelector on change', event.target.value);
-                    onChangeHandler(event.target.value);
+                    onChangeHandler(evt.target.value);
                 }
             };
 

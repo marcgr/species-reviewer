@@ -81,7 +81,12 @@ export default function View(){
             // console.log(evt.target.value);
             // opacitySliderOnUpdate(evt.target.value);
             viewProps.layerOpacitySliderOnUpdate(evt.target.value)
-        })
+        });
+
+        document.querySelectorAll('.js-sign-out').forEach(element=>{
+
+            element.addEventListener('click', viewProps.signOutBtnOnClick);
+        });
     };
 
     // const toggleOverallFeeback = (isVisible=false, data={})=>{

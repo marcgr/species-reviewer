@@ -458,7 +458,29 @@ const MapControl = function(options={}){
             layer.refresh();
 
         });
-    }
+
+        zoomToPredictedHabitatLayer();
+    };
+
+    const zoomToPredictedHabitatLayer = (speciesCode='')=>{
+        mapView.map.layers.forEach(layer=>{
+            // console.log(layer);
+
+            if(layer.isPredictedHabitatLayer){
+                // console.log(la)
+
+                layer.queryExtent().then(function(results){
+                    // go to the extent of the results satisfying the query
+                    // view.goTo(results.extent);
+
+                    if(results.extent){
+                        mapView.goTo(results.extent);
+                    }
+                });
+            }
+
+        });
+    };
 
     const setLayersOpacity = (val)=>{
         mapView.map.layers.forEach(layer=>{

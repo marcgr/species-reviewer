@@ -651,6 +651,10 @@ export default function Controller(props={}){
         return distinctSpeciesCode;
     };
 
+    const signOut = ()=>{
+        oauthManager.signOut();
+    };
+
     return {
         init,
         dataModel,
@@ -663,7 +667,8 @@ export default function Controller(props={}){
         postOverallFeedback,
         getFeedbacksByUserForReviewMode,
         renderListOfHucsWithFeedbacks,
-        getFeedbacksByHucForReviewMode
+        getFeedbacksByHucForReviewMode,
+        signOut
         // openFeedbackManager
     };
 

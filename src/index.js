@@ -10,9 +10,6 @@ import MapControl from './core/MapControl';
 
 (async function initApp(){
 
-    // const oauthManager = new OAuthManager(config.oauthAppID);
-    // const credential = await oauthManager.init();
-
     const view = new View();
     
     const mapControl = new MapControl({
@@ -21,9 +18,6 @@ import MapControl from './core/MapControl';
     });
 
     const controller = new Controller({
-        // mapControl,
-        // view,
-        // oauthManager,
 
         speciesDataOnReady:(data)=>{
             // console.log('speciesDataOnReady', data);
@@ -188,6 +182,9 @@ import MapControl from './core/MapControl';
         listViewForFeedbacksByHucOnClose:()=>{
             controller.resetSelectedHucFeature();
         },
+        signOutBtnOnClick:()=>{
+            controller.signOut();
+        }
     });
 
     controller.init({

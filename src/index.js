@@ -42,7 +42,12 @@ import MapControl from './core/MapControl';
         speciesOnSelect:()=>{
             view.enableOpenOverallFeedbackBtnBtn();
         },
-
+        onDeatiledFeedbackSubmit: (data)=>{
+            console.log('onDeatiledFeedbackSubmit', data);
+        },
+        onOverallFeedbackSubmit: (data)=>{
+            console.log('onOverallFeedbackSubmit', data);
+        },
 
         onReviewMode:()=>{
             view.switchToReviewModeView();

@@ -1,3 +1,5 @@
+import './style.scss';
+
 import config from '../../config';
 
 export default function SpeciesSelector(props={
@@ -31,6 +33,12 @@ export default function SpeciesSelector(props={
             }
         });
 
+        distinctTaxa.sort((a,b)=>{
+            if(a < b) { return -1; }
+            if(a > b) { return 1; }
+            return 0;
+        });
+
         // console.log(distinctTaxa);
 
         const optionsHtml = distinctTaxa.map(d=>{
@@ -51,12 +59,19 @@ export default function SpeciesSelector(props={
 
     const getHtmlForSpeciesSelector = ()=>{
 
-        const optionsHtml = data
-            .filter(d=>{return d[config.FIELD_NAME.speciesLookup.taxa] === selectedTaxa})
-            .map(d=>{
+        const dataForSelectedTaxa = data.filter(d=>{return d[config.FIELD_NAME.speciesLookup.taxa] === selectedTaxa});
+
+        dataForSelectedTaxa.sort((a,b)=>{
+            if(a[config.FIELD_NAME.speciesLookup.speciesName] < b[config.FIELD_NAME.speciesLookup.speciesName]) { return -1; }
+            if(a[config.FIELD_NAME.speciesLookup.speciesName] > b[config.FIELD_NAME.speciesLookup.speciesName]) { return 1; }
+            return 0;
+        });
+
+        const optionsHtml = dataForSelectedTaxa.map(d=>{
                 const val = d[config.FIELD_NAME.speciesLookup.speciesCode];
                 const label = d[config.FIELD_NAME.speciesLookup.speciesName];
-                return `<option class='select-option' value="${val}">${label}</option>`
+                const isBold = d.hasBeenReviewed ? 'is-bold' : '';
+                return `<option class='select-option ${isBold}' value="${val}">${label}</option>`
             }).join('');
 
         const speciesSelectorHtml = `

@@ -39,20 +39,20 @@ export default function Controller(props={}){
             : await apiManager.querySpeciesLookupTable({
                 speciesCode: getDistinctSpeciesCodeToReview(speciesByUsers)
             });
-
             // console.log(sepeciesData);
-
+            
             const statusData = await apiManager.queryStatusTable();
-    
-            initSpeciesLookupTable(sepeciesData);
-    
             initStatusTable(statusData);
 
             initFeedbackManager();
     
-            queryFeedbacksByUser();
+            const deatiledFeedbacks = await queryFeedbacksByUser();
     
-            queryOverallFeedbacksByUser();
+            const overallFeedbacks = await queryOverallFeedbacksByUser();
+
+            initSpeciesLookupTable(sepeciesData, deatiledFeedbacks, overallFeedbacks);
+
+            // console.log(deatiledFeedbacks, overallFeedbacks);
 
         } catch(err){
             console.error(err);
@@ -79,6 +79,8 @@ export default function Controller(props={}){
                 postFeedback(data);
                 showHucFeatureOnMap(data.hucID, data.status, data);
                 resetSelectedHucFeature();
+
+                controllerProps.onDeatiledFeedbackSubmit(data);
             },
 
             onRemoveHandler: (data)=>{
@@ -90,9 +92,23 @@ export default function Controller(props={}){
         });
     };
 
-    const initSpeciesLookupTable = (data)=>{
+    const initSpeciesLookupTable = (data, deatiledFeedbacks, overallFeedbacks)=>{
+
+        const speciesAlreadyReviewed = {};
+
+        deatiledFeedbacks.forEach(d=>{
+            const species = d.attributes[config.FIELD_NAME.feedbackTable.species];
+            speciesAlreadyReviewed[species] = true;
+        });
+
+        overallFeedbacks.forEach(d=>{
+            const species = d.attributes[config.FIELD_NAME.overallFeedback.species];
+            speciesAlreadyReviewed[species] = true;
+        });
 
         data = data.map(d=>{
+            const species = d.attributes[config.FIELD_NAME.speciesLookup.speciesCode];
+            d.attributes.hasBeenReviewed = speciesAlreadyReviewed[species] ? true : false;
             return d.attributes
         });
 
@@ -100,7 +116,7 @@ export default function Controller(props={}){
 
         controllerProps.speciesDataOnReady(data);
 
-        // console.log('init species lookup table', data);
+        // console.log('init species lookup table', data, deatiledFeedbacks, overallFeedbacks, speciesAlreadyReviewed);
 
     };
 
@@ -197,6 +213,8 @@ export default function Controller(props={}){
                 feedbackManager.batchAddToDataStore(formattedFeedbackData);
             }
 
+            return feedbacks;
+
         } catch(err){
             console.error(err);
         }
@@ -215,6 +233,8 @@ export default function Controller(props={}){
             });
 
             saveOverallFeedbackToDataModel(feedbacks);
+
+            return feedbacks;
 
         } catch(err){
             console.error(err);
@@ -277,6 +297,8 @@ export default function Controller(props={}){
             apiManager.applyEditToFeatureTable(requestUrl, feature).then(res=>{
                 console.log('post edit to OverallFeedback table', res);
             });
+
+            controllerProps.onOverallFeedbackSubmit(feature);
 
         } catch(err){
             console.error(err);

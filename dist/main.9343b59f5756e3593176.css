@@ -158,6 +158,9 @@ html, body {
 .icon-no-right-padding[class^="icon-ui-"]:before {
   padding-right: 0; }
 
+#speciesSelectorDiv .is-bold {
+  font-weight: 600; }
+
 #feedbackControlPanelContainer .fieldset-radio label {
   color: #fff;
   font-size: .8rem; }

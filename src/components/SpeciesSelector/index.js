@@ -162,9 +162,23 @@ export default function SpeciesSelector(props={
         })
     };
 
+    const setSpeciesSelectorOptionAsReviewed = (speciesCode='')=>{
+        const selectOption = document.querySelector(`.select-option[value='${speciesCode}']`);
+        selectOption.classList.add('is-bold');
+
+        // console.log(speciesCode);
+
+        data.forEach(d=>{
+            if(d[config.FIELD_NAME.speciesLookup.speciesCode] === speciesCode){
+                d.hasBeenReviewed = true;
+            }
+        });
+    };
+
     return {
         init,
-        render
+        render,
+        setSpeciesSelectorOptionAsReviewed
     };
 
 }

@@ -43,10 +43,14 @@ import MapControl from './core/MapControl';
             view.enableOpenOverallFeedbackBtnBtn();
         },
         onDeatiledFeedbackSubmit: (data)=>{
-            console.log('onDeatiledFeedbackSubmit', data);
+            // console.log('onDeatiledFeedbackSubmit', data);
+            const species = data.species;
+            view.speciesSelector.setSpeciesSelectorOptionAsReviewed(species);
         },
         onOverallFeedbackSubmit: (data)=>{
-            console.log('onOverallFeedbackSubmit', data);
+            // console.log('onOverallFeedbackSubmit', data);
+            const species = data.attributes[config.FIELD_NAME.overallFeedback.species];
+            view.speciesSelector.setSpeciesSelectorOptionAsReviewed(species);
         },
 
         onReviewMode:()=>{

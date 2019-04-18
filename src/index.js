@@ -45,12 +45,12 @@ import MapControl from './core/MapControl';
         onDeatiledFeedbackSubmit: (data)=>{
             // console.log('onDeatiledFeedbackSubmit', data);
             const species = data.species;
-            view.speciesSelector.setSpeciesSelectorOptionAsReviewed(species);
+            view.speciesSelector.setSpeciesSelectorOptionAsReviewed(species, 'detailed');
         },
         onOverallFeedbackSubmit: (data)=>{
             // console.log('onOverallFeedbackSubmit', data);
             const species = data.attributes[config.FIELD_NAME.overallFeedback.species];
-            view.speciesSelector.setSpeciesSelectorOptionAsReviewed(species);
+            view.speciesSelector.setSpeciesSelectorOptionAsReviewed(species, 'overall');
         },
 
         onReviewMode:()=>{

@@ -70,8 +70,9 @@ export default function SpeciesSelector(props={
         const optionsHtml = dataForSelectedTaxa.map(d=>{
                 const val = d[config.FIELD_NAME.speciesLookup.speciesCode];
                 const label = d[config.FIELD_NAME.speciesLookup.speciesName];
-                const isBold = d.hasBeenReviewed ? 'is-bold' : '';
-                return `<option class='select-option ${isBold}' value="${val}">${label}</option>`
+                const hasOverallFeedback = d.hasOverallFeedback ? getOptionDecorationClass('overall') : '';
+                const hasDeatiledFeedback = d.hasDeatiledFeedback ? getOptionDecorationClass('detailed') : '';
+                return `<option class='select-option ${hasOverallFeedback} ${hasDeatiledFeedback}' value="${val}">${label}</option>`
             }).join('');
 
         const speciesSelectorHtml = `
@@ -162,18 +163,43 @@ export default function SpeciesSelector(props={
         })
     };
 
-    const setSpeciesSelectorOptionAsReviewed = (speciesCode='')=>{
+    // feedback type values: 'overall' | 'detailed'. Need to use it to determine which class to add (is-bold | is-italic)
+    const setSpeciesSelectorOptionAsReviewed = (speciesCode='', feedbackType='')=>{
         const selectOption = document.querySelector(`.select-option[value='${speciesCode}']`);
-        selectOption.classList.add('is-bold');
+
+        const decorationClass = getOptionDecorationClass(feedbackType);
+
+        selectOption.classList.add(decorationClass);
 
         // console.log(speciesCode);
 
         data.forEach(d=>{
             if(d[config.FIELD_NAME.speciesLookup.speciesCode] === speciesCode){
-                d.hasBeenReviewed = true;
+
+                if(feedbackType === 'detailed'){
+                    d.hasDeatiledFeedback = true;
+                }
+
+                if(feedbackType === 'overall'){
+                    d.hasOverallFeedback = true;
+                }
+                
             }
         });
     };
+
+    // feedback type values: 'overall' | 'detailed'
+    // for species has overall feedback provided, style it as bold text
+    // for species has detailed feedback provided, style it as italic text
+    const getOptionDecorationClass = (feedbackType='')=>{
+
+        const decorationClasses = {
+            'overall': 'is-bold',
+            'detailed': 'is-italic'
+        };
+
+        return decorationClasses[feedbackType] || 'undefined-class';
+    }
 
     return {
         init,

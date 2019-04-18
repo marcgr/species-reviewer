@@ -94,21 +94,23 @@ export default function Controller(props={}){
 
     const initSpeciesLookupTable = (data, deatiledFeedbacks, overallFeedbacks)=>{
 
-        const speciesAlreadyReviewed = {};
+        const speciesWithOverallFeedback = {};
+        const speciesWithDeatiledFeedback = {};
 
         deatiledFeedbacks.forEach(d=>{
             const species = d.attributes[config.FIELD_NAME.feedbackTable.species];
-            speciesAlreadyReviewed[species] = true;
+            speciesWithDeatiledFeedback[species] = true;
         });
 
         overallFeedbacks.forEach(d=>{
             const species = d.attributes[config.FIELD_NAME.overallFeedback.species];
-            speciesAlreadyReviewed[species] = true;
+            speciesWithOverallFeedback[species] = true;
         });
 
         data = data.map(d=>{
             const species = d.attributes[config.FIELD_NAME.speciesLookup.speciesCode];
-            d.attributes.hasBeenReviewed = speciesAlreadyReviewed[species] ? true : false;
+            d.attributes.hasOverallFeedback = speciesWithOverallFeedback[species] ? true : false;
+            d.attributes.hasDeatiledFeedback = speciesWithDeatiledFeedback[species] ? true : false;
             return d.attributes
         });
 

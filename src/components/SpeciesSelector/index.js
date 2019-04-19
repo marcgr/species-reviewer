@@ -72,7 +72,7 @@ export default function SpeciesSelector(props={
                 const label = d[config.FIELD_NAME.speciesLookup.speciesName];
                 const hasOverallFeedback = d.hasOverallFeedback ? getOptionDecorationClass('overall') : '';
                 const hasDeatiledFeedback = d.hasDeatiledFeedback ? getOptionDecorationClass('detailed') : '';
-                return `<option class='select-option ${hasOverallFeedback} ${hasDeatiledFeedback}' value="${val}">${label}</option>`
+                return `<option class='select-option species-option ${hasOverallFeedback} ${hasDeatiledFeedback}' value="${val}">${label}</option>`
             }).join('');
 
         const speciesSelectorHtml = `
@@ -194,8 +194,8 @@ export default function SpeciesSelector(props={
     const getOptionDecorationClass = (feedbackType='')=>{
 
         const decorationClasses = {
-            'overall': 'is-bold',
-            'detailed': 'is-italic'
+            'overall': 'has-overall-feedback',
+            'detailed': 'has-detailed-feedback'
         };
 
         return decorationClasses[feedbackType] || 'undefined-class';

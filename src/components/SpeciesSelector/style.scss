@@ -1,9 +1,18 @@
 #speciesSelectorDiv{
-    .is-bold {
+    .has-overall-feedback {
         font-weight: 600;
     }
 
-    .is-italic {
+    .has-detailed-feedback {
         font-style: italic;
+    }
+
+    .species-option {
+        color: #959595;
+    }
+
+    .species-option.has-overall-feedback,
+    .species-option.has-detailed-feedback {
+        color: #323232;
     }
 }

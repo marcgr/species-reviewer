@@ -158,8 +158,18 @@ html, body {
 .icon-no-right-padding[class^="icon-ui-"]:before {
   padding-right: 0; }
 
-#speciesSelectorDiv .is-bold {
+#speciesSelectorDiv .has-overall-feedback {
   font-weight: 600; }
+
+#speciesSelectorDiv .has-detailed-feedback {
+  font-style: italic; }
+
+#speciesSelectorDiv .species-option {
+  color: #959595; }
+
+#speciesSelectorDiv .species-option.has-overall-feedback,
+#speciesSelectorDiv .species-option.has-detailed-feedback {
+  color: #323232; }
 
 #feedbackControlPanelContainer .fieldset-radio label {
   color: #fff;

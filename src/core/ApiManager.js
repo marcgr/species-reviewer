@@ -291,7 +291,38 @@ export default function ApiManager(props={}){
         } else {
             console.log('pdf lookup table url is not found for', speciesKey);
         }
-    }
+    };
+
+    const getDistinctSpeciesCodeFromModelingExtent = ()=>{
+        const requestUrl = config.URL.speciesDistribution + '/query';
+
+        return new Promise((resolve, reject)=>{
+
+            axios.get(requestUrl, {
+                params: {
+                    where: '1=1',
+                    outFields: config.FIELD_NAME.speciesDistribution.speciesCode,
+                    returnDistinctValues: true,
+                    f: 'json',
+                    token: props.oauthManager.getToken()
+                }
+            }).then(function (response) {
+                if(response.data && response.data.features){
+                    // console.log(response.data.features);
+
+                    const speciesCodes = response.data.features.map(d=>{
+                        return d.attributes[config.FIELD_NAME.speciesDistribution.speciesCode]
+                    });
+
+                    resolve(speciesCodes)
+                } else {
+                    reject('no PDF resouce found for selected species');
+                }
+            }).catch(err=>{
+                reject(err);
+            });
+        });
+    };
 
     return {
         querySpeciesLookupTable,
@@ -302,7 +333,8 @@ export default function ApiManager(props={}){
         deleteFromFeedbackTable,
         applyEditToFeatureTable,
         querySpeciesByUser,
-        queryPdfTable
+        queryPdfTable,
+        getDistinctSpeciesCodeFromModelingExtent
     }
 
 };

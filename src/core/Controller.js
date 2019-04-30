@@ -92,7 +92,10 @@ export default function Controller(props={}){
         });
     };
 
-    const initSpeciesLookupTable = (data, deatiledFeedbacks, overallFeedbacks)=>{
+    const initSpeciesLookupTable = async(data, deatiledFeedbacks, overallFeedbacks)=>{
+
+        const speciesWithDataLoaded = await apiManager.getDistinctSpeciesCodeFromModelingExtent();
+        // console.log(speciesWithDataLoaded)
 
         const speciesWithOverallFeedback = {};
         const speciesWithDeatiledFeedback = {};
@@ -111,6 +114,7 @@ export default function Controller(props={}){
             const species = d.attributes[config.FIELD_NAME.speciesLookup.speciesCode];
             d.attributes.hasOverallFeedback = speciesWithOverallFeedback[species] ? true : false;
             d.attributes.hasDeatiledFeedback = speciesWithDeatiledFeedback[species] ? true : false;
+            d.attributes.hasDataLoaded = speciesWithDataLoaded.indexOf(species) !== -1 ? true : false;
             return d.attributes
         });
 
@@ -118,7 +122,7 @@ export default function Controller(props={}){
 
         controllerProps.speciesDataOnReady(data);
 
-        // console.log('init species lookup table', data, deatiledFeedbacks, overallFeedbacks, speciesAlreadyReviewed);
+        console.log('init species lookup table', data);
 
     };
 

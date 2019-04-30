@@ -72,7 +72,9 @@ export default function SpeciesSelector(props={
                 const label = d[config.FIELD_NAME.speciesLookup.speciesName];
                 const hasOverallFeedback = d.hasOverallFeedback ? getOptionDecorationClass('overall') : '';
                 const hasDeatiledFeedback = d.hasDeatiledFeedback ? getOptionDecorationClass('detailed') : '';
-                return `<option class='select-option species-option ${hasOverallFeedback} ${hasDeatiledFeedback}' value="${val}">${label}</option>`
+                // if no data has been loaded for this species, disable the option
+                const isDisabled = !d.hasDataLoaded ? 'is-disabled' : '';
+                return `<option class='select-option species-option ${hasOverallFeedback} ${hasDeatiledFeedback} ${isDisabled}' value="${val}">${label}</option>`
             }).join('');
 
         const speciesSelectorHtml = `

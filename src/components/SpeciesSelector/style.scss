@@ -8,11 +8,17 @@
     }
 
     .species-option {
-        color: #959595;
+        color: #323232;
     }
 
     .species-option.has-overall-feedback,
     .species-option.has-detailed-feedback {
         color: #323232;
+    }
+
+    .species-option.is-disabled {
+        pointer-events: none;
+        background: rgba(0,0,0,.05);
+        color: rgba(100,100,100,.5);
     }
 }

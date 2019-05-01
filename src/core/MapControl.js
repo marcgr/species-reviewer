@@ -162,9 +162,20 @@ const MapControl = function(options={}){
         ])=>{
 
             hucsLayer = new FeatureLayer({
-                url: 'https://utility.arcgis.com/usrsvcs/servers/9c326d3f7db34042857789f580ade469/rest/services/WatershedBoundaryDataset_HUC10/FeatureServer/0',
+                url: config.URL.WatershedBoundaryDataset_HUC10,
                 opacity: .9,
-                listMode: 'hide'
+                listMode: 'hide',
+                renderer: {
+                    type: "simple",  // autocasts as new SimpleRenderer()
+                    symbol: {
+                        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                        color: [0, 0, 0, 0],
+                        outline: {  // autocasts as new SimpleLineSymbol()
+                            color: [0, 0, 0, 0],
+                            width: "0"
+                        }
+                    }
+                }
             });
     
             mapView.map.add(hucsLayer);

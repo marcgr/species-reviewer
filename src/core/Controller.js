@@ -9,13 +9,15 @@ import ApiManager from './ApiManager';
 
 export default function Controller(props={}){
 
-    const oauthManager = new OAuthManager(config.oauthAppID);
+    // const oauthManager = new OAuthManager(config.oauthAppID);
+    const oauthManager = props.oauthManager;
     const dataModel = new DataModel();
     const dataModelForReviewMode = new DataModelForReviewMode();
     const feedbackManager = new FeedbackManager();
     const apiManager = new ApiManager({oauthManager});
 
     const controllerProps = props;
+
     const state = {
         selectedHucFeature: null
     };
@@ -30,7 +32,9 @@ export default function Controller(props={}){
         }
 
         try{
-            const portalUser = await oauthManager.init();
+            // const portalUser = await oauthManager.init();
+
+            const portalUser = oauthManager.getPoralUser();
 
             const speciesByUsers = await apiManager.querySpeciesByUser({email: portalUser.email});
 

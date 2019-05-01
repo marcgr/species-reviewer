@@ -51,6 +51,13 @@ export default function View(){
         // openOverallBtnOnclick = options.openOverallBtnOnclick;
         // opacitySliderOnUpdate = options.layerOpacitySliderOnUpdate;
 
+        // hide agreement info
+        document.getElementById('agreementDiv').classList.add('hide');
+
+        // show mainControlDiv when init view
+        document.getElementById('mainControlDiv').classList.remove('hide');
+        document.getElementById('viewDiv').classList.remove('hide');
+
         initEventHandlers();
     };
 
@@ -77,11 +84,11 @@ export default function View(){
             });
         });
 
-        document.querySelector('#sliderForLayerOpacity').addEventListener('change', (evt)=>{
-            // console.log(evt.target.value);
-            // opacitySliderOnUpdate(evt.target.value);
-            viewProps.layerOpacitySliderOnUpdate(evt.target.value)
-        });
+        // document.querySelector('#sliderForLayerOpacity').addEventListener('change', (evt)=>{
+        //     // console.log(evt.target.value);
+        //     // opacitySliderOnUpdate(evt.target.value);
+        //     viewProps.layerOpacitySliderOnUpdate(evt.target.value)
+        // });
 
         document.querySelectorAll('.js-sign-out').forEach(element=>{
 

@@ -6,9 +6,25 @@ import config from './config';
 import Controller from './core/Controller';
 import View from './core/View';
 import MapControl from './core/MapControl';
-// import OAuthManager from './core/OauthManager';
+import OAuthManager from './core/OauthManager';
 
-(async function initApp(){
+(async function initOAuthManager(){
+
+    const oauthManager = new OAuthManager(config.oauthAppID);
+    await oauthManager.init();
+
+    document.querySelector('.js-accept-terms').addEventListener('click', evt=>{
+        // console.log('agress');
+        initApp(oauthManager);
+    });
+})();
+
+const initApp = async (oauthManager)=>{
+
+    if(!oauthManager){
+        console.error('oauth manager is required to init the app...');
+        return;
+    }
 
     const view = new View();
     
@@ -18,6 +34,8 @@ import MapControl from './core/MapControl';
     });
 
     const controller = new Controller({
+
+        oauthManager,
 
         speciesDataOnReady:(data)=>{
             // console.log('speciesDataOnReady', data);
@@ -102,13 +120,6 @@ import MapControl from './core/MapControl';
             view.toggleDownloadAsPdfBtn(url);
         }
 
-    });
-
-    mapControl.init({
-        hucFeatureOnSelectHandler: (hucFeature)=>{
-            // console.log('selected hucFeature', hucFeature);
-            controller.setSelectedHucFeature(hucFeature);
-        }
     });
 
     view.speciesSelector.init({
@@ -200,8 +211,15 @@ import MapControl from './core/MapControl';
         // token: credential.token
     });
 
+    mapControl.init({
+        hucFeatureOnSelectHandler: (hucFeature)=>{
+            // console.log('selected hucFeature', hucFeature);
+            controller.setSelectedHucFeature(hucFeature);
+        }
+    });
+
     // window.appDebugger = {
     //     signOut: oauthManager.signOut
     // };
 
-})();
+};

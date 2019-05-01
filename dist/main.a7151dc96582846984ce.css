@@ -165,11 +165,16 @@ html, body {
   font-style: italic; }
 
 #speciesSelectorDiv .species-option {
-  color: #959595; }
+  color: #323232; }
 
 #speciesSelectorDiv .species-option.has-overall-feedback,
 #speciesSelectorDiv .species-option.has-detailed-feedback {
   color: #323232; }
+
+#speciesSelectorDiv .species-option.disabled {
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(100, 100, 100, 0.5); }
 
 #feedbackControlPanelContainer .fieldset-radio label {
   color: #fff;

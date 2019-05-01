@@ -55,10 +55,10 @@ export default function View(){
     };
 
     const initEventHandlers = ()=>{
-        document.querySelectorAll('.js-toggle-basemap-gallery').forEach(element=>{
-            // console.log(element);
-            element.addEventListener('click', toggleBasemapGallery);
-        });
+        // document.querySelectorAll('.js-toggle-basemap-gallery').forEach(element=>{
+        //     // console.log(element);
+        //     element.addEventListener('click', toggleBasemapGallery);
+        // });
 
         document.querySelectorAll('.js-open-overall-feedback').forEach(element=>{
             // console.log('js-open-overall-feedback on click');
@@ -118,10 +118,10 @@ export default function View(){
 
     };
 
-    const toggleBasemapGallery = ()=>{
-        // console.log('toggleBasemapGallery');
-        document.getElementById('basemapGalleryControl').classList.toggle('is-collapsed');
-    };
+    // const toggleBasemapGallery = ()=>{
+    //     // console.log('toggleBasemapGallery');
+    //     document.getElementById('basemapGalleryControl').classList.toggle('is-collapsed');
+    // };
 
     const toggleMainControl = (isVisible)=>{
         if(isVisible){

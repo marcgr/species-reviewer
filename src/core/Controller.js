@@ -122,7 +122,7 @@ export default function Controller(props={}){
 
         controllerProps.speciesDataOnReady(data);
 
-        console.log('init species lookup table', data);
+        // console.log('init species lookup table', data);
 
     };
 

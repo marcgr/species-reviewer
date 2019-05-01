@@ -56,7 +56,8 @@ module.exports = {
         'listViewOverallFeedback': 'listViewForOverallFeedbackDiv',
         'listViewDeatiledFeedback': 'listViewForDetailedFeedbackDiv',
         'listViewForFeedbacksByHuc': 'listViewForFeedbacksByHucDiv',
-        'searchWidgetDiv': 'searchWidgetDiv'
+        'searchWidgetDiv': 'searchWidgetDiv',
+        'layerListDiv': 'layerListDiv'
     },
 
     "URL": {
@@ -79,6 +80,25 @@ module.exports = {
             "polygon": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Predicted_Habitat_Polygon/FeatureServer/0"
         },
         "pdfLookup": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/PDF_Lookup/FeatureServer/0"
+    },
+
+    "reference_layers": {
+        "usa_protected_areas": {
+            "itemId": "dd6077b7b71c4492aceab1ae0146ad1c",
+            "title": "USA Protected Areas"
+        },
+        "USA_NLCD_Land_Cover_2011": {
+            "itemId": "aa71e15357a14dbb93a50ef3a8e06f70",
+            "title": "USA NLCD Land Cover"
+        },
+        "USA_Forest_Type": {
+            "itemId": "593d022dbeb24c3abbf6c509fd592dd2",
+            "title": "USA Forest Type"
+        },
+        "USA_Wetlands": {
+            "itemId": "0cb75b1f54854ad188302cd8b260c98f",
+            "title": "USA Wetlands"
+        }
     },
 
     "COLOR": {

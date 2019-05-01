@@ -41,8 +41,6 @@ const MapControl = function(options={}){
         hucFeatureOnSelectHandler = options.hucFeatureOnSelectHandler || null;
 
         initMapView();
-
-        initLayers();
     };
 
     const initMapView = ()=>{
@@ -62,17 +60,119 @@ const MapControl = function(options={}){
                 map: webmap,
                 container: mapViewContainerID
             });
-    
+
             mapView.when(mapViewOnReadyHandler);
     
-            initBasemapGallery(mapView);
-
-            initSearch(mapView);
         });
 
     };
 
-    const initLayers = ()=>{
+    const initLayerList = (mapView)=>{
+
+        esriLoader.loadModules([
+            "esri/widgets/LayerList"
+        ], esriLoaderOptions).then(([
+            LayerList,
+        ])=>{
+            const layerlist = new LayerList({
+                container: config.DOM_ID.layerListDiv,
+                view: mapView
+            });
+        }).catch(err=>{
+            console.error(err);
+        })
+    };
+
+    const initReferenceLayers = (mapView)=>{
+
+        // Layer.fromPortalItem({
+        //     portalItem: {  // autocasts new PortalItem()
+        //         id: "dd6077b7b71c4492aceab1ae0146ad1c"
+        //     }
+        // }).then(function(layer){
+        //     // add the layer to the map
+        //     mapView.map.add(layer);
+        // });
+
+        esriLoader.loadModules([
+            "esri/layers/MapImageLayer",
+            "esri/layers/ImageryLayer"
+        ], esriLoaderOptions).then(([
+            MapImageLayer,
+            ImageryLayer
+        ])=>{
+
+            const defaultOpacity = .7;
+
+            // USA Protected Areas
+            const usaProtectedAreas = new ImageryLayer({
+                portalItem: {  // autocasts as esri/portal/PortalItem
+                    id: config.reference_layers.usa_protected_areas.itemId
+                },
+                title: config.reference_layers.usa_protected_areas.title,
+                opacity: defaultOpacity,
+                visible: false
+            });
+
+            // USA_NLCD_Land_Cover_2011
+            const nlcdLandCover = new ImageryLayer({
+                portalItem: {  // autocasts as esri/portal/PortalItem
+                    id: config.reference_layers.USA_NLCD_Land_Cover_2011.itemId
+                },
+                title: config.reference_layers.USA_NLCD_Land_Cover_2011.title,
+                opacity: defaultOpacity,
+                visible: false
+            });
+
+            // USA_Forest_Type
+            const forestType = new ImageryLayer({
+                portalItem: {  // autocasts as esri/portal/PortalItem
+                    id: config.reference_layers.USA_Forest_Type.itemId
+                },
+                title: config.reference_layers.USA_Forest_Type.title,
+                opacity: defaultOpacity,
+                visible: false
+            });
+
+            // USA_Wetlands
+            const wetLand = new MapImageLayer({
+                portalItem: {  // autocasts as esri/portal/PortalItem
+                    id: config.reference_layers.USA_Wetlands.itemId
+                },
+                title: config.reference_layers.USA_Wetlands.title,
+                opacity: defaultOpacity,
+                visible: false
+            });
+            
+            // mapView.map.addMany([usaProtectedAreas, nlcdLandCover, forestType, wetLand]);
+            mapView.map.add(usaProtectedAreas, 0);
+            mapView.map.add(nlcdLandCover, 0); 
+            mapView.map.add(forestType, 0); 
+            mapView.map.add(wetLand, 0); 
+        }).catch(err=>{
+            console.error(err);
+        })
+    };
+
+    const initHucLayer = (mapView)=>{
+        esriLoader.loadModules([
+            "esri/layers/FeatureLayer",
+        ], esriLoaderOptions).then(([
+            FeatureLayer
+        ])=>{
+
+            hucsLayer = new FeatureLayer({
+                url: 'https://utility.arcgis.com/usrsvcs/servers/9c326d3f7db34042857789f580ade469/rest/services/WatershedBoundaryDataset_HUC10/FeatureServer/0',
+                opacity: .9,
+                listMode: 'hide'
+            });
+    
+            mapView.map.add(hucsLayer);
+
+        });
+    }
+
+    const initHucsReviewReferenceLayers = (mapView)=>{
 
         esriLoader.loadModules([
             "esri/layers/GraphicsLayer"
@@ -80,10 +180,15 @@ const MapControl = function(options={}){
             GraphicsLayer
         ])=>{
             hucsByStatusGraphicLayer = new GraphicsLayer({
-                opacity: .6
+                opacity: .6,
+                listMode: 'hide'
             });
         
-            hucPreviewGraphicLayer = new GraphicsLayer();
+            hucPreviewGraphicLayer = new GraphicsLayer({
+                listMode: 'hide'
+            });
+
+            mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
         });
     };
 
@@ -112,13 +217,21 @@ const MapControl = function(options={}){
 
         esriLoader.loadModules([
             "esri/widgets/BasemapGallery",
+            "esri/widgets/Expand"
         ], esriLoaderOptions).then(([
-            BasemapGallery
+            BasemapGallery,
+            Expand
         ])=>{
             const basemapGallery = new BasemapGallery({
-                view: view,
-                container: 'basemapGalleryDiv'
+                view
             });
+
+            const bgExpand = new Expand({
+                view,
+                content: basemapGallery
+            });
+
+            mapView.ui.add(bgExpand, "top-left");
         });
     };
 
@@ -145,11 +258,26 @@ const MapControl = function(options={}){
 
         initMapEventHandlers();
 
-        setHucsLayer(mapView.map);
+        initBasemapGallery(mapView);
 
-        mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
+        initReferenceLayers(mapView);
 
-        initPredictedHabitatLayers();
+        initHucLayer(mapView);
+
+        initHucsReviewReferenceLayers(mapView);
+
+        initPredictedHabitatLayers(mapView);
+
+        initSearch(mapView);
+
+        initLayerList(mapView);
+
+
+        // setHucsLayer(mapView.map);
+
+        // mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
+
+        // initPredictedHabitatLayers();
 
         // initLegend();
     };
@@ -196,15 +324,18 @@ const MapControl = function(options={}){
 
     };
 
-    const setHucsLayer = (webmap)=>{
-        // console.log(webmap.layers.items);
+    // const setHucsLayer = (webmap)=>{
+    //     console.log(webmap.layers.items);
 
-        hucsLayer = webmap.layers.items.filter(d=>{
-            return d.title.indexOf('HUC10') !== -1 
-        })[0];
+    //     hucsLayer = webmap.layers.items.filter(d=>{
+    //         console.log(d.title)
+    //         return d.title.indexOf('HUC10') !== -1 
+    //     })[0];
 
-        // console.log(hucsLayer);
-    };
+    //     // hucsLayer.listMode = 'hide';
+
+    //     console.log('setHucsLayer', hucsLayer);
+    // };
 
     const queryHucsLayerByMouseEventOnSuccessHandler = (feature)=>{
 
@@ -414,7 +545,7 @@ const MapControl = function(options={}){
         return renderer;
     };
 
-    const initPredictedHabitatLayers = ()=>{
+    const initPredictedHabitatLayers = (mapView)=>{
         // console.log(url);
 
         // if(actualModelBoundaryLayer){
@@ -431,7 +562,8 @@ const MapControl = function(options={}){
 
                 return new FeatureLayer({
                     url,
-                    opacity: .8,
+                    opacity: .9,
+                    listMode: 'hide',
                     definitionExpression: `cutecode=''`,
                     isPredictedHabitatLayer: true
                 });

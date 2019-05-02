@@ -261,7 +261,7 @@ export default function Controller(props={}){
 
             const feedbacks = await apiManager.fetchFeedback({
                 requestUrl: config.URL.overallFeedback + '/query',
-                where: `${config.FIELD_NAME.overallFeedback.species} = '${species}'`
+                where: `${config.FIELD_NAME.overallFeedback.species} = '${species}' AND ${config.FIELD_NAME.overallFeedback.retirementDate} is NULL`
             });
 
             controllerProps.overallFeedbackForReviewModeOnReady(feedbacks);

@@ -27,14 +27,16 @@ module.exports = {
             'species': 'Species',
             'comment': 'Comment',
             'status': 'StatusType',
-            'retirementDate': 'RetirementDate'
+            'retirementDate': 'RetirementDate',
+            'data_load_date': 'DataLoadDate'
         },
         'overallFeedback': {
             'userID': 'UserID',
             'species': 'Species',
             'comment': 'Comment',
             'rating': 'Rating',
-            'retirementDate': 'RetirementDate'
+            'retirementDate': 'RetirementDate',
+            'data_load_date': 'DataLoadDate'
         },
         'speciesByUser': {
             'speciesCode': 'cutecode',
@@ -43,6 +45,10 @@ module.exports = {
         'pdfLookup': {
             'speciesCode': 'cutecode',
             'url': 'url'
+        },
+        'data_load_date': {
+            'species_code': 'cutecode',
+            'data_load_date': 'DataLoadDate'
         }
     },
 
@@ -80,7 +86,8 @@ module.exports = {
             "polygon": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Predicted_Habitat_Polygon/FeatureServer/0"
         },
         "pdfLookup": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/PDF_Lookup/FeatureServer/0",
-        "WatershedBoundaryDataset_HUC10": "https://utility.arcgis.com/usrsvcs/servers/9c326d3f7db34042857789f580ade469/rest/services/WatershedBoundaryDataset_HUC10/FeatureServer/0"
+        "WatershedBoundaryDataset_HUC10": "https://utility.arcgis.com/usrsvcs/servers/9c326d3f7db34042857789f580ade469/rest/services/WatershedBoundaryDataset_HUC10/FeatureServer/0",
+        "data_load_date": "https://services.arcgis.com/EVsTT4nNRCwmHNyb/arcgis/rest/services/Data_Load_Date/FeatureServer/0"
     },
 
     "reference_layers": {

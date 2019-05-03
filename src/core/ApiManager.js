@@ -324,6 +324,37 @@ export default function ApiManager(props={}){
         });
     };
 
+    const getDataLoadDate = (speciesCode='')=>{
+
+        const fieldNameDataLoadDate = config.FIELD_NAME.data_load_date.data_load_date
+        const requestUrl = config.URL.data_load_date + '/query';
+        const where = `${config.FIELD_NAME.data_load_date.species_code} = '${speciesCode}'`
+
+        return new Promise((resolve, reject)=>{
+
+            axios.get(requestUrl, {
+                params: {
+                    where,
+                    outFields: fieldNameDataLoadDate,
+                    f: 'json',
+                    token: props.oauthManager.getToken()
+                }
+            }).then(function (response) {
+                if(response.data && response.data.features){
+                    // console.log(response.data.features);
+
+                    const dataLoadDate = response.data.features && response.data.features[0] ? response.data.features[0].attributes[fieldNameDataLoadDate] : '';
+
+                    resolve(dataLoadDate)
+                } else {
+                    reject('no data load date is found');
+                }
+            }).catch(err=>{
+                reject(err);
+            });
+        });
+    };
+
     return {
         querySpeciesLookupTable,
         queryAllFeaturesFromSpeciesLookupTable,
@@ -334,7 +365,8 @@ export default function ApiManager(props={}){
         applyEditToFeatureTable,
         querySpeciesByUser,
         queryPdfTable,
-        getDistinctSpeciesCodeFromModelingExtent
+        getDistinctSpeciesCodeFromModelingExtent,
+        getDataLoadDate
     }
 
 };

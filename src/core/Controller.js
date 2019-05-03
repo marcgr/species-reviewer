@@ -272,6 +272,7 @@ export default function Controller(props={}){
 
     }; 
 
+    // add data load date
     const postOverallFeedback = async(data={
         rating: 0,
         comment: ''
@@ -291,6 +292,9 @@ export default function Controller(props={}){
         saveOverallFeedbackToDataModel([feature]);
 
         try {
+
+            const dataLoadDate = await apiManager.getDataLoadDate(species);
+            // console.log(dataLoadDate);
             
             const feedbacks = await apiManager.fetchFeedback({
                 requestUrl: config.URL.overallFeedback + '/query',
@@ -303,6 +307,10 @@ export default function Controller(props={}){
             if(feedbacks[0]){
                 feature.attributes.ObjectId = feedbacks[0].attributes.ObjectId;
             } 
+
+            if(dataLoadDate){
+                feature.attributes[config.FIELD_NAME.overallFeedback.data_load_date] = dataLoadDate;
+            }
 
             apiManager.applyEditToFeatureTable(requestUrl, feature).then(res=>{
                 console.log('post edit to OverallFeedback table', res);
@@ -383,20 +391,24 @@ export default function Controller(props={}){
         }
     };
 
+    // add data load date
     const postFeedback = async(data={})=>{
         // console.log(data);
 
-        const feedbackFeature = {
-            "attributes": {
-                [config.FIELD_NAME.feedbackTable.userID]: data.userID,
-                [config.FIELD_NAME.feedbackTable.hucID]: data.hucID,
-                [config.FIELD_NAME.feedbackTable.status]: data.status,
-                [config.FIELD_NAME.feedbackTable.comment]: data.comment,
-                [config.FIELD_NAME.feedbackTable.species]: data.species
-            }
-        };
-
         try {
+
+            const dataLoadDate = await apiManager.getDataLoadDate(data.species);
+            // console.log(dataLoadDate);
+
+            const feedbackFeature = {
+                "attributes": {
+                    [config.FIELD_NAME.feedbackTable.userID]: data.userID,
+                    [config.FIELD_NAME.feedbackTable.hucID]: data.hucID,
+                    [config.FIELD_NAME.feedbackTable.status]: data.status,
+                    [config.FIELD_NAME.feedbackTable.comment]: data.comment,
+                    [config.FIELD_NAME.feedbackTable.species]: data.species
+                }
+            };
 
             const feedbacks = await apiManager.fetchFeedback({
                 requestUrl: config.URL.feedbackTable + '/query',
@@ -409,6 +421,10 @@ export default function Controller(props={}){
             if(feedbacks[0]){
                 feedbackFeature.attributes.ObjectId = feedbacks[0].attributes.ObjectId;
             } 
+
+            if(dataLoadDate){
+                feedbackFeature.attributes[config.FIELD_NAME.feedbackTable.data_load_date] = dataLoadDate;
+            }
 
             apiManager.applyEditToFeatureTable(requestUrl, feedbackFeature).then(res=>{
                 console.log('post edit to Feedback table', res);

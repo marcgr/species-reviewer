@@ -111,7 +111,10 @@ export default function Controller(props={}){
 
         overallFeedbacks.forEach(d=>{
             const species = d.attributes[config.FIELD_NAME.overallFeedback.species];
-            speciesWithOverallFeedback[species] = true;
+
+            if(+d.attributes[config.FIELD_NAME.overallFeedback.rating]){
+                speciesWithOverallFeedback[species] = true;
+            }
         });
 
         data = data.map(d=>{

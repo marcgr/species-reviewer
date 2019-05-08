@@ -110,6 +110,12 @@ export default function(){
             }
 
             if(event.target.classList.contains('js-submit')){
+
+                if(!rating){
+                    alert('please provide a star rating');
+                    return;
+                }
+
                 onSubmitHandler({
                     rating,
                     comment

@@ -1,372 +1,435 @@
-import axios from 'axios';
-import config from '../config';
+import axios from "axios";
+import config from "../config";
 
-const Promise = require('es6-promise').Promise;
+const Promise = require("es6-promise").Promise;
 
-export default function ApiManager(props={}){
-
-    const querySpeciesByUser = (options={
-        email: ''
-    })=>{
-        const requestUrl = config.URL.speciesByUser + '/query';
-        const whereClause = `${config.FIELD_NAME.speciesByUser.email} = '${options.email}'`
-
-        return new Promise((resolve, reject)=>{
-
-            axios.get(requestUrl, {
-                params: {
-                    where: whereClause,
-                    outFields: '*',
-                    f: 'json',
-                    token: props.oauthManager.getToken()
-                }
-            }).then(function (response) {
-                // console.log(response);
-
-                if(response.data && response.data.features){
-                    // console.log(response.data.features);
-                    resolve(response.data.features);
-                } 
-            }).catch(err=>{
-                // console.error(err);
-                reject(err);
-            });
-        });
+export default function ApiManager(props = {}) {
+  const querySpeciesByUser = (
+    options = {
+      email: ""
     }
+  ) => {
+    const requestUrl = config.URL.speciesByUser + "/query";
+    const whereClause = `${config.FIELD_NAME.speciesByUser.email} = '${
+      options.email
+    }'`;
 
-    const querySpeciesLookupTable = (options={
-        speciesCode: []
-    })=>{
+    return new Promise((resolve, reject) => {
+      axios
+        .get(requestUrl, {
+          params: {
+            where: whereClause,
+            outFields: "*",
+            f: "json",
+            token: props.oauthManager.getToken()
+          }
+        })
+        .then(function(response) {
+          // console.log(response);
 
-        const requestUrl = config.URL.speciesLookupTable + '/query';
-
-        const whereClause = options.speciesCode.map(d=>{
-            return `${config.FIELD_NAME.speciesLookup.speciesCode} = '${d}'`;
-        }).join(' OR ');
-
-        return new Promise((resolve, reject)=>{
-
-            const bodyFormData = new FormData();
-            bodyFormData.append('where', whereClause); 
-            bodyFormData.append('outFields', '*'); 
-            bodyFormData.append('f', 'json'); 
-            bodyFormData.append('token', props.oauthManager.getToken()); 
-
-            axios.post(requestUrl, bodyFormData).then(function (response) {
-                // console.log(response);
-
-                if(response.data && response.data.features && response.data.features.length){
-                    // console.log(response.data.features);
-                    resolve(response.data.features) 
-                } else {
-                    reject('no featurs in species lookup table');
-                }
-            }).catch(err=>{
-                // console.error(err);
-                reject(err);
-            });
+          if (response.data && response.data.features) {
+            // console.log(response.data.features);
+            resolve(response.data.features);
+          }
+        })
+        .catch(err => {
+          // console.error(err);
+          reject(err);
         });
+    });
+  };
 
-    };
+  const querySpeciesLookupTable = (
+    options = {
+      speciesCode: []
+    }
+  ) => {
+    const requestUrl = config.URL.speciesLookupTable + "/query";
 
-    const queryAllFeaturesFromSpeciesLookupTable = ()=>{
-        const requestUrl = config.URL.speciesLookupTable + '/query';
+    const whereClause = options.speciesCode
+      .map(d => {
+        return `${config.FIELD_NAME.speciesLookup.speciesCode} = '${d}'`;
+      })
+      .join(" OR ");
 
-        return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
+      const bodyFormData = new FormData();
+      bodyFormData.append("where", whereClause);
+      bodyFormData.append("outFields", "*");
+      bodyFormData.append("f", "json");
+      bodyFormData.append("token", props.oauthManager.getToken());
 
-            // const bodyFormData = new FormData();
-            // bodyFormData.append('where', '1=1'); 
-            // bodyFormData.append('outFields', '*'); 
-            // bodyFormData.append('f', 'json'); 
-            // bodyFormData.append('token', props.oauthManager.getToken()); 
+      axios
+        .post(requestUrl, bodyFormData)
+        .then(function(response) {
+          // console.log(response);
 
-            // axios.post(requestUrl, bodyFormData).then(function (response) {
-            //     // console.log(response);
-
-            //     if(response.data && response.data.features && response.data.features.length){
-            //         // console.log(response.data.features);
-            //         resolve(response.data.features) 
-            //     } else {
-            //         reject('no featurs in species lookup table');
-            //     }
-            // }).catch(err=>{
-            //     // console.error(err);
-            //     reject(err);
-            // });
-
-            let arrOfAllFeatures = [];
-
-            const getFeatures = (resultOffset)=>{
-
-                const bodyFormData = new FormData();
-                bodyFormData.append('where', '1=1'); 
-                bodyFormData.append('outFields', '*'); 
-                bodyFormData.append('f', 'json'); 
-                bodyFormData.append('token', props.oauthManager.getToken()); 
-
-                if(resultOffset){
-                    bodyFormData.append('resultOffset', resultOffset); 
-                }
-    
-                axios.post(requestUrl, bodyFormData).then(function (response) {
-                    // console.log(response);
-    
-                    if(response.data && response.data.features && response.data.features.length){
-                        // console.log(response.data.features);
-                        arrOfAllFeatures = [...arrOfAllFeatures, ...response.data.features];
-                    } 
-    
-                    if(response.data.exceededTransferLimit){
-                        getFeatures(response.data.features[response.data.features.length - 1].attributes.ObjectId);
-                    } else {
-                        resolve(arrOfAllFeatures) 
-                    }
-    
-                }).catch(err=>{
-                    // console.error(err);
-                    reject(err);
-                });
-            };
-
-            getFeatures();
+          if (
+            response.data &&
+            response.data.features &&
+            response.data.features.length
+          ) {
+            // console.log(response.data.features);
+            resolve(response.data.features);
+          } else {
+            reject("no featurs in species lookup table");
+          }
+        })
+        .catch(err => {
+          // console.error(err);
+          reject(err);
         });
-    };
+    });
+  };
 
-    const queryStatusTable = ()=>{
-        const requestUrl = config.URL.statusTable + '/query';
+  const queryAllFeaturesFromSpeciesLookupTable = () => {
+    const requestUrl = config.URL.speciesLookupTable + "/query";
 
-        return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
+      let arrOfAllFeatures = [];
 
-            axios.get(requestUrl, {
-                params: {
-                    where: '1=1',
-                    outFields: '*',
-                    f: 'json',
-                    token: props.oauthManager.getToken()
-                }
-            }).then(function (response) {
-                // console.log(response);
-
-                if(response.data && response.data.features && response.data.features.length){
-                    // console.log(response.data.features);
-                    resolve(response.data.features) 
-                }
-            }).catch(err=>{
-                console.error(err);
-            });
-        });
-    };
-
-    const queryHucsBySpecies = (speciesKey)=>{
-        // const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
-
-        const requestUrl = config.URL.speciesDistribution + '/query';
-        const whereClause = `${config.FIELD_NAME.speciesDistribution.speciesCode} = '${speciesKey}'`;
-
-        if(requestUrl){
-            return new Promise((resolve, reject)=>{
-
-                axios.get(requestUrl, {
-                    params: {
-                        where: whereClause,
-                        outFields: '*',
-                        f: 'json',
-                        token: props.oauthManager.getToken()
-                    }
-                }).then(function (response) {
-                    if(response.data && response.data.features && response.data.features.length){
-                        // console.log(response.data.features);
-                        resolve(response.data.features) 
-                    } else {
-                        reject('no huc features for selected species');
-                    }
-                }).catch(err=>{
-                    console.error(err);
-                });
-            });
-
-        } else {
-            console.log('species extent table url is not found for', speciesKey);
-        }
-    };
-
-    const fetchFeedback = (options={})=>{
-        const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
-        const whereClause = options.where || '1=1';
-        const outFields = options.outFields || '*';
-        const returnDistinctValues = options.returnDistinctValues || false;
-
-        return new Promise((resolve, reject)=>{
-
-            axios.get(requestUrl, {
-                params: {
-                    where: whereClause,
-                    outFields,
-                    returnDistinctValues,
-                    f: 'json',
-                    token: props.oauthManager.getToken()
-                }
-            }).then(function (response) {
-                // console.log(response);
-
-                if(response.data && response.data.features){
-                    // console.log(response.data.features);
-                    resolve(response.data.features);
-                } else {
-                    reject('no features found from the feedback table');
-                }
-            });
-        });
-    };
-
-    const deleteFromFeedbackTable = (requestUrl, objectID)=>{
-        // const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
-
+      const getFeatures = resultOffset => {
         const bodyFormData = new FormData();
-        bodyFormData.append('objectIds', objectID); 
-        bodyFormData.append('rollbackOnFailure', false); 
-        bodyFormData.append('f', 'pjson'); 
-        bodyFormData.append('token', props.oauthManager.getToken()); 
+        bodyFormData.append("where", "1=1");
+        bodyFormData.append("outFields", "*");
+        bodyFormData.append("f", "json");
+        bodyFormData.append("token", props.oauthManager.getToken());
 
-        return new Promise((resolve, reject)=>{
-
-            axios.post(requestUrl, bodyFormData).then(function (response) {
-                // console.log(response);
-                resolve(response);
-            }).catch(err=>{
-                console.error(err);
-                reject(err);
-            });
-        });
-    }
-
-    const applyEditToFeatureTable = (requestUrl, feature)=>{
-        // const requestUrl = config.URL.feedbackTable + '/' + operationName;
-
-        const bodyFormData = new FormData();
-        bodyFormData.append('features', JSON.stringify(feature)); 
-        bodyFormData.append('rollbackOnFailure', false); 
-        bodyFormData.append('f', 'pjson'); 
-        bodyFormData.append('token', props.oauthManager.getToken()); 
-
-        return new Promise((resolve, reject)=>{
-
-            axios.post(requestUrl, bodyFormData).then(function (response) {
-                // console.log(response);
-                resolve(response);
-            }).catch(err=>{
-                console.error(err);
-                reject(err);
-            });
-        });
-    };
-
-    const queryPdfTable = (speciesKey='')=>{
-        
-        const requestUrl = config.URL.pdfLookup + '/query';
-        const whereClause = `${config.FIELD_NAME.pdfLookup.speciesCode} = '${speciesKey}'`;
-
-        if(requestUrl){
-            return new Promise((resolve, reject)=>{
-
-                axios.get(requestUrl, {
-                    params: {
-                        where: whereClause,
-                        outFields: '*',
-                        f: 'json',
-                        token: props.oauthManager.getToken()
-                    }
-                }).then(function (response) {
-                    if(response.data && response.data.features && response.data.features.length){
-                        // console.log(response.data.features);
-                        resolve(response.data.features) 
-                    } else {
-                        reject('no PDF resouce found for selected species');
-                    }
-                }).catch(err=>{
-                    console.error(err);
-                });
-            });
-
-        } else {
-            console.log('pdf lookup table url is not found for', speciesKey);
+        if (resultOffset) {
+          bodyFormData.append("resultOffset", resultOffset);
         }
-    };
 
-    const getDistinctSpeciesCodeFromModelingExtent = ()=>{
-        const requestUrl = config.URL.speciesDistribution + '/query';
+        axios
+          .post(requestUrl, bodyFormData)
+          .then(function(response) {
+            // console.log(response);
 
-        return new Promise((resolve, reject)=>{
+            if (
+              response.data &&
+              response.data.features &&
+              response.data.features.length
+            ) {
+              // console.log(response.data.features);
+              arrOfAllFeatures = [
+                ...arrOfAllFeatures,
+                ...response.data.features
+              ];
 
-            axios.get(requestUrl, {
-                params: {
-                    where: '1=1',
-                    outFields: config.FIELD_NAME.speciesDistribution.speciesCode,
-                    returnDistinctValues: true,
-                    f: 'json',
-                    token: props.oauthManager.getToken()
-                }
-            }).then(function (response) {
-                if(response.data && response.data.features){
-                    // console.log(response.data.features);
+              if (response.data.exceededTransferLimit) {
+                getFeatures(
+                  response.data.features[response.data.features.length - 1]
+                    .attributes.ObjectId
+                );
+              } else {
+                resolve(arrOfAllFeatures);
+              }
+            } else {
+              reject("no species in species lookup table");
+            }
+          })
+          .catch(err => {
+            // console.error(err);
+            reject(err);
+          });
+      };
 
-                    const speciesCodes = response.data.features.map(d=>{
-                        return d.attributes[config.FIELD_NAME.speciesDistribution.speciesCode]
-                    });
+      getFeatures();
+    });
+  };
 
-                    resolve(speciesCodes)
-                } else {
-                    reject('no PDF resouce found for selected species');
-                }
-            }).catch(err=>{
-                reject(err);
-            });
+  const queryStatusTable = () => {
+    const requestUrl = config.URL.statusTable + "/query";
+
+    return new Promise((resolve, reject) => {
+      axios
+        .get(requestUrl, {
+          params: {
+            where: "1=1",
+            outFields: "*",
+            f: "json",
+            token: props.oauthManager.getToken()
+          }
+        })
+        .then(function(response) {
+          // console.log(response);
+
+          if (
+            response.data &&
+            response.data.features &&
+            response.data.features.length
+          ) {
+            // console.log(response.data.features);
+            resolve(response.data.features);
+          }
+        })
+        .catch(err => {
+          console.error(err);
         });
-    };
+    });
+  };
 
-    const getDataLoadDate = (speciesCode='')=>{
+  const queryHucsBySpecies = speciesKey => {
+    // const requestUrl = config.URL.speciesExtent[speciesKey] ? config.URL.speciesExtent[speciesKey] + '/query' : null;
 
-        const fieldNameDataLoadDate = config.FIELD_NAME.data_load_date.data_load_date
-        const requestUrl = config.URL.data_load_date + '/query';
-        const where = `${config.FIELD_NAME.data_load_date.species_code} = '${speciesCode}'`
+    const requestUrl = config.URL.speciesDistribution + "/query";
+    const whereClause = `${
+      config.FIELD_NAME.speciesDistribution.speciesCode
+    } = '${speciesKey}'`;
 
-        return new Promise((resolve, reject)=>{
+    if (requestUrl) {
+      return new Promise((resolve, reject) => {
+        let arrOfAllFeatures = [];
 
-            axios.get(requestUrl, {
-                params: {
-                    where,
-                    outFields: fieldNameDataLoadDate,
-                    f: 'json',
-                    token: props.oauthManager.getToken()
-                }
-            }).then(function (response) {
-                if(response.data && response.data.features){
-                    // console.log(response.data.features);
+        const getHucs = resultOffset => {
+          const params = {
+            where: whereClause,
+            outFields: "*",
+            f: "json",
+            token: props.oauthManager.getToken()
+          };
 
-                    const dataLoadDate = response.data.features && response.data.features[0] ? response.data.features[0].attributes[fieldNameDataLoadDate] : '';
+          if (resultOffset) {
+            params.resultOffset = resultOffset;
+          }
 
-                    resolve(dataLoadDate)
+          axios
+            .get(requestUrl, {
+              params: params
+            })
+            .then(function(response) {
+              if (
+                response.data &&
+                response.data.features &&
+                response.data.features.length
+              ) {
+                arrOfAllFeatures = [
+                  ...arrOfAllFeatures,
+                  ...response.data.features
+                ];
+
+                if (response.data.exceededTransferLimit) {
+                  getHucs(
+                    response.data.features[response.data.features.length - 1]
+                      .attributes.ObjectId
+                  );
                 } else {
-                    reject('no data load date is found');
+                  resolve(arrOfAllFeatures);
                 }
-            }).catch(err=>{
-                reject(err);
+              } else {
+                reject("no huc features for selected species");
+              }
+            })
+            .catch(err => {
+              // console.error(err);
+              reject(err);
             });
-        });
-    };
+        };
 
-    return {
-        querySpeciesLookupTable,
-        queryAllFeaturesFromSpeciesLookupTable,
-        queryHucsBySpecies,
-        queryStatusTable,
-        fetchFeedback,
-        deleteFromFeedbackTable,
-        applyEditToFeatureTable,
-        querySpeciesByUser,
-        queryPdfTable,
-        getDistinctSpeciesCodeFromModelingExtent,
-        getDataLoadDate
+        getHucs();
+      });
+    } else {
+      console.log("species extent table url is not found for", speciesKey);
     }
+  };
 
-};
+  const fetchFeedback = (options = {}) => {
+    const requestUrl = options.requestUrl; //config.URL.feedbackTable + '/query';
+    const whereClause = options.where || "1=1";
+    const outFields = options.outFields || "*";
+    const returnDistinctValues = options.returnDistinctValues || false;
+
+    return new Promise((resolve, reject) => {
+      axios
+        .get(requestUrl, {
+          params: {
+            where: whereClause,
+            outFields,
+            returnDistinctValues,
+            f: "json",
+            token: props.oauthManager.getToken()
+          }
+        })
+        .then(function(response) {
+          // console.log(response);
+
+          if (response.data && response.data.features) {
+            // console.log(response.data.features);
+            resolve(response.data.features);
+          } else {
+            reject("no features found from the feedback table");
+          }
+        });
+    });
+  };
+
+  const deleteFromFeedbackTable = (requestUrl, objectID) => {
+    // const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
+
+    const bodyFormData = new FormData();
+    bodyFormData.append("objectIds", objectID);
+    bodyFormData.append("rollbackOnFailure", false);
+    bodyFormData.append("f", "pjson");
+    bodyFormData.append("token", props.oauthManager.getToken());
+
+    return new Promise((resolve, reject) => {
+      axios
+        .post(requestUrl, bodyFormData)
+        .then(function(response) {
+          // console.log(response);
+          resolve(response);
+        })
+        .catch(err => {
+          console.error(err);
+          reject(err);
+        });
+    });
+  };
+
+  const applyEditToFeatureTable = (requestUrl, feature) => {
+    // const requestUrl = config.URL.feedbackTable + '/' + operationName;
+
+    const bodyFormData = new FormData();
+    bodyFormData.append("features", JSON.stringify(feature));
+    bodyFormData.append("rollbackOnFailure", false);
+    bodyFormData.append("f", "pjson");
+    bodyFormData.append("token", props.oauthManager.getToken());
+
+    return new Promise((resolve, reject) => {
+      axios
+        .post(requestUrl, bodyFormData)
+        .then(function(response) {
+          // console.log(response);
+          resolve(response);
+        })
+        .catch(err => {
+          console.error(err);
+          reject(err);
+        });
+    });
+  };
+
+  const queryPdfTable = (speciesKey = "") => {
+    const requestUrl = config.URL.pdfLookup + "/query";
+    const whereClause = `${
+      config.FIELD_NAME.pdfLookup.speciesCode
+    } = '${speciesKey}'`;
+
+    if (requestUrl) {
+      return new Promise((resolve, reject) => {
+        axios
+          .get(requestUrl, {
+            params: {
+              where: whereClause,
+              outFields: "*",
+              f: "json",
+              token: props.oauthManager.getToken()
+            }
+          })
+          .then(function(response) {
+            if (
+              response.data &&
+              response.data.features &&
+              response.data.features.length
+            ) {
+              // console.log(response.data.features);
+              resolve(response.data.features);
+            } else {
+              reject("no PDF resouce found for selected species");
+            }
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      });
+    } else {
+      console.log("pdf lookup table url is not found for", speciesKey);
+    }
+  };
+
+  const getDistinctSpeciesCodeFromModelingExtent = () => {
+    const requestUrl = config.URL.speciesDistribution + "/query";
+
+    return new Promise((resolve, reject) => {
+      axios
+        .get(requestUrl, {
+          params: {
+            where: "1=1",
+            outFields: config.FIELD_NAME.speciesDistribution.speciesCode,
+            returnDistinctValues: true,
+            f: "json",
+            token: props.oauthManager.getToken()
+          }
+        })
+        .then(function(response) {
+          if (response.data && response.data.features) {
+            // console.log(response.data.features);
+
+            const speciesCodes = response.data.features.map(d => {
+              return d.attributes[
+                config.FIELD_NAME.speciesDistribution.speciesCode
+              ];
+            });
+
+            resolve(speciesCodes);
+          } else {
+            reject("no PDF resouce found for selected species");
+          }
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  };
+
+  const getDataLoadDate = (speciesCode = "") => {
+    const fieldNameDataLoadDate =
+      config.FIELD_NAME.data_load_date.data_load_date;
+    const requestUrl = config.URL.data_load_date + "/query";
+    const where = `${
+      config.FIELD_NAME.data_load_date.species_code
+    } = '${speciesCode}'`;
+
+    return new Promise((resolve, reject) => {
+      axios
+        .get(requestUrl, {
+          params: {
+            where,
+            outFields: fieldNameDataLoadDate,
+            f: "json",
+            token: props.oauthManager.getToken()
+          }
+        })
+        .then(function(response) {
+          if (response.data && response.data.features) {
+            // console.log(response.data.features);
+
+            const dataLoadDate =
+              response.data.features && response.data.features[0]
+                ? response.data.features[0].attributes[fieldNameDataLoadDate]
+                : "";
+
+            resolve(dataLoadDate);
+          } else {
+            reject("no data load date is found");
+          }
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  };
+
+  return {
+    querySpeciesLookupTable,
+    queryAllFeaturesFromSpeciesLookupTable,
+    queryHucsBySpecies,
+    queryStatusTable,
+    fetchFeedback,
+    deleteFromFeedbackTable,
+    applyEditToFeatureTable,
+    querySpeciesByUser,
+    queryPdfTable,
+    getDistinctSpeciesCodeFromModelingExtent,
+    getDataLoadDate
+  };
+}

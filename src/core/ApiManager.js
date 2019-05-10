@@ -14,28 +14,11 @@ export default function ApiManager(props = {}) {
       options.email
     }'`;
 
-    return new Promise((resolve, reject) => {
-      axios
-        .get(requestUrl, {
-          params: {
-            where: whereClause,
-            outFields: "*",
-            f: "json",
-            token: props.oauthManager.getToken()
-          }
-        })
-        .then(function(response) {
-          // console.log(response);
-
-          if (response.data && response.data.features) {
-            // console.log(response.data.features);
-            resolve(response.data.features);
-          }
-        })
-        .catch(err => {
-          // console.error(err);
-          reject(err);
-        });
+    return queryForFeaturesGet(requestUrl, {
+      where: whereClause,
+      outFields: "*",
+      f: "json",
+      token: props.oauthManager.getToken()
     });
   };
 
@@ -52,120 +35,47 @@ export default function ApiManager(props = {}) {
       })
       .join(" OR ");
 
-    return new Promise((resolve, reject) => {
-      const bodyFormData = new FormData();
-      bodyFormData.append("where", whereClause);
-      bodyFormData.append("outFields", "*");
-      bodyFormData.append("f", "json");
-      bodyFormData.append("token", props.oauthManager.getToken());
-
-      axios
-        .post(requestUrl, bodyFormData)
-        .then(function(response) {
-          // console.log(response);
-
-          if (
-            response.data &&
-            response.data.features &&
-            response.data.features.length
-          ) {
-            // console.log(response.data.features);
-            resolve(response.data.features);
-          } else {
-            reject("no featurs in species lookup table");
-          }
-        })
-        .catch(err => {
-          // console.error(err);
-          reject(err);
-        });
-    });
+    const bodyFormData = new FormData();
+    bodyFormData.append("where", whereClause);
+    bodyFormData.append("outFields", "*");
+    bodyFormData.append("f", "json");
+    bodyFormData.append("token", props.oauthManager.getToken());
+    return queryForFeaturesPost(
+      requestUrl,
+      bodyFormData,
+      "no features in species lookup table"
+    );
   };
 
   const queryAllFeaturesFromSpeciesLookupTable = () => {
     const requestUrl = config.URL.speciesLookupTable + "/query";
 
-    return new Promise((resolve, reject) => {
-      let arrOfAllFeatures = [];
+    const bodyFormData = new FormData();
+    bodyFormData.append("where", "1=1");
+    bodyFormData.append("outFields", "*");
+    bodyFormData.append("f", "json");
+    bodyFormData.append("token", props.oauthManager.getToken());
 
-      const getFeatures = resultOffset => {
-        const bodyFormData = new FormData();
-        bodyFormData.append("where", "1=1");
-        bodyFormData.append("outFields", "*");
-        bodyFormData.append("f", "json");
-        bodyFormData.append("token", props.oauthManager.getToken());
-
-        if (resultOffset) {
-          bodyFormData.append("resultOffset", resultOffset);
-        }
-
-        axios
-          .post(requestUrl, bodyFormData)
-          .then(function(response) {
-            // console.log(response);
-
-            if (
-              response.data &&
-              response.data.features &&
-              response.data.features.length
-            ) {
-              // console.log(response.data.features);
-              arrOfAllFeatures = [
-                ...arrOfAllFeatures,
-                ...response.data.features
-              ];
-
-              if (response.data.exceededTransferLimit) {
-                getFeatures(
-                  response.data.features[response.data.features.length - 1]
-                    .attributes.ObjectId
-                );
-              } else {
-                resolve(arrOfAllFeatures);
-              }
-            } else {
-              reject("no species in species lookup table");
-            }
-          })
-          .catch(err => {
-            // console.error(err);
-            reject(err);
-          });
-      };
-
-      getFeatures();
-    });
+    return queryForFeaturesPost(
+      requestUrl,
+      bodyFormData,
+      "no species in species lookup table"
+    );
   };
 
   const queryStatusTable = () => {
     const requestUrl = config.URL.statusTable + "/query";
 
-    return new Promise((resolve, reject) => {
-      axios
-        .get(requestUrl, {
-          params: {
-            where: "1=1",
-            outFields: "*",
-            f: "json",
-            token: props.oauthManager.getToken()
-          }
-        })
-        .then(function(response) {
-          // console.log(response);
-
-          if (
-            response.data &&
-            response.data.features &&
-            response.data.features.length
-          ) {
-            // console.log(response.data.features);
-            resolve(response.data.features);
-          }
-        })
-        .catch(err => {
-          console.error(err);
-        });
-    });
+    return queryForFeaturesGet(
+      requestUrl,
+      {
+        where: "1=1",
+        outFields: "*",
+        f: "json",
+        token: props.oauthManager.getToken()
+      },
+      "no status found in table"
+    );
   };
 
   const queryHucsBySpecies = speciesKey => {
@@ -177,56 +87,16 @@ export default function ApiManager(props = {}) {
     } = '${speciesKey}'`;
 
     if (requestUrl) {
-      return new Promise((resolve, reject) => {
-        let arrOfAllFeatures = [];
-
-        const getHucs = resultOffset => {
-          const params = {
-            where: whereClause,
-            outFields: "*",
-            f: "json",
-            token: props.oauthManager.getToken()
-          };
-
-          if (resultOffset) {
-            params.resultOffset = resultOffset;
-          }
-
-          axios
-            .get(requestUrl, {
-              params: params
-            })
-            .then(function(response) {
-              if (
-                response.data &&
-                response.data.features &&
-                response.data.features.length
-              ) {
-                arrOfAllFeatures = [
-                  ...arrOfAllFeatures,
-                  ...response.data.features
-                ];
-
-                if (response.data.exceededTransferLimit) {
-                  getHucs(
-                    response.data.features[response.data.features.length - 1]
-                      .attributes.ObjectId
-                  );
-                } else {
-                  resolve(arrOfAllFeatures);
-                }
-              } else {
-                reject("no huc features for selected species");
-              }
-            })
-            .catch(err => {
-              // console.error(err);
-              reject(err);
-            });
-        };
-
-        getHucs();
-      });
+      return queryForFeaturesGet(
+        requestUrl,
+        {
+          where: whereClause,
+          outFields: "*",
+          f: "json",
+          token: props.oauthManager.getToken()
+        },
+        "no huc features for selected species"
+      );
     } else {
       console.log("species extent table url is not found for", speciesKey);
     }
@@ -238,28 +108,18 @@ export default function ApiManager(props = {}) {
     const outFields = options.outFields || "*";
     const returnDistinctValues = options.returnDistinctValues || false;
 
-    return new Promise((resolve, reject) => {
-      axios
-        .get(requestUrl, {
-          params: {
-            where: whereClause,
-            outFields,
-            returnDistinctValues,
-            f: "json",
-            token: props.oauthManager.getToken()
-          }
-        })
-        .then(function(response) {
-          // console.log(response);
-
-          if (response.data && response.data.features) {
-            // console.log(response.data.features);
-            resolve(response.data.features);
-          } else {
-            reject("no features found from the feedback table");
-          }
-        });
-    });
+    return queryForFeaturesGet(
+      requestUrl,
+      {
+        where: whereClause,
+        outFields,
+        returnDistinctValues,
+        f: "json",
+        token: props.oauthManager.getToken()
+      },
+      "no features found from the feedback table",
+      true
+    );
   };
 
   const deleteFromFeedbackTable = (requestUrl, objectID) => {
@@ -315,32 +175,16 @@ export default function ApiManager(props = {}) {
     } = '${speciesKey}'`;
 
     if (requestUrl) {
-      return new Promise((resolve, reject) => {
-        axios
-          .get(requestUrl, {
-            params: {
-              where: whereClause,
-              outFields: "*",
-              f: "json",
-              token: props.oauthManager.getToken()
-            }
-          })
-          .then(function(response) {
-            if (
-              response.data &&
-              response.data.features &&
-              response.data.features.length
-            ) {
-              // console.log(response.data.features);
-              resolve(response.data.features);
-            } else {
-              reject("no PDF resouce found for selected species");
-            }
-          })
-          .catch(err => {
-            console.error(err);
-          });
-      });
+      return queryForFeaturesGet(
+        requestUrl,
+        {
+          where: whereClause,
+          outFields: "*",
+          f: "json",
+          token: props.oauthManager.getToken()
+        },
+        "no PDF resouce found for selected species"
+      );
     } else {
       console.log("pdf lookup table url is not found for", speciesKey);
     }
@@ -349,35 +193,24 @@ export default function ApiManager(props = {}) {
   const getDistinctSpeciesCodeFromModelingExtent = () => {
     const requestUrl = config.URL.speciesDistribution + "/query";
 
-    return new Promise((resolve, reject) => {
-      axios
-        .get(requestUrl, {
-          params: {
-            where: "1=1",
-            outFields: config.FIELD_NAME.speciesDistribution.speciesCode,
-            returnDistinctValues: true,
-            f: "json",
-            token: props.oauthManager.getToken()
-          }
-        })
-        .then(function(response) {
-          if (response.data && response.data.features) {
-            // console.log(response.data.features);
+    return new Promise(async (resolve, reject) => {
+      let feats = await queryForFeaturesGet(
+        requestUrl,
+        {
+          where: "1=1",
+          outFields: config.FIELD_NAME.speciesDistribution.speciesCode,
+          returnDistinctValues: true,
+          f: "json",
+          token: props.oauthManager.getToken()
+        },
+        "failure to query for distinct codes in extent",
+        true
+      );
 
-            const speciesCodes = response.data.features.map(d => {
-              return d.attributes[
-                config.FIELD_NAME.speciesDistribution.speciesCode
-              ];
-            });
-
-            resolve(speciesCodes);
-          } else {
-            reject("no PDF resouce found for selected species");
-          }
-        })
-        .catch(err => {
-          reject(err);
-        });
+      feats = feats.map(d => {
+        return d.attributes[config.FIELD_NAME.speciesDistribution.speciesCode];
+      });
+      resolve(feats);
     });
   };
 
@@ -389,33 +222,136 @@ export default function ApiManager(props = {}) {
       config.FIELD_NAME.data_load_date.species_code
     } = '${speciesCode}'`;
 
-    return new Promise((resolve, reject) => {
-      axios
-        .get(requestUrl, {
+    return new Promise(async (resolve, reject) => {
+      const queryResult = await queryForFeaturesGet(
+        requestUrl,
+        {
           params: {
             where,
             outFields: fieldNameDataLoadDate,
             f: "json",
             token: props.oauthManager.getToken()
           }
-        })
-        .then(function(response) {
-          if (response.data && response.data.features) {
-            // console.log(response.data.features);
+        },
+        "no data load date is found"
+      );
 
-            const dataLoadDate =
-              response.data.features && response.data.features[0]
-                ? response.data.features[0].attributes[fieldNameDataLoadDate]
-                : "";
+      const dataLoadDate =
+        queryResult && queryResult[0]
+          ? queryResult[0].attributes[fieldNameDataLoadDate]
+          : "";
 
-            resolve(dataLoadDate);
-          } else {
-            reject("no data load date is found");
-          }
-        })
-        .catch(err => {
-          reject(err);
-        });
+      resolve(dataLoadDate);
+    });
+  };
+
+  const queryForFeaturesGet = (
+    requestUrl,
+    params,
+    rejectMessage,
+    allowEmpty
+  ) => {
+    return new Promise((resolve, reject) => {
+      let arrOfAllFeatures = [];
+
+      const getFeatures = resultOffset => {
+        if (resultOffset) {
+          params.resultOffset = resultOffset;
+        }
+
+        axios
+          .get(requestUrl, {
+            params: params
+          })
+          .then(function(response) {
+            if (
+              response.data &&
+              response.data.features &&
+              response.data.features.length
+            ) {
+              arrOfAllFeatures = [
+                ...arrOfAllFeatures,
+                ...response.data.features
+              ];
+
+              if (response.data.exceededTransferLimit) {
+                getFeatures(response.data.features.length);
+              } else {
+                resolve(arrOfAllFeatures);
+              }
+            } else {
+              if (rejectMessage) {
+                if (allowEmpty && response.data && response.data.features) {
+                  resolve([]);
+                } else {
+                  reject(rejectMessage);
+                }
+              } else {
+                resolve([]);
+              }
+            }
+          })
+          .catch(err => {
+            // console.error(err);
+            reject(err);
+          });
+      };
+
+      getFeatures();
+    });
+  };
+
+  const queryForFeaturesPost = (
+    requestUrl,
+    bodyFormData,
+    rejectMessage,
+    allowEmpty
+  ) => {
+    return new Promise((resolve, reject) => {
+      let arrOfAllFeatures = [];
+
+      const getFeatures = resultOffset => {
+        if (resultOffset) {
+          bodyFormData.append("resultOffset", resultOffset);
+        }
+
+        axios
+          .post(requestUrl, bodyFormData)
+          .then(function(response) {
+            if (
+              response.data &&
+              response.data.features &&
+              response.data.features.length
+            ) {
+              arrOfAllFeatures = [
+                ...arrOfAllFeatures,
+                ...response.data.features
+              ];
+
+              if (response.data.exceededTransferLimit) {
+                getFeatures(response.data.features.length);
+              } else {
+                resolve(arrOfAllFeatures);
+              }
+            } else {
+              if (rejectMessage) {
+                if (allowEmpty && response.data && response.data.features) {
+                  resolve([]);
+                } else {
+                  reject(rejectMessage);
+                }
+              } else {
+                resolve([]);
+              }
+            }
+          })
+          .catch(err => {
+            // console.error(err);
+            reject(err);
+          });
+      };
+
+      getFeatures();
     });
   };
 

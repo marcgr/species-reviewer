@@ -11,14 +11,6 @@ const esriLoaderOptions = {
   url: "https://js.arcgis.com/4.10"
 };
 
-// esriLoader.loadModules([
-//     "esri/layers/FeatureLayer",
-// ], esriLoaderOptions).then(([
-//     FeatureLayer
-// ])=>{
-
-// });
-
 const MapControl = function(options = {}) {
   const webMapID = options.webMapID || null;
   const mapViewContainerID = options.mapViewContainerID || null;
@@ -237,10 +229,6 @@ const MapControl = function(options = {}) {
     });
   };
 
-  // const disableMapOnHoldEvent = ()=>{
-  //     isOnHoldEventDisabled = true;
-  // };
-
   const initBasemapGallery = view => {
     esriLoader
       .loadModules(
@@ -309,6 +297,7 @@ const MapControl = function(options = {}) {
   };
 
   const queryHucsLayerByMouseEvent = event => {
+    if (!hucsLayer) return;
     const query = hucsLayer.createQuery();
     query.geometry = mapView.toMap(event); // the point location of the pointer
     query.spatialRelationship = "intersects"; // this is the default
@@ -327,8 +316,14 @@ const MapControl = function(options = {}) {
   };
 
   const queryHucsLayerByHucID = hucID => {
+    return queryHucsLayerByHucIDs([hucID]);
+  };
+
+  const queryHucsLayerByHucIDs = hucIDs => {
     const query = hucsLayer.createQuery();
-    query.where = `${config.FIELD_NAME.huc10LayerHucID} = '${hucID}'`;
+    let where = `${config.FIELD_NAME.huc10LayerHucID} = '${hucIDs[0]}'`;
+    if (hucIDs.length > 1) where = generateHucWhereFromHucIDs(hucIDs);
+    query.where = where;
     query.returnGeometry = true;
     query.outFields = ["*"];
 
@@ -338,7 +333,7 @@ const MapControl = function(options = {}) {
         .then(function(response) {
           if (response.features && response.features.length) {
             // console.log(response.features[0]);
-            resolve(response.features[0]);
+            resolve(response.features);
           } else {
             reject("no huc feature is found");
           }
@@ -349,18 +344,32 @@ const MapControl = function(options = {}) {
     });
   };
 
-  // const setHucsLayer = (webmap)=>{
-  //     console.log(webmap.layers.items);
+  const generateHucWhereFromHucIDs = hucIds => {
+    let whereText = "";
+    let tempHucIds = hucIds.slice(0);
+    let currHucIds = [];
+    let maxHit = false;
+    while (tempHucIds.length > 200) {
+      currHucIds = tempHucIds.shift(0, 199);
+      whereText =
+        whereText +
+        `${maxHit ? " OR " : ""}${
+          config.FIELD_NAME.huc10LayerHucID
+        } in ('${currHucIds.join("','")}')`;
+      maxHit = true;
+    }
+    whereText =
+      whereText +
+      `${maxHit ? " OR " : ""}${
+        config.FIELD_NAME.huc10LayerHucID
+      } in ('${tempHucIds.join("','")}')`;
+    return whereText;
+  };
 
-  //     hucsLayer = webmap.layers.items.filter(d=>{
-  //         console.log(d.title)
-  //         return d.title.indexOf('HUC10') !== -1
-  //     })[0];
-
-  //     // hucsLayer.listMode = 'hide';
-
-  //     console.log('setHucsLayer', hucsLayer);
-  // };
+  const zoomToHucs = async hucIds => {
+    const hucFeats = await queryHucsLayerByHucIDs(hucIds);
+    mapView.goTo(hucFeats);
+  };
 
   const queryHucsLayerByMouseEventOnSuccessHandler = feature => {
     addPreviewHucGraphic(feature);
@@ -381,8 +390,8 @@ const MapControl = function(options = {}) {
     removeHucGraphicByStatus(hucID);
 
     if (+status > 0) {
-      queryHucsLayerByHucID(hucID).then(feature => {
-        addHucGraphicByStatus(feature, status, options);
+      queryHucsLayerByHucID(hucID).then(features => {
+        addHucGraphicByStatus(features[0], status, options);
       });
     }
 
@@ -654,6 +663,8 @@ const MapControl = function(options = {}) {
     clearAllGraphics,
     // disableMapOnHoldEvent,
     queryHucsLayerByHucID,
+    queryHucsLayerByHucIDs,
+    zoomToHucs,
     addPreviewHucGraphic,
     setLayersOpacity,
     clearMapGraphics,

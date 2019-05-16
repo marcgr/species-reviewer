@@ -124,6 +124,12 @@ module.exports = {
     }
   },
 
+  layerParameters: {
+    data_load_date: {
+      defaultDate: "5/9/2019  7:00:00 AM"
+    }
+  },
+
   COLOR: {
     hucBorder: [255, 255, 255, 0.3],
     hucBorderIsModeled: [255, 255, 255, 0.5],

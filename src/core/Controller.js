@@ -40,11 +40,17 @@ export default function Controller(props = {}) {
         email: portalUser.email
       });
 
+      const distinctUserSpecies = getDistinctSpeciesCodeToReview(
+        speciesByUsers
+      );
       const sepeciesData =
-        portalUser.username === "MobiAdmin8"
+        portalUser.username === "MobiAdmin8" ||
+        (distinctUserSpecies &&
+          distinctUserSpecies.length > 0 &&
+          distinctUserSpecies[0] === "-1")
           ? await apiManager.queryAllFeaturesFromSpeciesLookupTable()
           : await apiManager.querySpeciesLookupTable({
-              speciesCode: getDistinctSpeciesCodeToReview(speciesByUsers)
+              speciesCode: distinctUserSpecies
             });
       // console.log(sepeciesData);
 

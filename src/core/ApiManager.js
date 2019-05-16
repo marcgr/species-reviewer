@@ -223,23 +223,17 @@ export default function ApiManager(props = {}) {
     } = '${speciesCode}'`;
 
     return new Promise(async (resolve, reject) => {
-      const queryResult = await queryForFeaturesGet(
-        requestUrl,
-        {
-          params: {
-            where,
-            outFields: fieldNameDataLoadDate,
-            f: "json",
-            token: props.oauthManager.getToken()
-          }
-        },
-        "no data load date is found"
-      );
+      const queryResult = await queryForFeaturesGet(requestUrl, {
+        where,
+        outFields: fieldNameDataLoadDate,
+        f: "json",
+        token: props.oauthManager.getToken()
+      });
 
       const dataLoadDate =
         queryResult && queryResult[0]
           ? queryResult[0].attributes[fieldNameDataLoadDate]
-          : "";
+          : config.layerParameters.data_load_date.defaultDate;
 
       resolve(dataLoadDate);
     });

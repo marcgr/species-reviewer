@@ -7,6 +7,7 @@ import Controller from './core/Controller';
 import View from './core/View';
 import MapControl from './core/MapControl';
 import OAuthManager from './core/OauthManager';
+import CsvLoader from './core/CsvLoader';
 
 (async function initOAuthManager(){
 
@@ -217,6 +218,11 @@ const initApp = async (oauthManager)=>{
             controller.setSelectedHucFeature(hucFeature);
         }
     });
+
+    const csvLoader = new CsvLoader({
+        targetDomElementId: config.DOM_ID.mapViewContainer
+    });
+    csvLoader.init();
 
     // window.appDebugger = {
     //     signOut: oauthManager.signOut

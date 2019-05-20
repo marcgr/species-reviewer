@@ -1,8 +1,8 @@
 "use strict";
 
 module.exports = {
-  // 'oauthAppID': 'pXyO9t8Sf4goOQiu', // old one under content org
-  oauthAppID: "Dks28Xk6zIbYoWbO",
+  oauthAppID: "zPRYFrWVWNO44xMP", // Test one, switch out for production
+  //oauthAppID: "Dks28Xk6zIbYoWbO",
   webMapID: "6c4e0d073ff94d4cb979e29128a43eb7",
 
   FIELD_NAME: {

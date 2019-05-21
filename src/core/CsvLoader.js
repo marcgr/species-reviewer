@@ -45,8 +45,8 @@ const CsvLoader = ({
             const reader = new FileReader();
 
             reader.onload = (event)=>{
-                const csvData = event.target.result;
-                console.log(csvData);
+                const csvString = event.target.result;
+                console.log(parseCsvString(csvString));
             };
 
             reader.readAsText(file);
@@ -55,6 +55,30 @@ const CsvLoader = ({
         };
 
     };
+
+    const parseCsvString = (csvString='')=>{
+        const csvRows = csvString.split('\n');
+        const columns = csvRows[0].split(',');
+        const dataRows = csvRows.slice(1).map(d=>d.split(','));
+
+        const features = dataRows.map(feature=>{
+            
+            const attributes = {};
+
+            feature.forEach((attribute, index)=>{
+                const key = columns[index];
+                attributes[key] = attribute;
+            });
+
+            return {
+                attributes
+            };
+        });
+
+        return {
+            features
+        };
+    }
 
     return {
         init

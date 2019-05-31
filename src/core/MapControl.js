@@ -654,6 +654,47 @@ const MapControl = function(options = {}) {
     });
   };
 
+  const addCsvLayer = (features=[])=>{
+
+    const layerId = 'csvLayer';
+
+    let csvLayer = mapView.map.findLayerById(layerId);
+
+    if(csvLayer){
+      mapView.map.remove(csvLayer);
+    }
+
+    esriLoader
+      .loadModules(["esri/layers/GraphicsLayer", "esri/Graphic"], esriLoaderOptions)
+      .then(([GraphicsLayer,Graphic]) => {
+
+        const fireflySymbl = {
+          type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+          url: config.fireflyStyle.blue,
+          width: "32px",
+          height: "32px"
+        };
+
+        const graphics = features.map((feature, idx)=>{
+          feature.attributes.FID = idx;
+          feature.symbol = fireflySymbl;
+          return new Graphic(feature);
+        });
+
+        csvLayer = new GraphicsLayer({
+          id: layerId,
+          graphics,
+          title: 'CSV Layer',
+          opacity: 0.85
+        });
+
+        mapView.map.add(csvLayer);
+
+      }).catch(err=>{
+        console.error(err);
+      })
+  };
+
   return {
     init,
     highlightHucs,
@@ -669,7 +710,8 @@ const MapControl = function(options = {}) {
     setLayersOpacity,
     clearMapGraphics,
     addPreviewHucByID,
-    showPredictedHabitatLayers
+    showPredictedHabitatLayers,
+    addCsvLayer
   };
 };
 

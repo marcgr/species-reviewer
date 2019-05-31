@@ -330,6 +330,9 @@ export default function Controller(props = {}) {
 
       apiManager.applyEditToFeatureTable(requestUrl, feature).then(res => {
         console.log("post edit to OverallFeedback table", res);
+      })
+      .catch(err => {
+        alert(`failed to post feedback to server!`);
       });
 
       controllerProps.onOverallFeedbackSubmit(feature);
@@ -448,6 +451,9 @@ export default function Controller(props = {}) {
         .applyEditToFeatureTable(requestUrl, feedbackFeature)
         .then(res => {
           console.log("post edit to Feedback table", res);
+        })
+        .catch(err => {
+          alert(`failed to post feedback to server!`);
         });
     } catch (err) {
       console.error(err);

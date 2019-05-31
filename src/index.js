@@ -220,7 +220,13 @@ const initApp = async (oauthManager)=>{
     });
 
     const csvLoader = new CsvLoader({
-        targetDomElementId: config.DOM_ID.mapViewContainer
+        targetDomElementId: config.DOM_ID.mapViewContainer,
+        onLoadHandler: (csvData)=>{
+            if(csvData.features && csvData.features.length){
+                // console.log('csv data deatures', csvData.features);
+                mapControl.addCsvLayer(csvData.features);
+            }
+        }
     });
     csvLoader.init();
 

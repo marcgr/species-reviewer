@@ -11,9 +11,13 @@ const esriLoaderOptions = {
   url: "https://js.arcgis.com/4.10"
 };
 
-const MapControl = function(options = {}) {
-  const webMapID = options.webMapID || null;
-  const mapViewContainerID = options.mapViewContainerID || null;
+const MapControl = function({
+  webMapID = '',
+  mapViewContainerID = '',
+  onScaleChange = null
+}={}) {
+  // const webMapID = options.webMapID || null;
+  // const mapViewContainerID = options.mapViewContainerID || null;
 
   let mapView = null;
   let hucsLayer = null;
@@ -227,6 +231,13 @@ const MapControl = function(options = {}) {
           console.log(err);
         });
     });
+
+    // // when the map view is stationary , call onZoomChange handler to get the legend updated based on the default zoom level
+    mapView.watch('stationary', evt=>{
+      if(onScaleChange){
+        onScaleChange(mapView.scale);
+      }
+    })
   };
 
   const initBasemapGallery = view => {

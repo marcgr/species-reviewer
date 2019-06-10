@@ -32,6 +32,10 @@ const initApp = async (oauthManager)=>{
     const mapControl = new MapControl({
         webMapID: config.webMapID,
         mapViewContainerID: config.DOM_ID.mapViewContainer,
+        onScaleChange:(newScale=0)=>{
+            // console.log('newScale', newScale);
+            view.legend.render(newScale);
+        }
     });
 
     const controller = new Controller({
@@ -43,7 +47,7 @@ const initApp = async (oauthManager)=>{
             view.speciesSelector.render({ data });
         },
         legendDataOnReady:(data)=>{
-            view.initLegend(data);
+            view.legend.init({data});
         },
         feedbackManagerOnOpen:(data)=>{
             view.toggleControlPanel({

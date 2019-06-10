@@ -714,7 +714,8 @@ export default function Controller(props = {}) {
     });
 
     data.unshift({
-      label: "Predicted Habitat"
+      label: "Predicted Habitat",
+      minVisibleScale: config.visibleRange.predictedHabitat.minScale
       // color: config.COLOR.actualModeledExtent
     });
 

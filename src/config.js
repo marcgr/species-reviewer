@@ -146,7 +146,7 @@ module.exports = {
 
   visibleRange: {
     predictedHabitat: {
-      minScale: 2043000
+      minScale: 1025000
     }
   }
 };

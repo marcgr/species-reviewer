@@ -8,9 +8,7 @@
     <meta name="author" content="Living Atlas of the World" />
     <title>Species Reviewer</title>
     <link rel="icon" href="//www.esri.com/favicon.ico" />
-    <link href="main.ef36bbe6a7f80201b228.css" rel="stylesheet" />
-  </head>
-
+  <link href="main.2bb97aabf5e25747dd9e.css" rel="stylesheet"></head>
   <body class="">
     <div id="agreementDiv">
       <div class="grid-container">
@@ -66,13 +64,13 @@
 
       <div id="settingsDiv">
         <div
-          class="text-left js-toggle-ui-component"
+          class="text-right js-toggle-ui-component"
           data-target="settingControls"
         >
+          <span class="cursor-pointer text-light-gray">Search/Add Data</span>
           <span
             class="icon-ui-settings cursor-pointer text-light-gray icon-no-right-padding"
-            >Test</span
-          >
+          ></span>
         </div>
         <div id="settingControls" class="hide">
           <div class="setting-control-item">
@@ -96,6 +94,14 @@
               <span class="font-size--2">Reference Layers</span>
             </div>
             <div id="layerListDiv"></div>
+            <div>
+              <div class="addPointHeader">To Add Your Own Point Data:</div>
+              <div class="addPointText">
+                Drag and drop a csv file from Windows Explorer onto the map.
+                File should be formatted with “latitude” and “longitude”
+                columns.
+              </div>
+            </div>
           </div>
 
           <div class="setting-control-item text-right">
@@ -135,9 +141,5 @@
         </div> -->
 
     <div id="viewDiv" class="hide"></div>
-    <script
-      type="text/javascript"
-      src="bundle.ef36bbe6a7f80201b228.js"
-    ></script>
-  </body>
+  <script type="text/javascript" src="bundle.2bb97aabf5e25747dd9e.js"></script></body>
 </html>

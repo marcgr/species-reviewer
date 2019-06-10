@@ -67,6 +67,9 @@ body {
   height: 19px;
   border: solid 2px rgba(239, 35, 60, 0.7); }
 
+.legend-item.is-inactive {
+  opacity: .4; }
+
 #basemapGalleryControl {
   position: absolute;
   bottom: 2rem;

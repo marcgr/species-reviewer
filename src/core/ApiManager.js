@@ -252,6 +252,9 @@ export default function ApiManager(props = {}) {
         if (resultOffset) {
           params.resultOffset = resultOffset;
         }
+        else {
+          resultOffset = 0;
+        }
 
         axios
           .get(requestUrl, {
@@ -269,7 +272,7 @@ export default function ApiManager(props = {}) {
               ];
 
               if (response.data.exceededTransferLimit) {
-                getFeatures(response.data.features.length);
+                getFeatures(response.data.features.length + resultOffset);
               } else {
                 resolve(arrOfAllFeatures);
               }
@@ -308,6 +311,9 @@ export default function ApiManager(props = {}) {
         if (resultOffset) {
           bodyFormData.append("resultOffset", resultOffset);
         }
+        else {
+          resultOffset = 0;
+        }
 
         axios
           .post(requestUrl, bodyFormData)
@@ -323,7 +329,7 @@ export default function ApiManager(props = {}) {
               ];
 
               if (response.data.exceededTransferLimit) {
-                getFeatures(response.data.features.length);
+                getFeatures(response.data.features.length + resultOffset);
               } else {
                 resolve(arrOfAllFeatures);
               }

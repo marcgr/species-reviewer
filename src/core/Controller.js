@@ -46,11 +46,11 @@ export default function Controller(props = {}) {
       const distinctUserSpecies = getDistinctSpeciesCodeToReview(
         speciesByUsers
       );
+
+      const userIsAdmin = distinctUserSpecies.some(itm => itm == -1);
       const sepeciesData =
         portalUser.username === "MobiAdmin8" ||
-        (distinctUserSpecies &&
-          distinctUserSpecies.length > 0 &&
-          distinctUserSpecies[0] === "-1")
+        (distinctUserSpecies && distinctUserSpecies.length > 0 && userIsAdmin)
           ? await apiManager.queryAllFeaturesFromSpeciesLookupTable()
           : await apiManager.querySpeciesLookupTable({
               speciesCode: distinctUserSpecies

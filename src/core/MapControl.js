@@ -12,10 +12,10 @@ const esriLoaderOptions = {
 };
 
 const MapControl = function({
-  webMapID = '',
-  mapViewContainerID = '',
+  webMapID = "",
+  mapViewContainerID = "",
   onScaleChange = null
-}={}) {
+} = {}) {
   // const webMapID = options.webMapID || null;
   // const mapViewContainerID = options.mapViewContainerID || null;
 
@@ -233,11 +233,11 @@ const MapControl = function({
     });
 
     // // when the map view is stationary , call onZoomChange handler to get the legend updated based on the default zoom level
-    mapView.watch('stationary', evt=>{
-      if(onScaleChange){
+    mapView.watch("stationary", evt => {
+      if (onScaleChange) {
         onScaleChange(mapView.scale);
       }
-    })
+    });
   };
 
   const initBasemapGallery = view => {
@@ -606,7 +606,9 @@ const MapControl = function({
       .then(([FeatureLayer]) => {
         const predictedHabitatLayers = [
           config.URL.PredictedHabitat.line,
-          config.URL.PredictedHabitat.polygon
+          config.URL.PredictedHabitat.polygon,
+          config.URL.PredictedHabitat.line2,
+          config.URL.PredictedHabitat.polygon2
         ].map(url => {
           return new FeatureLayer({
             url,
@@ -665,28 +667,29 @@ const MapControl = function({
     });
   };
 
-  const addCsvLayer = (features=[])=>{
-
-    const layerId = 'csvLayer';
+  const addCsvLayer = (features = []) => {
+    const layerId = "csvLayer";
 
     let csvLayer = mapView.map.findLayerById(layerId);
 
-    if(csvLayer){
+    if (csvLayer) {
       mapView.map.remove(csvLayer);
     }
 
     esriLoader
-      .loadModules(["esri/layers/GraphicsLayer", "esri/Graphic"], esriLoaderOptions)
-      .then(([GraphicsLayer,Graphic]) => {
-
+      .loadModules(
+        ["esri/layers/GraphicsLayer", "esri/Graphic"],
+        esriLoaderOptions
+      )
+      .then(([GraphicsLayer, Graphic]) => {
         const fireflySymbl = {
-          type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+          type: "picture-marker", // autocasts as new PictureMarkerSymbol()
           url: config.fireflyStyle.blue,
           width: "32px",
           height: "32px"
         };
 
-        const graphics = features.map((feature, idx)=>{
+        const graphics = features.map((feature, idx) => {
           feature.attributes.FID = idx;
           feature.symbol = fireflySymbl;
           return new Graphic(feature);
@@ -695,15 +698,15 @@ const MapControl = function({
         csvLayer = new GraphicsLayer({
           id: layerId,
           graphics,
-          title: 'CSV Layer',
+          title: "CSV Layer",
           opacity: 0.85
         });
 
         mapView.map.add(csvLayer);
-
-      }).catch(err=>{
-        console.error(err);
       })
+      .catch(err => {
+        console.error(err);
+      });
   };
 
   return {

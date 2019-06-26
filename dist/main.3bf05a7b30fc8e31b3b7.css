@@ -68,7 +68,7 @@ body {
   border: solid 2px rgba(239, 35, 60, 0.7); }
 
 .legend-item.is-inactive {
-  opacity: .4; }
+  opacity: 0.4; }
 
 #basemapGalleryControl {
   position: absolute;
@@ -168,6 +168,24 @@ body {
 .addPointText {
   margin: 0px 10px;
   font-size: 0.875rem; }
+
+.esri-legend__message {
+  width: 0px !important;
+  overflow: hidden !important;
+  margin: 0px !important;
+  padding: 0px !important;
+  min-height: 50px !important; }
+
+.esri-legend__message::after {
+  content: "No additional data to display legend for. Show more layers via Search/Add Data.";
+  padding: 10px;
+  position: absolute;
+  top: 0px;
+  left: 10px;
+  color: #323232;
+  font-size: 14px;
+  font-family: "Avenir Next W00", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.3em; }
 
 #speciesSelectorDiv .has-overall-feedback {
   font-weight: 600; }

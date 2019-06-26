@@ -182,6 +182,7 @@ const MapControl = function({
           url: config.URL.WatershedBoundaryDataset_HUC10,
           opacity: 0.9,
           listMode: "hide",
+          legendEnabled: false,
           renderer: {
             type: "simple", // autocasts as new SimpleRenderer()
             symbol: {
@@ -253,10 +254,35 @@ const MapControl = function({
 
         const bgExpand = new Expand({
           view,
-          content: basemapGallery
+          content: basemapGallery,
+          expandTooltip: "Change Basemap"
         });
 
         mapView.ui.add(bgExpand, "top-left");
+
+        initLegend(mapView);
+      });
+  };
+
+  const initLegend = view => {
+    esriLoader
+      .loadModules(
+        ["esri/widgets/Legend", "esri/widgets/Expand"],
+        esriLoaderOptions
+      )
+      .then(([Legend, Expand]) => {
+        const legend = new Legend({
+          view
+        });
+
+        const legExpand = new Expand({
+          view,
+          content: legend,
+          expandIconClass: "esri-icon-maps",
+          expandTooltip: "View Legend for Additional Layers"
+        });
+
+        mapView.ui.add(legExpand, "top-left");
       });
   };
 
@@ -297,14 +323,6 @@ const MapControl = function({
     initSearch(mapView);
 
     initLayerList(mapView);
-
-    // setHucsLayer(mapView.map);
-
-    // mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
-
-    // initPredictedHabitatLayers();
-
-    // initLegend();
   };
 
   const queryHucsLayerByMouseEvent = event => {
@@ -615,7 +633,8 @@ const MapControl = function({
             opacity: 0.9,
             listMode: "hide",
             definitionExpression: `cutecode=''`,
-            isPredictedHabitatLayer: true
+            isPredictedHabitatLayer: true,
+            legendEnabled: false
           });
         });
 

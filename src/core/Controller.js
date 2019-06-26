@@ -313,7 +313,7 @@ export default function Controller(props = {}) {
         requestUrl: config.URL.overallFeedback + "/query",
         where: `${config.FIELD_NAME.overallFeedback.userID} = '${userID}' AND ${
           config.FIELD_NAME.overallFeedback.species
-        } = '${species}'`
+        } = '${species}' AND ${config.FIELD_NAME.overallFeedback.retirementDate} is null`
       });
 
       const requestUrl = feedbacks[0]
@@ -372,7 +372,9 @@ export default function Controller(props = {}) {
         requestUrl: config.URL.feedbackTable + "/query",
         where: `${config.FIELD_NAME.feedbackTable.hucID} = '${hucID}' AND ${
           config.FIELD_NAME.feedbackTable.species
-        } = '${dataModel.getSelectedSpecies()}'`
+        } = '${dataModel.getSelectedSpecies()}' AND ${
+          config.FIELD_NAME.feedbackTable.retirementDate
+        } is null`
       });
 
       controllerProps.feedbackByHucsForReviewModeOnReady({

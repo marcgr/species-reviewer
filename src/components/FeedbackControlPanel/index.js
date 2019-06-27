@@ -20,7 +20,7 @@ export default function FeedbackControlPanel(){
         2: 'Remove from Modeling Extent',
         3: 'Comment on Predicted Habitat'
     };
-    
+
     const init = (options={})=>{
 
         container = options.containerID ? document.getElementById(options.containerID) : null;
@@ -97,7 +97,7 @@ export default function FeedbackControlPanel(){
                 <div class='comment-dialog'>
                     <label>
                         <span class='font-size--3'>Comment:</span>
-                        <textarea type="text" placeholder="" class="comment-textarea">${comment}</textarea>
+                        <textarea type="text" placeholder="" class="comment-textarea" maxlength="4095">${comment}</textarea>
                     </label>
                 </div>
 
@@ -188,7 +188,7 @@ export default function FeedbackControlPanel(){
                 if(onCloseHandler){
                     onCloseHandler();
                 }
-            }  
+            }
             else if (event.target.classList.contains('js-submit-feedback')) {
                 // console.log('close feedback control panel');
                 // const newStatus = event.target.dataset.status || null;
@@ -196,7 +196,7 @@ export default function FeedbackControlPanel(){
                 if(onSubmitHandler){
                     onSubmitHandler(newStatus);
                 }
-            }  
+            }
             else if (event.target.classList.contains('js-remove-feedback')) {
                 if(onRemoveHandler){
                     onRemoveHandler();
@@ -222,7 +222,7 @@ export default function FeedbackControlPanel(){
 
         container.addEventListener('input', function (event){
             // console.log(event.target);
-            if (event.target.classList.contains('comment-textarea')) { 
+            if (event.target.classList.contains('comment-textarea')) {
                 // console.log('textarea on input', event.target.value);
                 if(commentOnChange){
                     commentOnChange(event.target.value);

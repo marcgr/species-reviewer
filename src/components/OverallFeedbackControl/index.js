@@ -1,48 +1,47 @@
-import './style.scss';
+import "./style.scss";
 
-export default function(){
+export default function() {
+  let container = null;
+  let onSubmitHandler = null;
+  let onCloseHandler = null;
 
-    let container = null;
-    let onSubmitHandler = null;
-    let onCloseHandler = null;
+  let rating = 0;
+  let comment = "";
 
-    let rating = 0;
-    let comment = '';
+  const init = (options = {}) => {
+    container = options.containerID
+      ? document.getElementById(options.containerID)
+      : null;
+    onSubmitHandler = options.onSubmitHandler || null;
+    onCloseHandler = options.onCloseHandler || null;
 
-    const init = (options={})=>{
+    // rating = options.rating || rating;
+    // comment = options.comment || comment;
 
-        container = options.containerID ? document.getElementById(options.containerID) : null;
-        onSubmitHandler = options.onSubmitHandler || null;
-        onCloseHandler = options.onCloseHandler || null;
+    if (!container) {
+      console.error("containerID is required to init Overall Feedback Control");
+      return;
+    }
 
-        // rating = options.rating || rating;
-        // comment = options.comment || comment;
+    // render();
 
-        if(!container){
-            console.error('containerID is required to init Overall Feedback Control');
-            return;
-        }
+    initEventHandler();
+  };
 
-        // render();
+  const setRating = (val = 0) => {
+    rating = +val;
+    // console.log('setRating', rating);
+  };
 
-        initEventHandler();
-    };
+  const setComment = (val = "") => {
+    comment = val;
+    // console.log('setComment', comment);
+  };
 
-    const setRating = (val=0)=>{
-        rating = +val;
-        // console.log('setRating', rating);
-    };
+  const render = () => {
+    // const comment = data.comment || '';
 
-    const setComment = (val='')=>{
-        comment = val;
-        // console.log('setComment', comment);
-    };
-
-    const render = ()=>{
-
-        // const comment = data.comment || '';
-
-        const compoenetHtml = `
+    const compoenetHtml = `
             <div id='overallFeedbackControlPanelContainer' class='panel panel-black'>
                 <div class="text-center">
                     <h4>Tell us how you like the modeled results?</h4>
@@ -53,7 +52,7 @@ export default function(){
                 <div class='leader-half'>
                     <label>
                         <span class='font-size--3'>feedback</span>
-                        <textarea type="text" placeholder="" class="comment-textarea" rows="4">${comment}</textarea>
+                        <textarea type="text" placeholder="" class="comment-textarea" rows="4" maxlength="4095">${comment}</textarea>
                     </label>
                 </div>
 
@@ -64,95 +63,92 @@ export default function(){
             </div>
         `;
 
-        container.innerHTML = compoenetHtml;
+    container.innerHTML = compoenetHtml;
+  };
 
-    };
+  const getRatingStarHtml = () => {
+    const arrOfRatingStarHtml = [];
 
-    const getRatingStarHtml = ()=>{
-        
-        const arrOfRatingStarHtml = [];
+    for (let i = 0, len = 5; i < len; i++) {
+      const starColor = i < rating ? `icon-ui-yellow` : `icon-ui-gray`;
+      const itemHtm = `<span class="js-set-rating icon-ui-favorites icon-ui-flush ${starColor}" data-rating='${i +
+        1}'></span>`;
+      arrOfRatingStarHtml.push(itemHtm);
+    }
 
-        for(let i = 0, len = 5; i < len ; i++){
+    return arrOfRatingStarHtml.join("");
+  };
 
-            const starColor = i < rating ? `icon-ui-yellow` : `icon-ui-gray`;
-            const itemHtm = `<span class="js-set-rating icon-ui-favorites icon-ui-flush ${starColor}" data-rating='${i+1}'></span>`
-            arrOfRatingStarHtml.push(itemHtm);
+  const toggleRating = (rating = 0) => {
+    // console.log('calling toggleRating', rating, isRemove)
+
+    // if(isRemove){
+    //     setRating(rating-1);
+    // } else {
+    //     setRating(rating);
+    // }
+
+    setRating(rating);
+
+    render();
+  };
+
+  const initEventHandler = () => {
+    container.addEventListener("click", function(event) {
+      if (event.target.classList.contains("js-close")) {
+        onCloseHandler();
+      }
+
+      if (event.target.classList.contains("js-set-rating")) {
+        const isRemoveRatingStar = event.target.classList.contains(
+          "icon-ui-yellow"
+        )
+          ? true
+          : false;
+        toggleRating(event.target.dataset.rating);
+      }
+
+      if (event.target.classList.contains("js-submit")) {
+        if (!rating) {
+          alert("please provide a star rating");
+          return;
         }
 
-        return arrOfRatingStarHtml.join('');
-    };
-
-    const toggleRating = (rating=0)=>{
-        // console.log('calling toggleRating', rating, isRemove)
-
-        // if(isRemove){
-        //     setRating(rating-1);
-        // } else {
-        //     setRating(rating);
-        // }
-
-        setRating(rating);
-
-        render();
-    }
-
-    const initEventHandler = ()=>{
-
-        container.addEventListener('click', function(event){
-
-            if(event.target.classList.contains('js-close')){
-                onCloseHandler();
-            }
-
-            if(event.target.classList.contains('js-set-rating')){
-                const isRemoveRatingStar = event.target.classList.contains('icon-ui-yellow') ? true : false;
-                toggleRating(event.target.dataset.rating);
-            }
-
-            if(event.target.classList.contains('js-submit')){
-
-                if(!rating){
-                    alert('please provide a star rating');
-                    return;
-                }
-
-                onSubmitHandler({
-                    rating,
-                    comment
-                });
-            }
-
+        onSubmitHandler({
+          rating,
+          comment
         });
+      }
+    });
 
-        container.addEventListener('input', function(event){
-            // console.log(event.target);
-            setComment(event.target.value);
-        });
-    };
+    container.addEventListener("input", function(event) {
+      // console.log(event.target);
+      setComment(event.target.value);
+    });
+  };
 
-    const toggleVisibility = (isVisible=false)=>{
-        container.classList.toggle('hide', !isVisible);
-    };
+  const toggleVisibility = (isVisible = false) => {
+    container.classList.toggle("hide", !isVisible);
+  };
 
-    const open = (data={ rating: 0, comment: ''})=>{
-        setRating(data.rating);
-        setComment(data.comment);
+  const open = (data = { rating: 0, comment: "" }) => {
+    setRating(data.rating);
+    setComment(data.comment);
 
-        render();
-        toggleVisibility(true);
-    };
+    render();
+    toggleVisibility(true);
+  };
 
-    const close = ()=>{
-        setRating();
-        setComment();
-        toggleVisibility(false);
-    }
+  const close = () => {
+    setRating();
+    setComment();
+    toggleVisibility(false);
+  };
 
-    return {
-        init,
-        // toggleVisibility,
-        open,
-        close
-    };
-
+  return {
+    init,
+    // toggleVisibility,
+    open,
+    close
+  };
 }

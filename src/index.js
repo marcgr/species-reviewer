@@ -9,6 +9,8 @@ import MapControl from "./core/MapControl";
 import OAuthManager from "./core/OauthManager";
 import CsvLoader from "./core/CsvLoader";
 
+import PolyfillForIE from './utils/PolyfillForIE';
+
 (async function initOAuthManager() {
   const oauthManager = new OAuthManager(config.oauthAppID);
   await oauthManager.init();

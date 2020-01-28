@@ -8,7 +8,7 @@ import hatchBlack from '../static/Hatch_BlackAlt.png';
 const Promise = require('es6-promise').Promise;
 
 const esriLoaderOptions = {
-    url: 'https://js.arcgis.com/4.10'
+    url: 'https://js.arcgis.com/4.14' //actual set in oauthmanager where esriloader first called
 };
 
 // esriLoader.loadModules([
@@ -19,21 +19,24 @@ const esriLoaderOptions = {
 
 // });
 
-const MapControl = function(options={}){
+const MapControl = function (options = {}) {
 
     const webMapID = options.webMapID || null;
     const mapViewContainerID = options.mapViewContainerID || null;
+    const portalUrl = options.portalUrl || null;
 
     let mapView = null;
     let hucsLayer = null;
     let hucsByStatusGraphicLayer = null;
     let hucPreviewGraphicLayer = null;
+    let isInDrawMode = false;
+    let isInBatchSelectMode = false;
     // let actualModelBoundaryLayer = null;
     let hucFeatureOnSelectHandler = null;
     // let isOnHoldEventDisabled = false;
 
-    const init = (options={})=>{
-        if(!webMapID || ! mapViewContainerID){
+    const init = (options = {}) => {
+        if (!webMapID || !mapViewContainerID) {
             console.error('web map ID and map view container DOM ID is required to init map control');
             return;
         }
@@ -43,47 +46,50 @@ const MapControl = function(options={}){
         initMapView();
     };
 
-    const initMapView = ()=>{
+    const initMapView = () => {
 
         esriLoader.loadModules([
-            'esri/views/MapView', 
+            'esri/views/MapView',
+            'esri/config',
             'esri/WebMap',
-        ], esriLoaderOptions).then(([MapView, WebMap])=>{
+        ], esriLoaderOptions).then(([MapView, EsriConfig, WebMap]) => {
+
+            EsriConfig.portalUrl = portalUrl;
 
             const webmap = new WebMap({
                 portalItem: {
                     id: webMapID
                 }
             });
-    
+
             mapView = new MapView({
                 map: webmap,
                 container: mapViewContainerID
             });
 
             mapView.when(mapViewOnReadyHandler);
-    
+
         });
 
     };
 
-    const initLayerList = (mapView)=>{
+    const initLayerList = (mapView) => {
 
         esriLoader.loadModules([
             "esri/widgets/LayerList"
         ], esriLoaderOptions).then(([
             LayerList,
-        ])=>{
+        ]) => {
             const layerlist = new LayerList({
                 container: config.DOM_ID.layerListDiv,
                 view: mapView
             });
-        }).catch(err=>{
+        }).catch(err => {
             console.error(err);
         })
     };
 
-    const initReferenceLayers = (mapView)=>{
+    const initReferenceLayers = (mapView) => {
 
         // Layer.fromPortalItem({
         //     portalItem: {  // autocasts new PortalItem()
@@ -100,13 +106,13 @@ const MapControl = function(options={}){
         ], esriLoaderOptions).then(([
             MapImageLayer,
             ImageryLayer
-        ])=>{
+        ]) => {
 
             const defaultOpacity = .7;
 
             // USA Protected Areas
             const usaProtectedAreas = new ImageryLayer({
-                portalItem: {  // autocasts as esri/portal/PortalItem
+                portalItem: { // autocasts as esri/portal/PortalItem
                     id: config.reference_layers.usa_protected_areas.itemId
                 },
                 title: config.reference_layers.usa_protected_areas.title,
@@ -116,7 +122,7 @@ const MapControl = function(options={}){
 
             // USA_NLCD_Land_Cover_2011
             const nlcdLandCover = new ImageryLayer({
-                portalItem: {  // autocasts as esri/portal/PortalItem
+                portalItem: { // autocasts as esri/portal/PortalItem
                     id: config.reference_layers.USA_NLCD_Land_Cover_2011.itemId
                 },
                 title: config.reference_layers.USA_NLCD_Land_Cover_2011.title,
@@ -126,7 +132,7 @@ const MapControl = function(options={}){
 
             // USA_Forest_Type
             const forestType = new ImageryLayer({
-                portalItem: {  // autocasts as esri/portal/PortalItem
+                portalItem: { // autocasts as esri/portal/PortalItem
                     id: config.reference_layers.USA_Forest_Type.itemId
                 },
                 title: config.reference_layers.USA_Forest_Type.title,
@@ -136,65 +142,65 @@ const MapControl = function(options={}){
 
             // USA_Wetlands
             const wetLand = new MapImageLayer({
-                portalItem: {  // autocasts as esri/portal/PortalItem
+                portalItem: { // autocasts as esri/portal/PortalItem
                     id: config.reference_layers.USA_Wetlands.itemId
                 },
                 title: config.reference_layers.USA_Wetlands.title,
                 opacity: defaultOpacity,
                 visible: false
             });
-            
+
             // mapView.map.addMany([usaProtectedAreas, nlcdLandCover, forestType, wetLand]);
             mapView.map.add(usaProtectedAreas, 0);
-            mapView.map.add(nlcdLandCover, 0); 
-            mapView.map.add(forestType, 0); 
-            mapView.map.add(wetLand, 0); 
-        }).catch(err=>{
+            mapView.map.add(nlcdLandCover, 0);
+            mapView.map.add(forestType, 0);
+            mapView.map.add(wetLand, 0);
+        }).catch(err => {
             console.error(err);
         })
     };
 
-    const initHucLayer = (mapView)=>{
+    const initHucLayer = (mapView) => {
         esriLoader.loadModules([
             "esri/layers/FeatureLayer",
         ], esriLoaderOptions).then(([
             FeatureLayer
-        ])=>{
+        ]) => {
 
             hucsLayer = new FeatureLayer({
-                url: config.URL.WatershedBoundaryDataset_HUC10,
+                url: config.URL.WatershedBoundaryDataset_HUC12,
                 opacity: .9,
                 listMode: 'hide',
                 renderer: {
-                    type: "simple",  // autocasts as new SimpleRenderer()
+                    type: "simple", // autocasts as new SimpleRenderer()
                     symbol: {
-                        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                        type: "simple-fill", // autocasts as new SimpleFillSymbol()
                         color: [0, 0, 0, 0],
-                        outline: {  // autocasts as new SimpleLineSymbol()
+                        outline: { // autocasts as new SimpleLineSymbol()
                             color: [0, 0, 0, 0],
                             width: "0"
                         }
                     }
                 }
             });
-    
+
             mapView.map.add(hucsLayer);
 
         });
     }
 
-    const initHucsReviewReferenceLayers = (mapView)=>{
+    const initHucsReviewReferenceLayers = (mapView) => {
 
         esriLoader.loadModules([
             "esri/layers/GraphicsLayer"
         ], esriLoaderOptions).then(([
             GraphicsLayer
-        ])=>{
+        ]) => {
             hucsByStatusGraphicLayer = new GraphicsLayer({
                 opacity: .6,
                 listMode: 'hide'
             });
-        
+
             hucPreviewGraphicLayer = new GraphicsLayer({
                 listMode: 'hide'
             });
@@ -203,20 +209,31 @@ const MapControl = function(options={}){
         });
     };
 
-    const initMapEventHandlers = ()=>{
-        mapView.on('click', event=>{
-            // console.log('map view on hold', event);
+    const initMapEventHandlers = () => {
+        mapView.on('click', event => {
+            console.log('map view on hold', event, this.isInDrawMode);
 
             // if(!isOnHoldEventDisabled){
             //     queryHucsLayerByMouseEvent(event);
             // }
+            if (!this.isInDrawMode || this.isInBatchSelectMode) {
+                //mapView.graphics.removeAll();
+                let mapPt = mapView.toMap(event)
+                queryHucsLayerByMouseEvent(mapPt)
+                    .then(queryHucsLayerByMouseEventOnSuccessHandler)
+                    .catch(err => {
+                        console.log(err);
+                    });
+            }
+        });
 
-            queryHucsLayerByMouseEvent(event)
-            .then(queryHucsLayerByMouseEventOnSuccessHandler)
-            .catch(err=>{
-                console.log(err);
-            });
-            
+        mapView.on('key-down', event => {
+            console.log('key down event',event, this.isInBatchSelectMode);
+            this.isInBatchSelectMode = event.key === 'Control';
+        });
+
+        mapView.on('key-up', event => {
+            this.isInBatchSelectMode = false;
         });
     };
 
@@ -224,7 +241,7 @@ const MapControl = function(options={}){
     //     isOnHoldEventDisabled = true;
     // };
 
-    const initBasemapGallery = (view)=>{
+    const initBasemapGallery = (view) => {
 
         esriLoader.loadModules([
             "esri/widgets/BasemapGallery",
@@ -232,7 +249,7 @@ const MapControl = function(options={}){
         ], esriLoaderOptions).then(([
             BasemapGallery,
             Expand
-        ])=>{
+        ]) => {
             const basemapGallery = new BasemapGallery({
                 view
             });
@@ -246,30 +263,137 @@ const MapControl = function(options={}){
         });
     };
 
-    const initSearch = (view)=>{
+    const initHomeButton = (view) => {
+        esriLoader.loadModules(["esri/widgets/Home"], esriLoaderOptions).then(([
+            Home
+        ]) => {
+            const homeBtn = new Home({
+                view: view
+            });
+            view.ui.add(homeBtn, "top-left");
+        });
+    }
+
+    const initBatchSelectTools = (view) => {
+        esriLoader.loadModules([
+                "esri/views/draw/Draw",
+                "esri/Graphic",
+                "esri/geometry/Polyline"
+            ], esriLoaderOptions)
+            .then(([Draw, Graphic, Polyline]) => {
+                view.ui.add("line-button", "top-left");
+
+                const draw = new Draw({
+                    view: view
+                });
+
+                document.getElementById("line-button").onclick = () => {
+                    this.isInDrawMode = true;
+                    let thisScope = this;
+                    view.graphics.removeAll();
+
+                    // creates and returns an instance of PolyLineDrawAction
+                    const action = draw.create("polyline", "freehand");
+
+                    // focus the view to activate keyboard shortcuts for sketching
+                    view.focus();
+
+                    // listen polylineDrawAction events to give immediate visual feedback
+                    // to users as the line is being drawn on the view.
+                    action.on(
+                        ["vertex-remove", "cursor-update", "redo", "undo"],
+                        updateVertices
+                    );
+
+                    action.on(["vertex-add", "draw-complete"], function (event) {
+                        // create a polyline from returned vertices
+                        if (event.vertices.length > 1) {
+                            createGraphic(event);
+                        }
+                        if (event.type === "draw-complete") {
+                            thisScope.isInDrawMode = false;
+                            console.log('drawing Complete!', event);
+                            var polyline = new Polyline({
+                                paths: event.vertices,
+                                spatialReference: view.spatialReference
+                            });
+                            queryHucsLayerByMouseEvent(polyline)
+                                .then(queryHucsLayerByMouseEventOnSuccessHandler)
+                                .then(view.graphics.removeAll())
+                                .catch(err => {
+                                    console.log(err);
+                                });
+                        }
+
+                    });
+                };
+
+                // Checks if the last vertex is making the line intersect itself.
+                const updateVertices = (event) => {
+                    // create a polyline from returned vertices
+                    if (event.vertices.length > 1) {
+                        createGraphic(event);
+                    }
+                }
+
+                // create a new graphic presenting the polyline that is being drawn on the view
+                const createGraphic = (event) => {
+                    const vertices = event.vertices;
+                    view.graphics.removeAll();
+
+                    // a graphic representing the polyline that is being drawn
+                    const graphic = new Graphic({
+                        geometry: {
+                            type: "polyline",
+                            paths: vertices,
+                            spatialReference: view.spatialReference
+                        },
+                        symbol: {
+                            type: "simple-line", // autocasts as new SimpleFillSymbol
+                            color: [4, 90, 141],
+                            width: 4,
+                            cap: "round",
+                            join: "round"
+                        }
+                    });
+
+                    view.graphics.add(graphic);
+                }
+
+
+            });
+    }
+
+    const initSearch = (view) => {
 
         esriLoader.loadModules([
             "esri/widgets/Search",
         ], esriLoaderOptions).then(([
             Search
-        ])=>{
-            const searchWidget = new Search({ view, container: config.DOM_ID.searchWidgetDiv });
+        ]) => {
+            const searchWidget = new Search({
+                view,
+                container: config.DOM_ID.searchWidgetDiv
+            });
 
             // view.ui.add(searchWidget, {
             //     position: "top-left",
             //     index: 0
             // });
-        }).catch(err=>{
+        }).catch(err => {
             console.log(err);
         })
     };
 
-    const mapViewOnReadyHandler = ()=>{
+    const mapViewOnReadyHandler = () => {
         // console.log('mapView is ready...');
-
         initMapEventHandlers();
 
         initBasemapGallery(mapView);
+
+        initHomeButton(mapView);
+
+        initBatchSelectTools(mapView);
 
         initReferenceLayers(mapView);
 
@@ -277,7 +401,7 @@ const MapControl = function(options={}){
 
         initHucsReviewReferenceLayers(mapView);
 
-        initPredictedHabitatLayers(mapView);
+        //initPredictedHabitatLayers(mapView);
 
         initSearch(mapView);
 
@@ -293,54 +417,58 @@ const MapControl = function(options={}){
         // initLegend();
     };
 
-    const queryHucsLayerByMouseEvent = (event)=>{
+    const queryHucsLayerByMouseEvent = (geometry) => {
         const query = hucsLayer.createQuery();
-        query.geometry = mapView.toMap(event);  // the point location of the pointer
-        query.spatialRelationship = "intersects";  // this is the default
+        query.geometry = geometry; // the point location of the pointer
+        query.spatialRelationship = "intersects"; // this is the default
         query.returnGeometry = true;
-        query.outFields = [ "*" ];
-        
-        return new Promise((resolve, reject)=>{
+        query.outFields = ["*"];
 
-            hucsLayer.queryFeatures(query).then(function(response){
-                // console.log(response);
+        return new Promise((resolve, reject) => {
 
-                if(response.features && response.features.length){
-                    resolve(response.features[0]);
+            hucsLayer.queryFeatures(query).then(function (response) {
+                console.log('queryHUCSLayerresponse', geometry);
+
+                if (response.features && response.features.length) {
+                    resolve(response.features);
                 }
             });
         });
 
     };
 
-    const queryHucsLayerByHucID = (hucID)=>{
+    const queryHucsLayerByHucID = (hucID) => {
         const query = hucsLayer.createQuery();
-        query.where = `${config.FIELD_NAME.huc10LayerHucID} = '${hucID}'`;
+        query.where = `${config.FIELD_NAME.hucLayerHucID} = '${hucID}'`;
         query.returnGeometry = true;
-        query.outFields = [ "*" ];
-        
-        return new Promise((resolve, reject)=>{
+        query.outFields = ["*"];
 
-            hucsLayer.queryFeatures(query).then(function(response){
-                if(response.features && response.features.length){
+        return new Promise((resolve, reject) => {
+
+            hucsLayer.queryFeatures(query).then(function (response) {
+                if (response.features && response.features.length) {
                     // console.log(response.features[0]);
                     resolve(response.features[0]);
                 } else {
                     reject('no huc feature is found');
                 }
-            }).catch(err=>{
+            }).catch(err => {
                 reject(err);
             });
         });
 
     };
 
+    const getSelectState = () =>{
+        return this.isInBatchSelectMode || this.isInDrawMode;
+    }
+
     // const setHucsLayer = (webmap)=>{
     //     console.log(webmap.layers.items);
 
     //     hucsLayer = webmap.layers.items.filter(d=>{
     //         console.log(d.title)
-    //         return d.title.indexOf('HUC10') !== -1 
+    //         return d.title.indexOf('HUC10') !== -1
     //     })[0];
 
     //     // hucsLayer.listMode = 'hide';
@@ -348,44 +476,50 @@ const MapControl = function(options={}){
     //     console.log('setHucsLayer', hucsLayer);
     // };
 
-    const queryHucsLayerByMouseEventOnSuccessHandler = (feature)=>{
+    const queryHucsLayerByMouseEventOnSuccessHandler = (features) => {
+        features.forEach(feature => {
+            addPreviewHucGraphic(feature);
 
-        addPreviewHucGraphic(feature);
-
-        if(hucFeatureOnSelectHandler){
-            hucFeatureOnSelectHandler(feature);
-        }
+            if (hucFeatureOnSelectHandler) {
+                hucFeatureOnSelectHandler(feature);
+            }
+        });
     };
 
-    const showHucFeatureByStatus = (hucID, status, options={
+    const showHucFeatureByStatus = (hucID, status, options = {
         attributes: null,
         popupTemplate: null
-    })=>{
+    }) => {
+        if (this.isInBatchSelectMode){
+            removeHucGraphicByStatus(hucID);
+        }
 
-        removeHucGraphicByStatus(hucID);
 
-        if(+status > 0){
-            queryHucsLayerByHucID(hucID).then(feature=>{
+        if (+status > 0) {
+            queryHucsLayerByHucID(hucID).then(feature => {
                 addHucGraphicByStatus(feature, status, options);
             });
-        } 
+        }
 
         // queryHucsLayerByHucID(hucID).then(feature=>{
         //     addHucGraphicByStatus(feature, status);
         // });
     };
 
-    const addHucGraphicByStatus = (feature, status, options={})=>{
+    const addHucGraphicByStatus = (feature, status, options = {}) => {
 
         const geometry = feature.geometry;
-        const attributes = options.attributes ? {...feature.attributes, ...options.attributes} : feature.attributes;
+        const attributes = options.attributes ? {
+            ...feature.attributes,
+            ...options.attributes
+        } : feature.attributes;
         // const popupTemplate = options.popupTemplate || null;
 
         // console.log('calling addHucGraphicByStatus', feature, status);
 
         const symbols = {
             1: {
-                type: "picture-fill",  // autocasts as new PictureFillSymbol()
+                type: "picture-fill", // autocasts as new PictureFillSymbol()
                 url: hatchBlack, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
                 width: "24px",
                 height: "24px",
@@ -395,7 +529,7 @@ const MapControl = function(options={}){
                 },
             },
             2: {
-                type: "picture-fill",  // autocasts as new PictureFillSymbol()
+                type: "picture-fill", // autocasts as new PictureFillSymbol()
                 url: hatchRed, //"https://static.arcgis.com/images/Symbols/Shapes/BlackStarLargeB.png",
                 width: "24px",
                 height: "24px",
@@ -405,9 +539,9 @@ const MapControl = function(options={}){
                 },
             },
             3: {
-                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                type: "simple-fill", // autocasts as new SimpleFillSymbol()
                 color: [0, 0, 0, 0],
-                outline: {  // autocasts as new SimpleLineSymbol()
+                outline: { // autocasts as new SimpleLineSymbol()
                     color: config.COLOR.hucBorderCommentWithoutAction,
                     width: "4px"
                 }
@@ -420,7 +554,7 @@ const MapControl = function(options={}){
             "esri/Graphic",
         ], esriLoaderOptions).then(([
             Graphic
-        ])=>{
+        ]) => {
 
             const graphic = new Graphic({
                 geometry,
@@ -431,35 +565,37 @@ const MapControl = function(options={}){
 
             hucsByStatusGraphicLayer.add(graphic);
 
-        }).catch(err=>{
+        }).catch(err => {
             console.error(err);
         })
 
     };
 
-    const removeHucGraphicByStatus = (hucID)=>{
+    const removeHucGraphicByStatus = (hucID) => {
         // console.log('removeHucGraphicByStatus', hucID);
-        hucsByStatusGraphicLayer.graphics.forEach(g=>{
-            if(g && g.attributes && g.attributes[config.FIELD_NAME.huc10LayerHucID] === hucID){
+        hucsByStatusGraphicLayer.graphics.forEach(g => {
+            if (g && g.attributes && g.attributes[config.FIELD_NAME.hucLayerHucID] === hucID) {
                 hucsByStatusGraphicLayer.remove(g);
             }
         })
     };
 
-    const addPreviewHucByID = async (hucID)=>{
+    const addPreviewHucByID = async (hucID) => {
         const hucFeature = await queryHucsLayerByHucID(hucID);
         addPreviewHucGraphic(hucFeature)
     }
 
-    const addPreviewHucGraphic = (feature)=>{
+    const addPreviewHucGraphic = (feature) => {
         // const attributes = feature.attributes;
-
-        cleanPreviewHucGraphic();
+        console.log('addPreviewHucGraphic',feature, this.isInBatchSelectMode);
+        if (!this.isInBatchSelectMode){
+            cleanPreviewHucGraphic();
+        }
 
         const symbol = {
-            type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+            type: "simple-fill", // autocasts as new SimpleFillSymbol()
             color: [0, 0, 0, 0],
-            outline: {  // autocasts as new SimpleLineSymbol()
+            outline: { // autocasts as new SimpleLineSymbol()
                 color: [84, 242, 242, 0.75],
                 width: "2.5px"
             }
@@ -469,59 +605,60 @@ const MapControl = function(options={}){
             "esri/Graphic",
         ], esriLoaderOptions).then(([
             Graphic
-        ])=>{
+        ]) => {
             const graphicForSelectedHuc = new Graphic({
                 geometry: feature.geometry,
                 symbol: symbol,
             });
-    
+
             hucPreviewGraphicLayer.add(graphicForSelectedHuc);
         });
     };
 
-    const clearMapGraphics = (targetLayer='')=>{
+    const clearMapGraphics = (targetLayer = '') => {
         const layersLookup = {
             'hucPreview': hucPreviewGraphicLayer
         };
 
-        if(layersLookup[targetLayer]){
+        if (layersLookup[targetLayer]) {
             layersLookup[targetLayer].removeAll();
         } else {
             clearAllGraphics();
         }
     }
 
-    const clearAllGraphics = ()=>{
+    const clearAllGraphics = () => {
         hucsByStatusGraphicLayer.removeAll();
         cleanPreviewHucGraphic();
     };
 
-    const cleanPreviewHucGraphic = ()=>{
+    const cleanPreviewHucGraphic = () => {
         hucPreviewGraphicLayer.removeAll();
     };
 
     // highlight hucs from the species extent table
-    const highlightHucs = (data)=>{
+    const highlightHucs = (data) => {
         // cleanPreviewHucGraphic();
+        //console.log('highlightingHucs!', data);
         clearAllGraphics();
         hucsLayer.renderer = getUniqueValueRenderer(data);
     };
 
-    const getUniqueValueRenderer = (data)=>{
+    const getUniqueValueRenderer = (data) => {
 
         const defaultSymbol = {
-            type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-            color: [0,0,0, 0],
-            outline: {  // autocasts as new SimpleLineSymbol()
+            type: "simple-fill", // autocasts as new SimpleFillSymbol()
+            color: [0, 0, 0, 0],
+            outline: { // autocasts as new SimpleLineSymbol()
                 color: config.COLOR.hucBorder,
                 width: "1px"
             }
         }
 
         const symbol = {
-            type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+            type: "simple-fill", // autocasts as new SimpleFillSymbol()
             color: config.COLOR.hucFill,
-            outline: {  // autocasts as new SimpleLineSymbol()
+            outline: { // autocasts as new SimpleLineSymbol()
                 color: config.COLOR.hucBorderIsModeled,
                 width: "2px"
             }
@@ -539,7 +676,7 @@ const MapControl = function(options={}){
         //     },
         // };
 
-        const uniqueValueInfos = data.map(d=>{
+        const uniqueValueInfos = data.map(d => {
             return {
                 value: d[config.FIELD_NAME.speciesDistribution.hucID],
                 symbol: symbol
@@ -547,8 +684,8 @@ const MapControl = function(options={}){
         });
 
         const renderer = {
-            type: "unique-value",  // autocasts as new UniqueValueRenderer()
-            field: config.FIELD_NAME.huc10LayerHucID,
+            type: "unique-value", // autocasts as new UniqueValueRenderer()
+            field: config.FIELD_NAME.hucLayerHucID,
             defaultSymbol: defaultSymbol, //{ type: "none" },  // autocasts as new SimpleFillSymbol()
             uniqueValueInfos: uniqueValueInfos
         };
@@ -556,7 +693,7 @@ const MapControl = function(options={}){
         return renderer;
     };
 
-    const initPredictedHabitatLayers = (mapView)=>{
+    const initPredictedHabitatLayers = (mapView) => {
         // console.log(url);
 
         // if(actualModelBoundaryLayer){
@@ -567,9 +704,9 @@ const MapControl = function(options={}){
             "esri/layers/FeatureLayer",
         ], esriLoaderOptions).then(([
             FeatureLayer
-        ])=>{
+        ]) => {
 
-            const predictedHabitatLayers = [config.URL.PredictedHabitat.line, config.URL.PredictedHabitat.polygon].map(url=>{
+            const predictedHabitatLayers = [config.URL.PredictedHabitat.line, config.URL.PredictedHabitat.polygon].map(url => {
 
                 return new FeatureLayer({
                     url,
@@ -579,7 +716,7 @@ const MapControl = function(options={}){
                     isPredictedHabitatLayer: true
                 });
             });
-    
+
             mapView.map.addMany(predictedHabitatLayers);
 
         });
@@ -588,11 +725,11 @@ const MapControl = function(options={}){
 
     };
 
-    const showPredictedHabitatLayers = (speciesCode='')=>{
-        mapView.map.layers.forEach(layer=>{
-            // console.log(layer);
+    const showPredictedHabitatLayers = (speciesCode = '') => {
+        mapView.map.layers.forEach(layer => {
+            console.log(layer);
 
-            if(layer.isPredictedHabitatLayer){
+            if (layer.isPredictedHabitatLayer) {
                 // console.log(la)
 
                 layer.definitionExpression = `cutecode='${speciesCode}'`;
@@ -605,18 +742,18 @@ const MapControl = function(options={}){
         zoomToPredictedHabitatLayer();
     };
 
-    const zoomToPredictedHabitatLayer = (speciesCode='')=>{
-        mapView.map.layers.forEach(layer=>{
+    const zoomToPredictedHabitatLayer = (speciesCode = '') => {
+        mapView.map.layers.forEach(layer => {
             // console.log(layer);
 
-            if(layer.isPredictedHabitatLayer){
+            if (layer.isPredictedHabitatLayer) {
                 // console.log(la)
 
-                layer.queryExtent().then(function(results){
+                layer.queryExtent().then(function (results) {
                     // go to the extent of the results satisfying the query
                     // view.goTo(results.extent);
 
-                    if(results.extent){
+                    if (results.extent) {
                         mapView.goTo(results.extent);
                     }
                 });
@@ -625,8 +762,8 @@ const MapControl = function(options={}){
         });
     };
 
-    const setLayersOpacity = (val)=>{
-        mapView.map.layers.forEach(layer=>{
+    const setLayersOpacity = (val) => {
+        mapView.map.layers.forEach(layer => {
             // console.log(layer);
             layer.opacity = val;
         });
@@ -645,7 +782,8 @@ const MapControl = function(options={}){
         setLayersOpacity,
         clearMapGraphics,
         addPreviewHucByID,
-        showPredictedHabitatLayers
+        showPredictedHabitatLayers,
+        getSelectState
     };
 
 };

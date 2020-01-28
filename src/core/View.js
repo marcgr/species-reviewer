@@ -25,7 +25,7 @@ export default function View(){
     const listViewForOverallFeedback = new ListViewForOverallFeedback({
         containerID: config.DOM_ID.listViewOverallFeedback
     });
-    
+
     const listViewForDetailedFeedback = new ListViewForDetailedFeedback({
         containerID: config.DOM_ID.listViewDeatiledFeedback
     });
@@ -96,15 +96,15 @@ export default function View(){
         });
     };
 
-    // const toggleOverallFeeback = (isVisible=false, data={})=>{
-    //     if(isVisible){
-    //         overallFeedbackControlPanel.open(data);
-    //     } else {
-    //         overallFeedbackControlPanel.close();
-    //     }
-        
-    //     toggleMainControl(!isVisible);
-    // };
+    const toggleOverallFeeback = (isVisible=false, data={})=>{
+        if(isVisible){
+            overallFeedbackControlPanel.open(data);
+        } else {
+            overallFeedbackControlPanel.close();
+        }
+
+        toggleMainControl(!isVisible);
+    };
 
     const toggleControlPanel = (options={
         target: null,
@@ -119,7 +119,7 @@ export default function View(){
             } else {
                 options.target.close();
             }
-            
+
             toggleMainControl(!options.isVisible);
         }
 
@@ -199,7 +199,7 @@ export default function View(){
         return {
             init
         };
-        
+
     };
 
     const switchToReviewModeView = ()=>{
@@ -236,18 +236,18 @@ export default function View(){
         });
     };
 
-    // const openListViewForOverallFeedback = (data)=>{
-    //     listViewForOverallFeedback.toggleVisibility(true);
-    //     listViewForOverallFeedback.render(data);
+    const openListViewForOverallFeedback = (data)=>{
+        listViewForOverallFeedback.toggleVisibility(true);
+        listViewForOverallFeedback.render(data);
 
-    //     listViewForDetailedFeedback.toggleVisibility(false);
-    // }
+        listViewForDetailedFeedback.toggleVisibility(false);
+    }
 
-    // const openListViewForDetailedFeedback = (data)=>{
-    //     listViewForOverallFeedback.toggleVisibility(false);
-    //     listViewForDetailedFeedback.toggleVisibility(true);
-    //     listViewForDetailedFeedback.render(data);
-    // }
+    const openListViewForDetailedFeedback = (data)=>{
+        listViewForOverallFeedback.toggleVisibility(false);
+        listViewForDetailedFeedback.toggleVisibility(true);
+        listViewForDetailedFeedback.render(data);
+    }
 
     const openListView = (targetListView, data)=>{
         [listViewForOverallFeedback, listViewForDetailedFeedback, listViewForFeedbacksByHuc].forEach(item=>{
@@ -258,7 +258,7 @@ export default function View(){
                 if(data){
                     item.render(data);
                 }
-                
+
             } else {
                 item.toggleVisibility(false);
             }
@@ -272,7 +272,7 @@ export default function View(){
         feedbackControlPanel,
         toggleMainControl,
         overallFeedbackControlPanel,
-        // toggleOverallFeeback,
+        toggleOverallFeeback,
         toggleDownloadAsPdfBtn,
         enableOpenOverallFeedbackBtnBtn,
         listViewForOverallFeedback,

@@ -53,7 +53,7 @@ export default function SpeciesSelector(props={
                 </select>
             </label>
         `;
-        
+
         return taxaSelectorHtml;
     };
 
@@ -71,10 +71,10 @@ export default function SpeciesSelector(props={
                 const val = d[config.FIELD_NAME.speciesLookup.speciesCode];
                 const label = d[config.FIELD_NAME.speciesLookup.speciesName];
                 const hasOverallFeedback = d.hasOverallFeedback ? getOptionDecorationClass('overall') : '';
-                const hasDeatiledFeedback = d.hasDeatiledFeedback ? getOptionDecorationClass('detailed') : '';
+                const hasDetailedFeedback = d.hasDetailedFeedback ? getOptionDecorationClass('detailed') : '';
                 // if no data has been loaded for this species, disable the option
                 const isDisabled = !d.hasDataLoaded ? 'disabled' : '';
-                return `<option class='select-option species-option ${hasOverallFeedback} ${hasDeatiledFeedback} ${isDisabled}' value="${val}" ${isDisabled}>${label}</option>`
+                return `<option class='select-option species-option ${hasOverallFeedback} ${hasDetailedFeedback} ${isDisabled}' value="${val}" ${isDisabled}>${label}</option>`
             }).join('');
 
         const speciesSelectorHtml = `
@@ -85,7 +85,7 @@ export default function SpeciesSelector(props={
                 </select>
             </label>
         `;
-        
+
         return speciesSelectorHtml;
     };
 
@@ -154,7 +154,7 @@ export default function SpeciesSelector(props={
                     updateSpeciesSelector();
                 },
                 'speciesSelector': ()=>{
-                    // console.log('speciesSelector on change', event.target.value);
+                    console.log('speciesSelector on change', event.target.value);
                     onChangeHandler(evt.target.value);
                 }
             };
@@ -179,13 +179,13 @@ export default function SpeciesSelector(props={
             if(d[config.FIELD_NAME.speciesLookup.speciesCode] === speciesCode){
 
                 if(feedbackType === 'detailed'){
-                    d.hasDeatiledFeedback = true;
+                    d.hasDetailedFeedback = true;
                 }
 
                 if(feedbackType === 'overall'){
                     d.hasOverallFeedback = true;
                 }
-                
+
             }
         });
     };

@@ -29,7 +29,7 @@ html, body{
     // height: 100%;
 }
 
-#feedbackControlDiv, 
+#feedbackControlDiv,
 #overallFeedbackDiv {
     position: absolute;
     top: 1rem;
@@ -37,7 +37,7 @@ html, body{
     z-index: 10;
 }
 
-#feedbackControlDiv > div, 
+#feedbackControlDiv > div,
 #overallFeedbackDiv > div {
     position: relative;
     width: $control-panel-width;
@@ -53,25 +53,25 @@ html, body{
     height: 22px;
 }
 
-.legend-icon[data-index='0']{
+.legend-icon[data-index='x0']{
     background-color: #ffd400;
 }
 
-.legend-icon[data-index='1']{
+.legend-icon[data-index='0']{
     background-color: rgba(255,255,255, 1);
 }
 
-.legend-icon[data-index='2']{
+.legend-icon[data-index='1']{
     background: url('../static/Hatch_BlackAlt.png') center center no-repeat;
     background-size: 90%;
 }
 
-.legend-icon[data-index='3']{
+.legend-icon[data-index='2']{
     background: url('../static/Hatch_Red.png') center center no-repeat;
     background-size: 90%;
 }
 
-.legend-icon[data-index='4']{
+.legend-icon[data-index='3']{
     width: 19px;
     height: 19px;
     border: solid 2px rgba(239,35,60, .7) ;
@@ -113,7 +113,7 @@ html, body{
         display: block;
     }
 
-    
+
     #basemapGalleryControlHeader{
 
         .icon-ui-plus {
@@ -197,15 +197,15 @@ html, body{
 }
 
 .fancy-scrollbar::-webkit-scrollbar-track {
-    background: rgba(200, 200, 200, .5); 
+    background: rgba(200, 200, 200, .5);
 }
 
 .fancy-scrollbar::-webkit-scrollbar-thumb {
-    background: #ccc; 
+    background: #ccc;
 }
 
 .fancy-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #a9a9a9; 
+    background: #a9a9a9;
 }
 
 .icon-no-right-padding[class^="icon-ui-"]:before {

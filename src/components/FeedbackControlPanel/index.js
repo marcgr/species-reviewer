@@ -20,7 +20,7 @@ export default function FeedbackControlPanel(){
         2: 'Remove from Modeling Extent',
         3: 'Comment on Predicted Habitat'
     };
-    
+
     const init = (options={})=>{
 
         container = options.containerID ? document.getElementById(options.containerID) : null;
@@ -46,6 +46,7 @@ export default function FeedbackControlPanel(){
     };
 
     const initState = (data)=>{
+        console.log('initiating state', data);
         state.data = data;
         state.isSumbitCommentOnly = +state.data.status === 3 ? true : false;
     };
@@ -74,6 +75,7 @@ export default function FeedbackControlPanel(){
     const render = ()=>{
 
         const hucName = state.data.hucName || '';
+        const hucID = state.data.hucID || '';
         const comment = state.data.comment || '';
         // const statusIdx = +data.status || 0;
         // const message = data.isHucInModeledRange ? `Model is inaccurate, <span class='avenir-demi'>REMOVE</span> this HUC from range` : `Known occurances, <span class='avenir-demi'>ADD</span> this HUC to range`;
@@ -86,7 +88,8 @@ export default function FeedbackControlPanel(){
                 </div>
 
                 <div class='leader-half trailer-half'>
-                    <span class='font-size-0'>${hucName}</span>
+                    <span class='font-size-0'>${hucName}</span><br>
+                    <span class='font-size--3'><em>(${hucID})</em></span>
                     <hr>
                 </div>
 
@@ -148,7 +151,7 @@ export default function FeedbackControlPanel(){
                     </label>
                 </div>
                 <div class='inline-block'>
-                    <span class="toggle-switch-label font-size--2 action-message">${statusLookup[+status]}</span>
+                    <span class="toggle-switch-label font-size--2 action-message">${statusLookup[status]}</span>
                 </div>
             </div>
         `;
@@ -188,7 +191,7 @@ export default function FeedbackControlPanel(){
                 if(onCloseHandler){
                     onCloseHandler();
                 }
-            }  
+            }
             else if (event.target.classList.contains('js-submit-feedback')) {
                 // console.log('close feedback control panel');
                 // const newStatus = event.target.dataset.status || null;
@@ -196,7 +199,7 @@ export default function FeedbackControlPanel(){
                 if(onSubmitHandler){
                     onSubmitHandler(newStatus);
                 }
-            }  
+            }
             else if (event.target.classList.contains('js-remove-feedback')) {
                 if(onRemoveHandler){
                     onRemoveHandler();
@@ -222,7 +225,7 @@ export default function FeedbackControlPanel(){
 
         container.addEventListener('input', function (event){
             // console.log(event.target);
-            if (event.target.classList.contains('comment-textarea')) { 
+            if (event.target.classList.contains('comment-textarea')) {
                 // console.log('textarea on input', event.target.value);
                 if(commentOnChange){
                     commentOnChange(event.target.value);

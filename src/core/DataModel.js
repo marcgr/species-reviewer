@@ -8,8 +8,9 @@ export default class DataModel {
         this.hucsBySpecies = {};
         // this.hucsBySpeciesDictionary = {};
         this.status = [];
-        this.selectedSpecies = null;      
-        this.selectedHuc = null;  
+        this.selectedSpecies = null;
+        this.selectedHuc = null;
+        this.selectedHucs = [];
         this.overallFeedback = {};
         // this.selectedHucName = null;
     };
@@ -44,7 +45,7 @@ export default class DataModel {
     //     const dict = {};
 
     //     data.forEach(d=>{
-    //         dict[d.HUC10] = 
+    //         dict[d.HUC10] =
     //     })
 
     //     this.hucsBySpeciesDictionary[species] = data;
@@ -64,12 +65,19 @@ export default class DataModel {
         return this.selectedSpecies;
     }
 
-    setSelectedHuc(val=null){
-        this.selectedHuc = val;
+    setSelectedHucs(val = null) {
+        //this.selectedHuc = val;
+        console.log('set selected hucs', val, this.selectedHucs)
+        if (val) {
+            this.selectedHucs.push(val);
+        } else {
+            this.selectedHucs = [];
+        }
     }
 
-    getSelectedHuc(){
-        return this.selectedHuc;
+    getSelectedHucs(){
+        console.log('get selected hucs so nice', this.selectedHucs)
+        return this.selectedHucs[0];
     }
 
     getHucsBySpecies(species){
@@ -85,10 +93,10 @@ export default class DataModel {
 
         const hucs = this.hucsBySpecies[species];
 
-        // console.log('isHucInModeledRange', hucID);
+        //console.log('isHucInModeledRange', hucID, hucs);
 
         if(hucs){
-            return hucs.filter(d=>{ return d[config.FIELD_NAME.speciesDistribution.hucID] === hucID }).length ? true : false;
+            return hucs.filter(d=>{ return d[config.FIELD_NAME.speciesDistribution.hucID].toString() === hucID }).length ? true : false;
         } else {
             return false;
         }

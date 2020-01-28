@@ -21,7 +21,9 @@ export default function(options={}){
 
     const open = (data={})=>{
 
-        // if data is already in dataStore, use the item from data store instead because it has the status and comments info 
+        console.log('opening feedback manager',data);
+
+        // if data is already in dataStore, use the item from data store instead because it has the status and comments info
         data = getSavedItemFromDataStore(data) || data;
 
         feedbackDataModel.init(data);
@@ -90,7 +92,7 @@ export default function(options={}){
 
         // console.log('get Saved Item From DataStore', species, hucID, feedbackDataStore[species]);
         const savedItem = typeof feedbackDataStore[species] !== 'undefined' && typeof feedbackDataStore[species][hucID] !== 'undefined' ? feedbackDataStore[species][hucID] : null;
-        
+
         if(savedItem && typeof savedItem.hucName === 'undefined' && hucName){
             savedItem.hucName = hucName;
         }
@@ -114,7 +116,7 @@ export default function(options={}){
     };
 
     const getFeedbackDataBySpecies = (species)=>{
-        // console.log('getFeedbackDataBySpecies', species);
+        console.log('getFeedbackDataBySpecies', species);
         return feedbackDataStore[species];
     };
 

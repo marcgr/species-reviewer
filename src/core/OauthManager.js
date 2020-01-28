@@ -1,21 +1,24 @@
 
 import * as esriLoader from 'esri-loader';
+import config from '../config';
 
 const Promise = require('es6-promise').Promise;
 const esriLoaderOptions = {
-    url: 'https://js.arcgis.com/4.10'
+    url: 'https://js.arcgis.com/4.14'
 };
 // before using esri-loader, tell it to use the promise library if the Promise polyfill is being used
 esriLoader.utils.Promise = Promise;
 
-const OAuthManager = function(oauth_appid){
+const OAuthManager = function(oauth_appid, portalUrl){
+
 
     let userCredential = null;
     let isAnonymous = true;
     let poralUser = null;
     let info = null;
     let esriId = null;
-    
+
+
     const signIn = ()=>{
         esriId.getCredential(info.portalUrl + "/sharing").then((res)=>{
             setUserCredential(res);
@@ -51,11 +54,12 @@ const OAuthManager = function(oauth_appid){
             ], esriLoaderOptions).then(([
                 Portal
             ])=>{
+
                 const portal = new Portal();
-    
+
                 // Setting authMode to immediate signs the user in once loaded
                 portal.authMode = "immediate";
-        
+
                 // Once loaded, user is signed in
                 portal.load().then(()=>{
                     resolve(portal.user);
@@ -76,18 +80,21 @@ const OAuthManager = function(oauth_appid){
             esriLoader.loadModules([
                 "esri/identity/OAuthInfo",
                 "esri/identity/IdentityManager",
+                "esri/config"
             ], esriLoaderOptions).then(([
-                OAuthInfo, IdentityManager
+                OAuthInfo, IdentityManager, EsriConfig
             ]) => {
 
+                EsriConfig.portalUrl = portalUrl;
                 esriId = IdentityManager;
 
                 info = new OAuthInfo({
                     appId: oauth_appid,
+                    portalUrl: config.portalUrl,
                     popup: false,
                 });
 
-                esriId.useSignInPage = false;
+                esriId.useSignInPage = true;
 
                 esriId.registerOAuthInfos([info]);
 
@@ -99,12 +106,12 @@ const OAuthManager = function(oauth_appid){
                         poralUser = res;
                         resolve(res);
                     });
-                    
+
                 }).catch(()=>{
                     // console.log('Anonymous view, sign in first');
                     signIn();
                 });
-            
+
             }).catch(err=>{
                 reject(err);
                 console.error(err);

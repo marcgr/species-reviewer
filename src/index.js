@@ -11,7 +11,7 @@ import CsvLoader from './core/CsvLoader';
 
 (async function initOAuthManager(){
 
-    const oauthManager = new OAuthManager(config.oauthAppID);
+    const oauthManager = new OAuthManager(config.oauthAppID, config.portalUrl);
     await oauthManager.init();
 
     document.querySelector('.js-accept-terms').addEventListener('click', evt=>{
@@ -28,8 +28,9 @@ const initApp = async (oauthManager)=>{
     }
 
     const view = new View();
-    
+
     const mapControl = new MapControl({
+        portalUrl: config.portalUrl,
         webMapID: config.webMapID,
         mapViewContainerID: config.DOM_ID.mapViewContainer,
     });
@@ -59,6 +60,7 @@ const initApp = async (oauthManager)=>{
             });
         },
         speciesOnSelect:()=>{
+            console.log('speciesOnSelect?')
             view.enableOpenOverallFeedbackBtnBtn();
         },
         onDeatiledFeedbackSubmit: (data)=>{
@@ -87,15 +89,17 @@ const initApp = async (oauthManager)=>{
         },
         hucFeatureOnSelectForReviewMode:(feature)=>{
             if(view.listViewForDetailedFeedback.isVisible()){
-                view.listViewForDetailedFeedback.setActiveRow(feature.attributes[config.FIELD_NAME.huc10LayerHucID]);
+                console.log('no view visible', feature);
+                view.listViewForDetailedFeedback.setActiveRow(feature.attributes[config.FIELD_NAME.hucLayerHucID]);
             } else {
+                console.log('getFeedbackBYHucForReviewMode sup!!', feature);
                 controller.getFeedbacksByHucForReviewMode(feature);
             }
         },
-        
+
 
         highligtHucsOnMap:(data)=>{
-            // console.log('highligtHucsOnMap', data);
+            console.log('highligtHucsOnMap', data);
             mapControl.highlightHucs(data);
         },
         // addActualBoundaryLayerToMap:(url='')=>{
@@ -126,6 +130,7 @@ const initApp = async (oauthManager)=>{
     view.speciesSelector.init({
         onChange: (val)=>{
             // console.log(val);
+            console.log('view.speicesSelector on Change?', val);
             controller.setSelectedSpecies(val);
         }
     });
@@ -214,8 +219,8 @@ const initApp = async (oauthManager)=>{
 
     mapControl.init({
         hucFeatureOnSelectHandler: (hucFeature)=>{
-            // console.log('selected hucFeature', hucFeature);
-            controller.setSelectedHucFeature(hucFeature);
+            //console.log('PEE selected hucFeature', mapControl.getSelectState());
+            controller.setSelectedHucFeature(hucFeature, mapControl.getSelectState());
         }
     });
 

@@ -218,9 +218,9 @@ const initApp = async (oauthManager)=>{
     });
 
     mapControl.init({
-        hucFeatureOnSelectHandler: (hucFeature)=>{
-            //console.log('PEE selected hucFeature', mapControl.getSelectState());
-            controller.setSelectedHucFeature(hucFeature, mapControl.getSelectState());
+        hucFeatureOnSelectHandler: (hucFeature, selectState)=>{
+            console.log('PEE selected hucFeature', mapControl.getSelectState());
+            controller.setSelectedHucFeature(hucFeature, selectState);
         }
     });
 

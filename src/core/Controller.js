@@ -70,30 +70,43 @@ export default function Controller(props={}){
 
         feedbackManager.init({
 
-            onOpenHandler: (data)=>{
-                // console.log('feedbackManager onOpenHandler', data);
+            onOpenHandler: (data) => {
+                console.log('feedbackManager onOpenHandler', data);
+                let _data = data.hucsBySpecies ? data.hucsBySpecies : [data];
                 controllerProps.feedbackManagerOnOpen(data);
+                // _data.forEach(huc => {
+                //     controllerProps.feedbackManagerOnOpen(huc);
+                // });
             },
 
-            onCloseHandler: ()=>{
+            onCloseHandler: () => {
                 // console.log('feedbackManager is closed');
                 controllerProps.feedbackManagerOnClose();
             },
 
-            onSubmitHandler:(data)=>{
-                // console.log('feedback manager onSubmitHandler', data);
-                postFeedback(data);
-                showHucFeatureOnMap(data.hucID, data.status, data);
-                resetSelectedHucFeature();
+            onSubmitHandler: (data) => {
+                console.log('feedback manager onSubmitHandler', data);
+                let _data = data.hucsBySpecies ? data.hucsBySpecies : [data];
+                _data.forEach(huc => {
+                    postFeedback(huc);
+                    showHucFeatureOnMap(huc.hucID, huc.status, huc);
+                    resetSelectedHucFeature();
 
-                controllerProps.onDeatiledFeedbackSubmit(data);
+                    controllerProps.onDeatiledFeedbackSubmit(huc);
+                });
+
             },
 
-            onRemoveHandler: (data)=>{
+            onRemoveHandler: (data) => {
                 console.log('feedback manager onRemoveHandler', data);
-                deleteFeedback(data);
-                showHucFeatureOnMap(data.hucID);
-                resetSelectedHucFeature();
+                let _data = data.hucsBySpecies ? data.hucsBySpecies : [data];
+
+                _data.forEach(huc => {
+                    console.log('deleteFeedback 1', huc);
+                    deleteFeedback(huc);
+                    showHucFeatureOnMap(huc.hucID);
+                    resetSelectedHucFeature();
+                });
             }
         });
     };
@@ -385,9 +398,12 @@ export default function Controller(props={}){
                 where: `${config.FIELD_NAME.feedbackTable.userID} = '${data.userID}' AND ${config.FIELD_NAME.feedbackTable.species} = '${data.species}' AND ${config.FIELD_NAME.feedbackTable.hucID} = '${data.hucID}'`
             });
 
+            console.log('feedback to deletet', feedbacks);
+
             if(feedbacks[0]){
                 const requestUrl = config.URL.feedbackTable + '/deleteFeatures';
-                const objectID = feedbacks[0].attributes.ObjectId;
+                const objectID = feedbacks[0].attributes.objectid;
+
 
                 apiManager.deleteFromFeedbackTable(requestUrl, objectID).then(res=>{
                     console.log('deleted from feedback table', res);
@@ -401,12 +417,12 @@ export default function Controller(props={}){
 
     // add data load date
     const postFeedback = async(data={})=>{
-        // console.log(data);
+         console.log('post feedback',data);
 
         try {
 
             const dataLoadDate = await apiManager.getDataLoadDate(data.species);
-            // console.log(dataLoadDate);
+            console.log('data load date?', dataLoadDate);
 
             const feedbackFeature = {
                 "attributes": {
@@ -539,7 +555,7 @@ export default function Controller(props={}){
 
         } else {
             console.log('query feedbacks for selected huc', hucID);
-            controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeature);
+            controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeatures);
         }
     };
 
@@ -559,18 +575,32 @@ export default function Controller(props={}){
         const userID = oauthManager.getUserID();
         const species = dataModel.getSelectedSpecies();
         const hucID = dataModel.getSelectedHucs();
-        const hucName = state.selectedHucFeature.attributes[config.FIELD_NAME.hucLayerHucName];
-        const isHucInModeledRange = dataModel.isHucInModeledRange(hucID, species);
+        const hucsBySpecies = state.selectedHucFeatures.map(feature => {
+            const _hucID = feature.attributes[config.FIELD_NAME.hucLayerHucID];
+            return {
+                "hucName": feature.attributes[config.FIELD_NAME.hucLayerHucName],
+                "hucID": _hucID,
+                "isHucInModeledRange": dataModel.isHucInModeledRange(_hucID, species),
+                "species":species,
+                "userID": userID,
+                "status": null,
+                "comment": null
+            }
+        });
+        console.log('bathcHucIDs', hucsBySpecies);
+        // const hucName = state.selectedHucFeature.attributes[config.FIELD_NAME.hucLayerHucName];
+        // const isHucInModeledRange = dataModel.isHucInModeledRange(hucID, species);
 
         //console.log('isHucInModeledRange', isHucInModeledRange, userID, species,hucID);
 
         if(userID && species && hucID){
             feedbackManager.open({
-                userID,
-                species,
-                hucID,
-                hucName,
-                isHucInModeledRange
+                // userID,
+                // species,
+                // hucID,
+                // hucName,
+                // isHucInModeledRange,
+                hucsBySpecies
             });
         } else {
             console.error('userID, species name and huc id are required to open the feedback manager...');

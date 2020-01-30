@@ -12,7 +12,8 @@ export default function FeedbackControlPanel(){
 
     const state = {
         data: null,
-        isSumbitCommentOnly: false
+        isSumbitCommentOnly: false,
+        isBatchSelect: false
     };
 
     const statusLookup = {
@@ -47,7 +48,8 @@ export default function FeedbackControlPanel(){
 
     const initState = (data)=>{
         console.log('initiating state', data);
-        state.data = data;
+        state.data = data.hucsBySpecies ? data.hucsBySpecies : [data];
+        state.isBatchSelect = state.data.length > 1;
         state.isSumbitCommentOnly = +state.data.status === 3 ? true : false;
     };
 
@@ -61,7 +63,9 @@ export default function FeedbackControlPanel(){
     };
 
     const getStatusByIsInModeledRange = ()=>{
-        return state.data.isHucInModeledRange ? 2 : 1;
+        console.log('gettting status whether in modeled range', state);
+        //TODO add batch flag multi values for in/out  Currently just based on first huc selection.
+        return state.data[0].isHucInModeledRange ? 2 : 1;
     }
 
     const getNewStatus = ()=>{
@@ -73,10 +77,10 @@ export default function FeedbackControlPanel(){
     }
 
     const render = ()=>{
-
-        const hucName = state.data.hucName || '';
-        const hucID = state.data.hucID || '';
-        const comment = state.data.comment || '';
+        console.log('Rendering the feedback control', state);
+        const hucName = (state.isBatchSelect ? 'Multiple HUCs selected' :  state.data[0].hucName) || '';
+        const hucID =  (state.isBatchSelect ? '' : ('('+ state.data[0].hucID + ')')) || '';
+        const comment = (state.isBatchSelect ? 'Add comments to all selected HUCs' : state.data[0].comment) || '';
         // const statusIdx = +data.status || 0;
         // const message = data.isHucInModeledRange ? `Model is inaccurate, <span class='avenir-demi'>REMOVE</span> this HUC from range` : `Known occurances, <span class='avenir-demi'>ADD</span> this HUC to range`;
 
@@ -89,7 +93,7 @@ export default function FeedbackControlPanel(){
 
                 <div class='leader-half trailer-half'>
                     <span class='font-size-0'>${hucName}</span><br>
-                    <span class='font-size--3'><em>(${hucID})</em></span>
+                    <span class='font-size--3'><em>${hucID}</em></span>
                     <hr>
                 </div>
 
@@ -105,7 +109,7 @@ export default function FeedbackControlPanel(){
                 </div>
 
                 <div class='trailer-half'>
-                    ${getHtmlForBtns(state.data.isSaved)}
+                    ${getHtmlForBtns(state.data[0].isSaved)}
                 </div>
             </div>
         `;
@@ -127,7 +131,7 @@ export default function FeedbackControlPanel(){
     // }
 
     const getHtmlForActions = ()=>{
-
+        console.log('gettting html for actions', getNewStatus());
         const status = getNewStatus();
 
         // const isChecked = state.isSumbitCommentOnly ? '' : 'is-checked';
@@ -246,6 +250,7 @@ export default function FeedbackControlPanel(){
     };
 
     const open = (data={})=>{
+        console.log('open feedback',data);
         initState(data);
         render();
     };

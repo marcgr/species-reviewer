@@ -82,7 +82,17 @@ const MapControl = function (options = {}) {
         ]) => {
             const layerlist = new LayerList({
                 container: config.DOM_ID.layerListDiv,
-                view: mapView
+                view: mapView,
+                listItemCreatedFunction: function (event) {
+                    const item = event.item;
+                    if (item.layer.type != "group") {
+                        // don't show legend twice
+                        item.panel = {
+                            content: "legend",
+                            open: false
+                        };
+                    }
+                }
             });
         }).catch(err => {
             console.error(err);
@@ -211,12 +221,13 @@ const MapControl = function (options = {}) {
 
     const initMapEventHandlers = () => {
         mapView.on('click', event => {
-            console.log('map view on hold', event, this.isInDrawMode);
+            console.log('map view on hold', event, isInDrawMode);
 
             // if(!isOnHoldEventDisabled){
             //     queryHucsLayerByMouseEvent(event);
             // }
-            if (!this.isInDrawMode || this.isInBatchSelectMode) {
+            if (!isInDrawMode || isInBatchSelectMode) {
+                console.log('clicked again???????',isInDrawMode,isInDrawMode);
                 //mapView.graphics.removeAll();
                 let mapPt = mapView.toMap(event)
                 queryHucsLayerByMouseEvent(mapPt)
@@ -228,12 +239,12 @@ const MapControl = function (options = {}) {
         });
 
         mapView.on('key-down', event => {
-            console.log('key down event',event, this.isInBatchSelectMode);
-            this.isInBatchSelectMode = event.key === 'Control';
+            isInBatchSelectMode = event.key === 'Control';
+            console.log('key down event is in batch select mode?', isInBatchSelectMode);
         });
 
         mapView.on('key-up', event => {
-            this.isInBatchSelectMode = false;
+            isInBatchSelectMode = false;
         });
     };
 
@@ -274,6 +285,20 @@ const MapControl = function (options = {}) {
         });
     }
 
+    const initLegend = (view) => {
+        esriLoader.loadModules(["esri/widgets/Legend", "esri/widgets/Expand"], esriLoaderOptions).then(([
+            Legend, Expand
+        ]) => {
+            const legend = new Expand({
+                content: new Legend({
+                view: view
+            }),
+            view: view,
+            expanded:false});
+            view.ui.add(legend, "bottom-left");
+        });
+    }
+
     const initBatchSelectTools = (view) => {
         esriLoader.loadModules([
                 "esri/views/draw/Draw",
@@ -282,13 +307,15 @@ const MapControl = function (options = {}) {
             ], esriLoaderOptions)
             .then(([Draw, Graphic, Polyline]) => {
                 view.ui.add("line-button", "top-left");
+                //view.ui.add("esri-icon-polyline",)
 
                 const draw = new Draw({
                     view: view
                 });
 
                 document.getElementById("line-button").onclick = () => {
-                    this.isInDrawMode = true;
+                    console.log('line-button clicked', isInDrawMode);
+                    isInDrawMode = true;
                     let thisScope = this;
                     view.graphics.removeAll();
 
@@ -311,8 +338,7 @@ const MapControl = function (options = {}) {
                             createGraphic(event);
                         }
                         if (event.type === "draw-complete") {
-                            thisScope.isInDrawMode = false;
-                            console.log('drawing Complete!', event);
+                            console.log('drawing Complete! Is in drawmode?  getState?', isInDrawMode, getSelectState());
                             var polyline = new Polyline({
                                 paths: event.vertices,
                                 spatialReference: view.spatialReference
@@ -320,6 +346,7 @@ const MapControl = function (options = {}) {
                             queryHucsLayerByMouseEvent(polyline)
                                 .then(queryHucsLayerByMouseEventOnSuccessHandler)
                                 .then(view.graphics.removeAll())
+                                .then(window.setTimeout(()=>{isInDrawMode = false},500))
                                 .catch(err => {
                                     console.log(err);
                                 });
@@ -368,8 +395,9 @@ const MapControl = function (options = {}) {
 
         esriLoader.loadModules([
             "esri/widgets/Search",
+            "esri/widgets/Expand"
         ], esriLoaderOptions).then(([
-            Search
+            Search, Expand
         ]) => {
             const searchWidget = new Search({
                 view,
@@ -392,6 +420,8 @@ const MapControl = function (options = {}) {
         initBasemapGallery(mapView);
 
         initHomeButton(mapView);
+
+        //initLegend(mapView);
 
         initBatchSelectTools(mapView);
 
@@ -460,7 +490,8 @@ const MapControl = function (options = {}) {
     };
 
     const getSelectState = () =>{
-        return this.isInBatchSelectMode || this.isInDrawMode;
+        console.log('get select state', isInBatchSelectMode, isInDrawMode)
+        return isInBatchSelectMode || isInDrawMode;
     }
 
     // const setHucsLayer = (webmap)=>{
@@ -477,11 +508,12 @@ const MapControl = function (options = {}) {
     // };
 
     const queryHucsLayerByMouseEventOnSuccessHandler = (features) => {
+        let intialSelectState = getSelectState();
         features.forEach(feature => {
             addPreviewHucGraphic(feature);
 
             if (hucFeatureOnSelectHandler) {
-                hucFeatureOnSelectHandler(feature);
+                hucFeatureOnSelectHandler(feature, intialSelectState);
             }
         });
     };
@@ -490,7 +522,8 @@ const MapControl = function (options = {}) {
         attributes: null,
         popupTemplate: null
     }) => {
-        if (this.isInBatchSelectMode){
+        console.log('KKKKKKKKKKKKKKKKK',hucID,status,options,isInBatchSelectMode);
+        if (!isInBatchSelectMode){
             removeHucGraphicByStatus(hucID);
         }
 
@@ -587,8 +620,8 @@ const MapControl = function (options = {}) {
 
     const addPreviewHucGraphic = (feature) => {
         // const attributes = feature.attributes;
-        console.log('addPreviewHucGraphic',feature, this.isInBatchSelectMode);
-        if (!this.isInBatchSelectMode){
+        console.log('addPreviewHucGraphic',feature, isInBatchSelectMode);
+        if (!isInBatchSelectMode){
             cleanPreviewHucGraphic();
         }
 

@@ -44,8 +44,9 @@ export default function(options={}){
     };
 
     const submit = ()=>{
-
         const feedbackData =  feedbackDataModel.getFeedbackData();
+
+        console.log('submit feedback data', feedbackData);
 
         save(feedbackData);
 
@@ -55,54 +56,95 @@ export default function(options={}){
     };
 
     const save = (feedbackData)=>{
-        const hucID = feedbackData.hucID;
-        const species = feedbackData.species;
+        console.log('save feedback data', feedbackData);
+        let _feedbackData = feedbackData.hucsBySpecies ? feedbackData.hucsBySpecies : [feedbackData];
+        _feedbackData.forEach(huc => {
+            console.log('saving species for huc',huc);
+            const hucID = huc.hucID;
+            const species = huc.species;
 
-        if(!feedbackDataStore[species]){
-            feedbackDataStore[species] = {};
-        }
+            if (!feedbackDataStore[species]) {
+                feedbackDataStore[species] = {};
+            }
 
-        feedbackDataStore[species][hucID] = JSON.parse(JSON.stringify(feedbackData));
+            feedbackDataStore[species][hucID] = JSON.parse(JSON.stringify(huc));
+        });
+
 
         // console.log(feedbackDataStore);
     };
 
     const remove = ()=>{
+
         const feedbackData =  feedbackDataModel.getFeedbackData();
+        console.log('remove feedback data', feedbackData);
+        let _feedbackData = feedbackData.hucsBySpecies ? feedbackData.hucsBySpecies : [feedbackData];
+        _feedbackData.forEach(huc => {
+            removeFromDataStore(huc.species, huc.hucID);
 
-        removeFromDataStore(feedbackData.species, feedbackData.hucID);
+            // console.log('remove feedback', feedbackData);
 
-        // console.log('remove feedback', feedbackData);
-
-        if(eventHandlers['onRemove']){
-            eventHandlers['onRemove'](feedbackData);
-        }
+            if (eventHandlers['onRemove']) {
+                eventHandlers['onRemove'](huc);
+            }
+        });
     };
 
     const removeFromDataStore = (species, hucID)=>{
+        console.log('removeFromDataStore', species, hucID, feedbackDataStore[species][hucID]);
         if(feedbackDataStore[species][hucID]){
+            console.log('before delete', feedbackDataStore);
             delete feedbackDataStore[species][hucID];
+             console.log('after delete', feedbackDataStore);
         }
     };
 
     const getSavedItemFromDataStore = (data)=>{
-        const hucID = data.hucID;
-        const species = data.species;
-        const hucName = data.hucName;
+        console.log('XXXXXXXXXXXXXXXXXXXXX',data);
+        let dataWithSavedDataFromDataStore = [];
+        if (data.hucsBySpecies) {
+            data.hucsBySpecies.forEach(huc => {
+                console.log('YYYYYYYYYY', huc);
+                const savedItem = typeof feedbackDataStore[huc.species] !== 'undefined' &&
+                    typeof feedbackDataStore[huc.species][huc.hucID] !== 'undefined' ?
+                    feedbackDataStore[huc.species][huc.hucID] :
+                    null;
 
-        // console.log('get Saved Item From DataStore', species, hucID, feedbackDataStore[species]);
-        const savedItem = typeof feedbackDataStore[species] !== 'undefined' && typeof feedbackDataStore[species][hucID] !== 'undefined' ? feedbackDataStore[species][hucID] : null;
-
-        if(savedItem && typeof savedItem.hucName === 'undefined' && hucName){
-            savedItem.hucName = hucName;
+                // if (savedItem && typeof savedItem.hucName === 'undefined' && huc.hucName) {
+                //     savedItem.hucName = hucName;
+                // }
+                console.log('saved item?', savedItem, feedbackDataStore[huc.species][huc.hucID]);
+                if (savedItem) {
+                    huc.isSaved = true;
+                    huc.status = savedItem.status;
+                    huc.comment = savedItem.comment;
+                    //savedItem.isHucInModeledRange = data.isHucInModeledRange;
+                }
+                dataWithSavedDataFromDataStore.push(huc);
+            });
         }
+        data.hucsBySpecies = dataWithSavedDataFromDataStore;
+        console.log('data with saved data attached if available', data);
 
-        if(savedItem){
-            savedItem.isSaved = true;
-            savedItem.isHucInModeledRange = data.isHucInModeledRange;
-        }
+        //return data;
+        // const hucID = data.hucID;
+        // const species = data.species;
+        // const hucName = data.hucName;
 
-        return savedItem;
+        // // console.log('get Saved Item From DataStore', species, hucID, feedbackDataStore[species]);
+        // const savedItem = typeof feedbackDataStore[species] !== 'undefined' && typeof feedbackDataStore[species][hucID] !== 'undefined' ? feedbackDataStore[species][hucID] : null;
+
+        // if(savedItem && typeof savedItem.hucName === 'undefined' && hucName){
+        //     savedItem.hucName = hucName;
+        // }
+
+        // if(savedItem){
+        //     savedItem.isSaved = true;
+        //     savedItem.isHucInModeledRange = data.isHucInModeledRange;
+        // }
+
+        //return savedItem;
+        return data;
     };
 
     const batchAddToDataStore = (data)=>{

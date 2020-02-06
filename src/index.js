@@ -221,6 +221,10 @@ const initApp = async (oauthManager)=>{
         hucFeatureOnSelectHandler: (hucFeature, selectState)=>{
             console.log('PEE selected hucFeature', mapControl.getSelectState());
             controller.setSelectedHucFeature(hucFeature, selectState);
+        },
+        zoomToHucFeatureHandler: (hucFeature)=>{
+            console.log('zoom to huc feature', hucFeature)
+            controller.zoomToHucFeature(hucFeature);
         }
     });
 

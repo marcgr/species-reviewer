@@ -237,6 +237,7 @@ export default function View(){
     };
 
     const openListViewForOverallFeedback = (data)=>{
+        console.log('opening list view for overall feeedback');
         listViewForOverallFeedback.toggleVisibility(true);
         listViewForOverallFeedback.render(data);
 
@@ -244,6 +245,7 @@ export default function View(){
     }
 
     const openListViewForDetailedFeedback = (data)=>{
+        console.log('opening list view for detailed feeedback');
         listViewForOverallFeedback.toggleVisibility(false);
         listViewForDetailedFeedback.toggleVisibility(true);
         listViewForDetailedFeedback.render(data);

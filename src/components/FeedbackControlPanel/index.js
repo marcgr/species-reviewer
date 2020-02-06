@@ -78,8 +78,13 @@ export default function FeedbackControlPanel(){
 
     const render = ()=>{
         console.log('Rendering the feedback control', state);
-        const hucName = (state.isBatchSelect ? 'Multiple HUCs selected' :  state.data[0].hucName) || '';
-        const hucID =  (state.isBatchSelect ? '' : ('('+ state.data[0].hucID + ')')) || '';
+        let multiHucList = '<ul>';
+        state.data.forEach(huc => {
+            multiHucList += '<li>' + huc.hucName + ' ('+huc.hucID+')</li>';
+        });
+        multiHucList += '</ul>';
+                const hucName = (state.isBatchSelect ? 'Multiple HUCs selected' :  state.data[0].hucName) || '';
+        const hucID =  (state.isBatchSelect ? multiHucList : ('('+ state.data[0].hucID + ')')) || '';
         const comment = (state.isBatchSelect ? 'Add comments to all selected HUCs' : state.data[0].comment) || '';
         // const statusIdx = +data.status || 0;
         // const message = data.isHucInModeledRange ? `Model is inaccurate, <span class='avenir-demi'>REMOVE</span> this HUC from range` : `Known occurances, <span class='avenir-demi'>ADD</span> this HUC to range`;

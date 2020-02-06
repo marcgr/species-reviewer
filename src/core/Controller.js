@@ -366,7 +366,7 @@ export default function Controller(props={}){
     };
 
     const getFeedbacksByHucForReviewMode = async(hucFeature)=>{
-
+        console.log('getFeedbacksBYHucForReviewMode  gggggggggggggggggggg',hucFeature.attributes,config.FIELD_NAME.hucLayerHucID);
         const hucID = hucFeature.attributes[config.FIELD_NAME.hucLayerHucID];
         const hucName = hucFeature.attributes[config.FIELD_NAME.hucLayerHucName];
 
@@ -462,7 +462,7 @@ export default function Controller(props={}){
 
     const getHucsWithFeedbacksForReviewMode = async()=>{
         const species = dataModel.getSelectedSpecies();
-
+        console.log('get hucs with feedback review mode', species, dataModelForReviewMode.getHucsWithFeedbacks(species));
         if(dataModelForReviewMode.getHucsWithFeedbacks(species)){
             renderListOfHucsWithFeedbacks();
         } else {
@@ -474,6 +474,8 @@ export default function Controller(props={}){
                     outFields: `${config.FIELD_NAME.feedbackTable.hucID}, ${config.FIELD_NAME.feedbackTable.status}`,
                     returnDistinctValues: true
                 });
+
+                console.log('hucs for feedback in review mode', feedbacks);
 
                 dataModelForReviewMode.setHucsWithFeedbacks(species, feedbacks);
 
@@ -555,7 +557,7 @@ export default function Controller(props={}){
 
         } else {
             console.log('query feedbacks for selected huc', hucID);
-            controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeatures);
+            controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeature);
         }
     };
 

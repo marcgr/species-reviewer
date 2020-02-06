@@ -56,10 +56,10 @@ export default function(options={}){
     };
 
     const save = (feedbackData)=>{
-        console.log('save feedback data', feedbackData);
+        //console.log('save feedback data', feedbackData);
         let _feedbackData = feedbackData.hucsBySpecies ? feedbackData.hucsBySpecies : [feedbackData];
         _feedbackData.forEach(huc => {
-            console.log('saving species for huc',huc);
+            //console.log('saving species for huc',huc);
             const hucID = huc.hucID;
             const species = huc.species;
 

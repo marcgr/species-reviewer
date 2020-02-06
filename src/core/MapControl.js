@@ -33,6 +33,7 @@ const MapControl = function (options = {}) {
     let isInBatchSelectMode = false;
     // let actualModelBoundaryLayer = null;
     let hucFeatureOnSelectHandler = null;
+    let zoomToHucFeatureHandler = null;
     // let isOnHoldEventDisabled = false;
 
     const init = (options = {}) => {
@@ -42,6 +43,8 @@ const MapControl = function (options = {}) {
         }
 
         hucFeatureOnSelectHandler = options.hucFeatureOnSelectHandler || null;
+
+        zoomToHucFeatureHandler = options.zoomToHucFeatureHandler || null;
 
         initMapView();
     };
@@ -795,6 +798,10 @@ const MapControl = function (options = {}) {
         });
     };
 
+    const zoomToHucFeature = (hucID='') => {
+
+    }
+
     const setLayersOpacity = (val) => {
         mapView.map.layers.forEach(layer => {
             // console.log(layer);
@@ -816,7 +823,8 @@ const MapControl = function (options = {}) {
         clearMapGraphics,
         addPreviewHucByID,
         showPredictedHabitatLayers,
-        getSelectState
+        getSelectState,
+        zoomToHucFeature
     };
 
 };

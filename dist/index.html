@@ -5,10 +5,10 @@
         <meta name="viewport" content="width=device-width, user-scalable=no">
         <meta name="keywords" content="">
         <meta name='description' content='' />
-        <meta name="author" content="Living Atlas of the World">
+        <meta name="author" content="Oregon Explorer based on applicatino by Living Atlas of the World">
         <title>Species Reviewer</title>
-        <link rel="icon" href="//www.esri.com/favicon.ico">
-    <link href="main.ef81ad71a84495365b81.css" rel="stylesheet"></head>
+        <link rel="icon" href="//oregonexplorer.info/favicon.ico">
+    <link href="main.d5d77380d50ad269dbfb.css" rel="stylesheet"></head>
     <body class=''>
 
         <div id='agreementDiv'>
@@ -43,7 +43,15 @@
 
             <div id='settingsDiv'>
                 <div class='text-right js-toggle-ui-component' data-target='settingControls'>
-                    <span class='icon-ui-settings cursor-pointer text-light-gray icon-no-right-padding'></span>
+                    <div>
+                <div>Batch Selected</div>
+                <div id="esri-icon-polyline"></div>
+                    </div>
+                    <div>
+                        <span>Search / Add Layers</span>
+                        <span
+                            class='icon-ui-settings cursor-pointer text-light-gray icon-no-right-padding'></span>
+                    </div>
                 </div>
                 <div id='settingControls' class='hide'>
                     <div class='setting-control-item'>
@@ -72,14 +80,14 @@
                 </div>
             </div>
 
-            <div id='legendDiv2'></div>
+            <div id='legendDiv'></div>
 
             <div id='listViewForOverallFeedbackDiv'></div>
             <div id='listViewForDetailedFeedbackDiv'></div>
             <div id='listViewForFeedbacksByHucDiv'></div>
 
             <div id='openOverallFeedbackBtnDiv' class='leader-1'>
-                <btn id='openOverallFeedbackBtn' class='btn btn-fill js-open-overall-feedback'>Overall Feedbacks</btn>
+                <btn id='openOverallFeedbackBtn' class='btn btn-fill js-open-overall-feedback'>Overall Feedback</btn>
             </div>
         </div>
 
@@ -87,17 +95,11 @@
 
         <div id='overallFeedbackDiv' class='hide'></div>
 
-        <!-- <div id='basemapGalleryControl' class=''>
-            <div id='basemapGalleryControlHeader'>
-                <span class='avenir-demi margin-left-half fonr-size--2'>Basemap Gallery</span>
-                <div class='inline-block right js-toggle-basemap-gallery cursor-pointer'>
-                    <span class='icon-ui-plus'></span>
-                    <span class='icon-ui-minus'></span>
-                </div>
+        <div id='viewDiv' class="hide">
+            <div id="line-button" class="esri-widget esri-widget--button
+                    esri-interactive" title="Draw polyline">
+                <span class="esri-icon-polyline"></span>
             </div>
-            <div id='basemapGalleryDiv'></div>
-        </div> -->
-
-        <div id='viewDiv' class="hide"></div>
-    <script type="text/javascript" src="bundle.ef81ad71a84495365b81.js"></script></body>
+        </div>
+    <script type="text/javascript" src="bundle.d5d77380d50ad269dbfb.js"></script></body>
 </html>

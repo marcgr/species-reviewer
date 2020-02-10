@@ -44,6 +44,8 @@ export default function ApiManager(props={}){
             return `${config.FIELD_NAME.speciesLookup.speciesCode} = '${d}'`;
         }).join(' OR ');
 
+        console.log('where clause for species lookup', whereClause,options.speciesCode)
+
         return new Promise((resolve, reject)=>{
 
             const bodyFormData = new FormData();
@@ -145,7 +147,7 @@ export default function ApiManager(props={}){
                     token: props.oauthManager.getToken()
                 }
             }).then(function (response) {
-                // console.log(response);
+                console.log('status table response?', response);
 
                 if(response.data && response.data.features && response.data.features.length){
                     // console.log(response.data.features);

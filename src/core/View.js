@@ -57,6 +57,7 @@ export default function View(){
         // show mainControlDiv when init view
         document.getElementById('mainControlDiv').classList.remove('hide');
         document.getElementById('viewDiv').classList.remove('hide');
+        //document.getElementById('helpPanelDiv').classList.remove('hide');
 
         initEventHandlers();
     };

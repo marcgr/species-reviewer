@@ -20,7 +20,10 @@ import CsvLoader from './core/CsvLoader';
     });
 })();
 
+const isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
+
 const initApp = async (oauthManager)=>{
+
 
     if(!oauthManager){
         console.error('oauth manager is required to init the app...');
@@ -33,11 +36,13 @@ const initApp = async (oauthManager)=>{
         portalUrl: config.portalUrl,
         webMapID: config.webMapID,
         mapViewContainerID: config.DOM_ID.mapViewContainer,
+        isReviewMode: isReviewMode
     });
 
     const controller = new Controller({
 
         oauthManager,
+        isReviewMode,
 
         speciesDataOnReady:(data)=>{
             // console.log('speciesDataOnReady', data);
@@ -77,6 +82,7 @@ const initApp = async (oauthManager)=>{
         onReviewMode:()=>{
             view.switchToReviewModeView();
             view.initViewComponentsForReviewMode();
+            document.getElementById('multiHucHelp').classList.add('hide');
         },
         overallFeedbackForReviewModeOnReady: (data=null)=>{
             view.openListView(view.listViewForOverallFeedback, data);
@@ -132,6 +138,7 @@ const initApp = async (oauthManager)=>{
             // console.log(val);
             console.log('view.speicesSelector on Change?', val);
             controller.setSelectedSpecies(val);
+            document.getElementById('selectHUCHelp').classList.remove('hide');
         }
     });
 
@@ -218,9 +225,9 @@ const initApp = async (oauthManager)=>{
     });
 
     mapControl.init({
-        hucFeatureOnSelectHandler: (hucFeature, selectState)=>{
+        hucFeatureOnSelectHandler: (hucFeature, selectState, select)=>{
             console.log('PEE selected hucFeature', mapControl.getSelectState());
-            controller.setSelectedHucFeature(hucFeature, selectState);
+            controller.setSelectedHucFeature(hucFeature, selectState, select);
         },
         zoomToHucFeatureHandler: (hucFeature)=>{
             console.log('zoom to huc feature', hucFeature)

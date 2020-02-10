@@ -23,7 +23,7 @@ export default function Controller(props={}){
         selectedHucFeature: null,
         selectedHucFeatures: []
     };
-    const isReviewMode = window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
+    const isReviewMode = props.isReviewMode;//window.location.search.indexOf('reviewMode=true') !== -1 ? true : false;
 
     const init = async ()=>{
         // console.log('init app controller');
@@ -39,15 +39,19 @@ export default function Controller(props={}){
             const portalUser = oauthManager.getPoralUser();
 
             const speciesByUsers = await apiManager.querySpeciesByUser({email: portalUser.email});
+            console.log('USER SPECIES DATA', speciesByUsers);
 
             const speciesData = oauthManager.getPoralUser().username === 'oe_gis'
             ? await apiManager.queryAllFeaturesFromSpeciesLookupTable()
             : await apiManager.querySpeciesLookupTable({
                 speciesCode: getDistinctSpeciesCodeToReview(speciesByUsers)
             });
-            console.log(speciesData);
+            console.log('USER SPECIES DATA', speciesData);
 
             const statusData = await apiManager.queryStatusTable();
+
+            console.log('Status Data?', statusData);
+
             initStatusTable(statusData);
 
             initFeedbackManager();
@@ -538,27 +542,40 @@ export default function Controller(props={}){
         }
     };
 
-    const setSelectedHucFeature = (feature=null, select=null)=>{
+    const setSelectedHucFeature = (feature=null, selectState=null, select=true )=>{
         console.log('FFFFFFFF', select);
-        if (!select) {
+        if (!selectState) {
             resetSelectedHucFeature();
         }
-        state.selectedHucFeature = feature;
-        state.selectedHucFeatures.push(feature);
+        if (select){
+            state.selectedHucFeature = feature;
+            state.selectedHucFeatures.push(feature);
 
-        const hucID = state.selectedHucFeature.attributes[config.FIELD_NAME.hucLayerHucID];
+            const hucID = state.selectedHucFeature.attributes[config.FIELD_NAME.hucLayerHucID];
 
-        if(!isReviewMode){
+            if (!isReviewMode) {
 
-            dataModel.setSelectedHucs(hucID);
+                dataModel.setSelectedHucs(hucID);
 
-            // console.log(selectedHucFeature);
-            openFeedbackManager();
+                // console.log(selectedHucFeature);
+                openFeedbackManager();
 
+            } else {
+                console.log('query feedbacks for selected huc', hucID);
+                controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeature);
+            }
         } else {
-            console.log('query feedbacks for selected huc', hucID);
-            controllerProps.hucFeatureOnSelectForReviewMode(state.selectedHucFeature);
+            if (state.selectedHucFeatures.length >1){
+                //remove huc
+                let newSelection = state.selectedHucFeatures.filter(f =>
+                    f.attributes[config.FIELD_NAME.hucLayerHucID] !== feature.attributes[config.FIELD_NAME.hucLayerHucID]);
+                state.selectedHucFeatures = newSelection;
+                openFeedbackManager();
+            } else {
+                resetSelectedHucFeature();
+            }
         }
+
     };
 
     const resetSelectedHucFeature = ()=>{

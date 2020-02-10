@@ -100,11 +100,11 @@ export default function(options={}){
     };
 
     const getSavedItemFromDataStore = (data)=>{
-        console.log('XXXXXXXXXXXXXXXXXXXXX',data);
+        //console.log('XXXXXXXXXXXXXXXXXXXXX',data);
         let dataWithSavedDataFromDataStore = [];
         if (data.hucsBySpecies) {
             data.hucsBySpecies.forEach(huc => {
-                console.log('YYYYYYYYYY', huc);
+                //console.log('YYYYYYYYYY', huc);
                 const savedItem = typeof feedbackDataStore[huc.species] !== 'undefined' &&
                     typeof feedbackDataStore[huc.species][huc.hucID] !== 'undefined' ?
                     feedbackDataStore[huc.species][huc.hucID] :
@@ -113,7 +113,7 @@ export default function(options={}){
                 // if (savedItem && typeof savedItem.hucName === 'undefined' && huc.hucName) {
                 //     savedItem.hucName = hucName;
                 // }
-                console.log('saved item?', savedItem, feedbackDataStore[huc.species][huc.hucID]);
+               // console.log('saved item?', savedItem, feedbackDataStore[huc.species][huc.hucID]);
                 if (savedItem) {
                     huc.isSaved = true;
                     huc.status = savedItem.status;
@@ -124,7 +124,7 @@ export default function(options={}){
             });
         }
         data.hucsBySpecies = dataWithSavedDataFromDataStore;
-        console.log('data with saved data attached if available', data);
+        //console.log('data with saved data attached if available', data);
 
         //return data;
         // const hucID = data.hucID;
@@ -158,7 +158,7 @@ export default function(options={}){
     };
 
     const getFeedbackDataBySpecies = (species)=>{
-        console.log('getFeedbackDataBySpecies', species);
+        //console.log('getFeedbackDataBySpecies', species);
         return feedbackDataStore[species];
     };
 

@@ -5,7 +5,7 @@ export default function(options={
     onClickHandler: null
 }){
     const container = options.containerID ? document.getElementById(options.containerID) : null;
-    
+
     const init = (options={
         onClickHandler: null
     })=>{
@@ -32,7 +32,7 @@ export default function(options={
     };
 
     const getRatingStarHtml = (rating)=>{
-        
+
         const arrOfRatingStarHtml = [];
 
         for(let i = 0, len = 5; i < len ; i++){
@@ -49,8 +49,9 @@ export default function(options={
 
         const headerHtml = `<h6>Overall Feedback from all users</h6>`
 
-        const listViewCardsHtml = data.length ? 
+        const listViewCardsHtml = data.length ?
         data.map(d=>{
+            console.log('overall feedback',d);
             const user = d.attributes[config.FIELD_NAME.overallFeedback.userID];
             const rating = d.attributes[config.FIELD_NAME.overallFeedback.rating];
             const comment = d.attributes[config.FIELD_NAME.overallFeedback.comment];
@@ -65,7 +66,7 @@ export default function(options={
                     </div>
                 </div>
             `
-        }).join('') : 
+        }).join('') :
         `<p class='font-size--2'>No overall feedback for selected species</p>`
 
         const componentHtml = `
@@ -80,7 +81,7 @@ export default function(options={
 
     const toggleVisibility = (isVisible)=>{
         container.classList.toggle('hide', !isVisible);
-    }; 
+    };
 
     return {
         init,

@@ -11,6 +11,7 @@ const esriLoaderOptions = {
     url: 'https://js.arcgis.com/4.14' //actual set in oauthmanager where esriloader first called
 };
 
+
 // esriLoader.loadModules([
 //     "esri/layers/FeatureLayer",
 // ], esriLoaderOptions).then(([
@@ -24,6 +25,7 @@ const MapControl = function (options = {}) {
     const webMapID = options.webMapID || null;
     const mapViewContainerID = options.mapViewContainerID || null;
     const portalUrl = options.portalUrl || null;
+    const isReviewMode = options.isReviewMode || false;
 
     let mapView = null;
     let hucsLayer = null;
@@ -34,7 +36,9 @@ const MapControl = function (options = {}) {
     // let actualModelBoundaryLayer = null;
     let hucFeatureOnSelectHandler = null;
     let zoomToHucFeatureHandler = null;
-    // let isOnHoldEventDisabled = false;
+    let isOnHoldEventDisabled = false;
+    let draw;
+
 
     const init = (options = {}) => {
         if (!webMapID || !mapViewContainerID) {
@@ -163,11 +167,20 @@ const MapControl = function (options = {}) {
                 visible: false
             });
 
+            // USA_Wetlands
+            const hucLayerMapImage = new MapImageLayer({
+                url: config.URL.WatershedBoundaryDataset_HUC12.replace("FeatureServer/3", "MapServer"),
+                title: 'Oregon HUCs',
+                opacity: defaultOpacity,
+                visible: true
+            });
+
             // mapView.map.addMany([usaProtectedAreas, nlcdLandCover, forestType, wetLand]);
             mapView.map.add(usaProtectedAreas, 0);
             mapView.map.add(nlcdLandCover, 0);
             mapView.map.add(forestType, 0);
             mapView.map.add(wetLand, 0);
+            //mapView.map.add(hucLayerMapImage, 0);
         }).catch(err => {
             console.error(err);
         })
@@ -175,15 +188,16 @@ const MapControl = function (options = {}) {
 
     const initHucLayer = (mapView) => {
         esriLoader.loadModules([
-            "esri/layers/FeatureLayer",
+            "esri/layers/FeatureLayer"
         ], esriLoaderOptions).then(([
             FeatureLayer
         ]) => {
 
             hucsLayer = new FeatureLayer({
                 url: config.URL.WatershedBoundaryDataset_HUC12,
-                opacity: .9,
+                opacity: .7,
                 listMode: 'hide',
+                title: 'Oregon 12 Digit HUCs',
                 renderer: {
                     type: "simple", // autocasts as new SimpleRenderer()
                     symbol: {
@@ -211,10 +225,12 @@ const MapControl = function (options = {}) {
         ]) => {
             hucsByStatusGraphicLayer = new GraphicsLayer({
                 opacity: .6,
-                listMode: 'hide'
+                listMode: 'hide',
+                title: 'Species Status By HUC'
             });
 
             hucPreviewGraphicLayer = new GraphicsLayer({
+                opacity: .6,
                 listMode: 'hide'
             });
 
@@ -226,23 +242,28 @@ const MapControl = function (options = {}) {
         mapView.on('click', event => {
             console.log('map view on hold', event, isInDrawMode);
 
-            // if(!isOnHoldEventDisabled){
-            //     queryHucsLayerByMouseEvent(event);
-            // }
-            if (!isInDrawMode || isInBatchSelectMode) {
-                console.log('clicked again???????',isInDrawMode,isInDrawMode);
-                //mapView.graphics.removeAll();
-                let mapPt = mapView.toMap(event)
-                queryHucsLayerByMouseEvent(mapPt)
-                    .then(queryHucsLayerByMouseEventOnSuccessHandler)
-                    .catch(err => {
-                        console.log(err);
-                    });
+            if (isOnHoldEventDisabled) {
+                if (!isInDrawMode || isInBatchSelectMode) {
+                    console.log('clicked again???????', isInDrawMode, isInDrawMode);
+                    //mapView.graphics.removeAll();
+                    let mapPt = mapView.toMap(event)
+                    queryHucsLayerByMouseEvent(mapPt)
+                        .then(queryHucsLayerByMouseEventOnSuccessHandler)
+                        .catch(err => {
+                            console.log(err);
+                        });
+                }
+            }
+        });
+
+        mapView.on('pointer-up', event => {
+            if (isInDrawMode) {
+                draw.complete();
             }
         });
 
         mapView.on('key-down', event => {
-            isInBatchSelectMode = event.key === 'Control';
+            isInBatchSelectMode = event.key === 'Control' && !isReviewMode;
             console.log('key down event is in batch select mode?', isInBatchSelectMode);
         });
 
@@ -251,9 +272,13 @@ const MapControl = function (options = {}) {
         });
     };
 
-    // const disableMapOnHoldEvent = ()=>{
-    //     isOnHoldEventDisabled = true;
-    // };
+    const disableMapOnHoldEvent = ()=>{
+        isOnHoldEventDisabled = true;
+        if (!isReviewMode) {
+            document.getElementById('line-button').classList.remove('hide');
+            initBatchSelectTools(mapView);
+        }
+    };
 
     const initBasemapGallery = (view) => {
 
@@ -294,10 +319,11 @@ const MapControl = function (options = {}) {
         ]) => {
             const legend = new Expand({
                 content: new Legend({
-                view: view
-            }),
-            view: view,
-            expanded:false});
+                    view: view
+                }),
+                view: view,
+                expanded: false
+            });
             view.ui.add(legend, "bottom-left");
         });
     }
@@ -311,13 +337,12 @@ const MapControl = function (options = {}) {
             .then(([Draw, Graphic, Polyline]) => {
                 view.ui.add("line-button", "top-left");
                 //view.ui.add("esri-icon-polyline",)
-
-                const draw = new Draw({
+                draw = new Draw({
                     view: view
                 });
 
                 document.getElementById("line-button").onclick = () => {
-                    console.log('line-button clicked', isInDrawMode);
+                    //console.log('line-button clicked', isInDrawMode);
                     isInDrawMode = true;
                     let thisScope = this;
                     view.graphics.removeAll();
@@ -341,7 +366,7 @@ const MapControl = function (options = {}) {
                             createGraphic(event);
                         }
                         if (event.type === "draw-complete") {
-                            console.log('drawing Complete! Is in drawmode?  getState?', isInDrawMode, getSelectState());
+                            //console.log('drawing Complete! Is in drawmode?  getState?', isInDrawMode, getSelectState());
                             var polyline = new Polyline({
                                 paths: event.vertices,
                                 spatialReference: view.spatialReference
@@ -349,7 +374,9 @@ const MapControl = function (options = {}) {
                             queryHucsLayerByMouseEvent(polyline)
                                 .then(queryHucsLayerByMouseEventOnSuccessHandler)
                                 .then(view.graphics.removeAll())
-                                .then(window.setTimeout(()=>{isInDrawMode = false},500))
+                                .then(window.setTimeout(() => {
+                                    isInDrawMode = false
+                                }, 500))
                                 .catch(err => {
                                     console.log(err);
                                 });
@@ -416,6 +443,12 @@ const MapControl = function (options = {}) {
         })
     };
 
+    const initHelpPanel = (view) => {
+        let helpPanelDiv = document.getElementById('helpPanelDiv');
+        view.ui.add(helpPanelDiv, 'bottom-right');
+    }
+
+
     const mapViewOnReadyHandler = () => {
         // console.log('mapView is ready...');
         initMapEventHandlers();
@@ -425,8 +458,6 @@ const MapControl = function (options = {}) {
         initHomeButton(mapView);
 
         //initLegend(mapView);
-
-        initBatchSelectTools(mapView);
 
         initReferenceLayers(mapView);
 
@@ -440,7 +471,7 @@ const MapControl = function (options = {}) {
 
         initLayerList(mapView);
 
-
+        initHelpPanel(mapView);
         // setHucsLayer(mapView.map);
 
         // mapView.map.addMany([hucsByStatusGraphicLayer, hucPreviewGraphicLayer]);
@@ -492,7 +523,7 @@ const MapControl = function (options = {}) {
 
     };
 
-    const getSelectState = () =>{
+    const getSelectState = () => {
         console.log('get select state', isInBatchSelectMode, isInDrawMode)
         return isInBatchSelectMode || isInDrawMode;
     }
@@ -513,10 +544,16 @@ const MapControl = function (options = {}) {
     const queryHucsLayerByMouseEventOnSuccessHandler = (features) => {
         let intialSelectState = getSelectState();
         features.forEach(feature => {
-            addPreviewHucGraphic(feature);
-
+            console.log('adding/removing huc', feature, hucPreviewGraphicLayer);
+            //check if already in select, then deselect
+            let add = hucPreviewGraphicLayer.graphics.items.filter(g => g.attributes.huc12 === feature.attributes.huc12).length === 0;
+            if (add) {
+                addPreviewHucGraphic(feature);
+            } else {
+                removePreviewHucGraphic(feature);
+            }
             if (hucFeatureOnSelectHandler) {
-                hucFeatureOnSelectHandler(feature, intialSelectState);
+                hucFeatureOnSelectHandler(feature, intialSelectState, add);
             }
         });
     };
@@ -525,8 +562,9 @@ const MapControl = function (options = {}) {
         attributes: null,
         popupTemplate: null
     }) => {
-        console.log('KKKKKKKKKKKKKKKKK',hucID,status,options,isInBatchSelectMode);
-        if (!isInBatchSelectMode){
+        console.log('KKKKKKKKKKKKKKKKK', hucID, status, options, isInBatchSelectMode);
+        disableMapOnHoldEvent();
+        if (!isInBatchSelectMode) {
             removeHucGraphicByStatus(hucID);
         }
 
@@ -600,6 +638,7 @@ const MapControl = function (options = {}) {
             });
 
             hucsByStatusGraphicLayer.add(graphic);
+            hucsByStatusGraphicLayer.listMode = 'show';
 
         }).catch(err => {
             console.error(err);
@@ -623,8 +662,8 @@ const MapControl = function (options = {}) {
 
     const addPreviewHucGraphic = (feature) => {
         // const attributes = feature.attributes;
-        console.log('addPreviewHucGraphic',feature, isInBatchSelectMode);
-        if (!isInBatchSelectMode){
+        console.log('addPreviewHucGraphic', feature, isInBatchSelectMode);
+        if (!isInBatchSelectMode) {
             cleanPreviewHucGraphic();
         }
 
@@ -645,9 +684,18 @@ const MapControl = function (options = {}) {
             const graphicForSelectedHuc = new Graphic({
                 geometry: feature.geometry,
                 symbol: symbol,
+                attributes: feature.attributes
             });
 
             hucPreviewGraphicLayer.add(graphicForSelectedHuc);
+        });
+    };
+
+    const removePreviewHucGraphic = (feature) => {
+        hucPreviewGraphicLayer.graphics.forEach(g => {
+            if (g && g.attributes && g.attributes.huc12 === feature.attributes.huc12) {
+                hucPreviewGraphicLayer.remove(g);
+            }
         });
     };
 
@@ -665,6 +713,7 @@ const MapControl = function (options = {}) {
 
     const clearAllGraphics = () => {
         hucsByStatusGraphicLayer.removeAll();
+        hucsByStatusGraphicLayer.listMode = 'hide';
         cleanPreviewHucGraphic();
     };
 
@@ -678,6 +727,7 @@ const MapControl = function (options = {}) {
         //console.log('highlightingHucs!', data);
         clearAllGraphics();
         hucsLayer.renderer = getUniqueValueRenderer(data);
+        hucsLayer.listMode = 'show';
     };
 
     const getUniqueValueRenderer = (data) => {
@@ -798,7 +848,7 @@ const MapControl = function (options = {}) {
         });
     };
 
-    const zoomToHucFeature = (hucID='') => {
+    const zoomToHucFeature = (hucID = '') => {
 
     }
 
@@ -816,7 +866,7 @@ const MapControl = function (options = {}) {
         showHucFeatureByStatus,
         // addActualModelBoundaryLayer,
         clearAllGraphics,
-        // disableMapOnHoldEvent,
+        disableMapOnHoldEvent,
         queryHucsLayerByHucID,
         addPreviewHucGraphic,
         setLayersOpacity,

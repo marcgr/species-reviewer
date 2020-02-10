@@ -15,6 +15,7 @@ module.exports = {
         'statusType': 'statustype',
         'speciesLookup': {
             'speciesCode': 'element_global_id',
+            'speciesCuteCode': 'cutecode',
             'speciesName': 'scientific_name',
             'taxa': 'taxonomic_group',
             'boundaryLayerLink': 'boundarylayerlink',
@@ -36,13 +37,13 @@ module.exports = {
         'overallFeedback': {
             'userID': 'userid',
             'species': 'species',
-            'comment': 'comment',
+            'comment': 'comment_',
             'rating': 'rating',
             'retirementDate': 'retirementdate',
             'data_load_date': 'dataloaddate'
         },
         'speciesByUser': {
-            'speciesCode': 'cutecode',
+            'speciesCode': 'element_global_id',
             'email': 'Reviewer_email'
         },
         'pdfLookup': {
@@ -131,9 +132,9 @@ module.exports = {
 
     "COLOR": {
         "hucBorder": [255, 255, 255, 0.3],
-        "hucBorderIsModeled": [255, 255, 255, .5],
+        "hucBorderIsModeled": [255, 255, 102, .5],
         "hucBorderCommentWithoutAction": [239,35,60, 1],
-        "hucFill": [217, 217, 217, .4],
+        "hucFill": [217, 217, 102, .4],
         "status0": [200,200,200,.5],
         "status1": [166,219,160,.5],
         "status2": [194,165,207,.5],

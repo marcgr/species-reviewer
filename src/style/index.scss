@@ -58,17 +58,20 @@ html, body{
 }
 
 .legend-icon[data-index='0']{
-    background-color: rgba(255,255,255, 1);
+    background-color: rgba(255,255,102, .5);
+    border: solid 1px rgba(255,255,102,1);
 }
 
 .legend-icon[data-index='1']{
     background: url('../static/Hatch_BlackAlt.png') center center no-repeat;
     background-size: 90%;
+    border: solid 1px rgba(255, 255, 102, .5);
 }
 
 .legend-icon[data-index='2']{
     background: url('../static/Hatch_Red.png') center center no-repeat;
     background-size: 90%;
+    border: solid 1px rgba(255, 255, 102, .5);
 }
 
 .legend-icon[data-index='3']{
@@ -132,12 +135,13 @@ html, body{
 
     #settingControls {
         position: absolute;
-        top: 1.5rem;
+        top: .25rem;
         right: 0;
         width: 100%;
         // padding: .75rem;
-        background: rgba(0, 0, 0, .9);
+        background: rgba(100, 100, 100, 1);
         z-index: 10;
+        border-radius: 10px;
 
         .setting-control-item {
             padding: 1rem;
@@ -211,3 +215,17 @@ html, body{
 .icon-no-right-padding[class^="icon-ui-"]:before {
     padding-right: 0;
 }
+
+#mainControlDiv fieldset{
+    border:1px solid #999;
+    padding:10px;
+}
+
+.icon-ui-settings{
+    padding-left:25px;
+}
+
+#hucSelectHelp p{
+    margin-bottom:.5rem;
+}
+

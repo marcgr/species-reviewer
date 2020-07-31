@@ -43,6 +43,11 @@ html, body{
     width: $control-panel-width;
 }
 
+.leader-half.trailer-half{
+    max-height: 250px;
+    overflow: auto;
+}
+
 .legend-item {
     display:flex;
     align-items:center;

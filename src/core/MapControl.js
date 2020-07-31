@@ -36,7 +36,7 @@ const MapControl = function (options = {}) {
     // let actualModelBoundaryLayer = null;
     let hucFeatureOnSelectHandler = null;
     let zoomToHucFeatureHandler = null;
-    let isOnHoldEventDisabled = false;
+    let isOnHoldEventDisabled = true;
     let draw;
 
 
@@ -240,11 +240,10 @@ const MapControl = function (options = {}) {
 
     const initMapEventHandlers = () => {
         mapView.on('click', event => {
-            console.log('map view on hold', event, isInDrawMode);
+            console.log('map view on hold', event, isInDrawMode, isInBatchSelectMode, isOnHoldEventDisabled);
 
             if (isOnHoldEventDisabled) {
                 if (!isInDrawMode || isInBatchSelectMode) {
-                    console.log('clicked again???????', isInDrawMode, isInDrawMode);
                     //mapView.graphics.removeAll();
                     let mapPt = mapView.toMap(event)
                     queryHucsLayerByMouseEvent(mapPt)
@@ -457,6 +456,7 @@ const MapControl = function (options = {}) {
 
         initHomeButton(mapView);
 
+        initBatchSelectTools(mapView);
         //initLegend(mapView);
 
         initReferenceLayers(mapView);
@@ -562,7 +562,7 @@ const MapControl = function (options = {}) {
         attributes: null,
         popupTemplate: null
     }) => {
-        console.log('KKKKKKKKKKKKKKKKK', hucID, status, options, isInBatchSelectMode);
+        console.log('showing huc feature by status', hucID, status, options, isInBatchSelectMode);
         disableMapOnHoldEvent();
         if (!isInBatchSelectMode) {
             removeHucGraphicByStatus(hucID);

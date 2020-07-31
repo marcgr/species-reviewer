@@ -19,7 +19,7 @@ export default function FeedbackControlPanel(){
     const statusLookup = {
         1: 'Add to Modeling Extent',
         2: 'Remove from Modeling Extent',
-        3: 'Comment on Predicted Habitat'
+        3: 'Comment on Species Range'
     };
 
     const init = (options={})=>{

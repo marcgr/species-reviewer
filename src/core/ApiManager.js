@@ -312,14 +312,12 @@ export default function ApiManager(props={}){
                     token: props.oauthManager.getToken()
                 }
             }).then(function (response) {
-                console.log('frantisek?', response);
                 if(response.data && response.data.features){
                     //console.log(response.data.features);
 
                     const speciesCodes = response.data.features.map(d=>{
                         return d.attributes[config.FIELD_NAME.speciesDistribution.speciesCode]
                     });
-                    //console.log("frantisek has kids!", speciesCodes);
                     resolve(speciesCodes)
                 } else {
                     reject('no distinct species from modeling extent.  Check species distribution service.');

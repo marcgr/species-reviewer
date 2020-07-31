@@ -6,7 +6,6 @@ import FeedbackManager from './FeedbackManager';
 import config from '../config';
 //import OAuthManager from './OauthManager';
 import ApiManager from './ApiManager';
-import MapControl from './MapControl';
 
 export default function Controller(props={}){
 
@@ -16,7 +15,6 @@ export default function Controller(props={}){
     const dataModelForReviewMode = new DataModelForReviewMode();
     const feedbackManager = new FeedbackManager();
     const apiManager = new ApiManager({oauthManager});
-
     const controllerProps = props;
 
     const state = {
@@ -145,7 +143,6 @@ export default function Controller(props={}){
             d.attributes.hasDataLoaded = speciesWithDataLoaded.indexOf(species) !== -1 ? true : false;
             return d.attributes
         });
-        console.log('frumpy', data);
 
         dataModel.setSpeciesLookup(data);
 
@@ -513,10 +510,8 @@ export default function Controller(props={}){
 
         }
 
-        // mapControl.highlightHucs(hucs);
-
         controllerProps.highligtHucsOnMap(hucs);
-
+        console.log('renderHucsBySpeciesDataOnMap',options.data,options.speciesKey,hucs,isReviewMode);
         if(!isReviewMode){
             renderHucWithFeedbackDataOnMap();
         }
@@ -526,8 +521,8 @@ export default function Controller(props={}){
         const species = dataModel.getSelectedSpecies();
         data = data || feedbackManager.getFeedbackDataBySpecies(species);
 
-        // console.log('renderHucWithFeedbackDataOnMap >>> species', species);
-        // console.log('renderHucWithFeedbackDataOnMap >>> data', data);
+        console.log('renderHucWithFeedbackDataOnMap >>> species', species);
+        console.log('renderHucWithFeedbackDataOnMap >>> data', data);
 
         if(data){
             Object.keys(data).forEach(function(key) {
@@ -543,7 +538,6 @@ export default function Controller(props={}){
     };
 
     const setSelectedHucFeature = (feature=null, selectState=null, select=true )=>{
-        console.log('FFFFFFFF', select);
         if (!selectState) {
             resetSelectedHucFeature();
         }
@@ -699,7 +693,7 @@ export default function Controller(props={}){
     const renderListOfHucsWithFeedbacks = ()=>{
         const species = dataModel.getSelectedSpecies();
         const features = dataModelForReviewMode.getHucsWithFeedbacks(species);
-
+        console.log('renderListOfHucsWithFeedbacks: ', species, features);
         // mapControl.clearAllGraphics();
 
         controllerProps.clearMapGraphics();
@@ -735,6 +729,8 @@ export default function Controller(props={}){
         if(isReviewMode){
             getOverallFeedbacksForReviewMode();
             getHucsWithFeedbacksForReviewMode();
+        } else {
+            document.getElementById('line-button').classList.remove('hide');
         }
     };
 
